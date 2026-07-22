@@ -1,0 +1,1578 @@
+-- --------------------------------------------------------
+-- Hôte:                         127.0.0.1
+-- Version du serveur:           8.0.30 - MySQL Community Server - GPL
+-- SE du serveur:                Win64
+-- HeidiSQL Version:             12.1.0.6537
+-- --------------------------------------------------------
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET NAMES utf8 */;
+/*!50503 SET NAMES utf8mb4 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+
+-- Listage de la structure de la base pour bd_gst_bejamin
+CREATE DATABASE IF NOT EXISTS `bd_gst_bejamin` /*!40100 DEFAULT CHARACTER SET armscii8 COLLATE armscii8_bin */ /*!80016 DEFAULT ENCRYPTION='N' */;
+USE `bd_gst_bejamin`;
+
+-- Listage de la structure de table bd_gst_bejamin. audits
+CREATE TABLE IF NOT EXISTS `audits` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `id_utilisateur` bigint unsigned DEFAULT NULL,
+  `action` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `table_cible` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id_enregistrement` bigint unsigned DEFAULT NULL,
+  `anciennes_valeurs` json DEFAULT NULL,
+  `nouvelles_valeurs` json DEFAULT NULL,
+  `date_action` datetime DEFAULT NULL,
+  `adresse_ip` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `user_agent` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `route` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_audits_id_utilisateur` (`id_utilisateur`),
+  KEY `idx_audits_action` (`action`),
+  KEY `idx_audits_table_cible` (`table_cible`),
+  KEY `idx_audits_id_enregistrement` (`id_enregistrement`),
+  KEY `idx_audits_date_action` (`date_action`),
+  KEY `idx_audits_table_enregistrement` (`table_cible`,`id_enregistrement`),
+  KEY `idx_audits_date_action_action` (`date_action`,`action`),
+  CONSTRAINT `fk_audits_utilisateur` FOREIGN KEY (`id_utilisateur`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=119 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Table d''audit pour le traçage des actions';
+
+-- Listage des données de la table bd_gst_bejamin.audits : ~44 rows (environ)
+INSERT INTO `audits` (`id`, `id_utilisateur`, `action`, `table_cible`, `id_enregistrement`, `anciennes_valeurs`, `nouvelles_valeurs`, `date_action`, `adresse_ip`, `user_agent`, `route`, `created_at`, `updated_at`) VALUES
+	(1, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"PostmanRuntime\\\\/7.51.1\\"}"', '2026-07-19 15:11:03', '127.0.0.1', 'PostmanRuntime/7.51.1', 'api/auth/login', '2026-07-19 13:11:03', '2026-07-19 13:11:03'),
+	(2, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"PostmanRuntime\\\\/7.51.1\\"}"', '2026-07-19 21:24:12', '127.0.0.1', 'PostmanRuntime/7.51.1', 'api/auth/login', '2026-07-19 19:24:12', '2026-07-19 19:24:12'),
+	(3, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\\\\/537.36 (KHTML, like Gecko) Chrome\\\\/150.0.0.0 Safari\\\\/537.36\\"}"', '2026-07-19 21:24:50', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', 'api/auth/login', '2026-07-19 19:24:50', '2026-07-19 19:24:50'),
+	(4, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-19 21:24:54', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-19 19:24:54', '2026-07-19 19:24:54'),
+	(5, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-19 21:25:02', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-19 19:25:02', '2026-07-19 19:25:02'),
+	(6, 1, 'LOGIN_FAILED', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"failed\\",\\"reason\\":\\"wrong_password\\"}"', '2026-07-19 21:25:13', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-19 19:25:13', '2026-07-19 19:25:13'),
+	(7, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-19 21:25:22', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-19 19:25:22', '2026-07-19 19:25:22'),
+	(8, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-19 21:27:19', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-19 19:27:19', '2026-07-19 19:27:19'),
+	(9, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-19 21:27:23', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-19 19:27:23', '2026-07-19 19:27:23'),
+	(10, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-19 21:27:27', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-19 19:27:27', '2026-07-19 19:27:27'),
+	(11, NULL, 'LOGIN_FAILED', 'auth', 0, NULL, '"{\\"email\\":\\"pierrei@gmail.com\\",\\"status\\":\\"failed\\",\\"reason\\":\\"email_not_found\\"}"', '2026-07-19 21:27:42', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-19 19:27:42', '2026-07-19 19:27:42'),
+	(12, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-19 21:27:54', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-19 19:27:54', '2026-07-19 19:27:54'),
+	(13, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-19 21:33:14', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-19 19:33:14', '2026-07-19 19:33:14'),
+	(14, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-19 21:33:18', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-19 19:33:18', '2026-07-19 19:33:18'),
+	(15, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-19 21:41:45', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-19 19:41:45', '2026-07-19 19:41:45'),
+	(16, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-19 21:41:49', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-19 19:41:49', '2026-07-19 19:41:49'),
+	(17, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-19 21:45:52', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-19 19:45:52', '2026-07-19 19:45:52'),
+	(18, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-19 21:46:22', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-19 19:46:22', '2026-07-19 19:46:22'),
+	(19, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-19 21:46:34', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-19 19:46:34', '2026-07-19 19:46:34'),
+	(20, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\\\\/537.36 (KHTML, like Gecko) Chrome\\\\/150.0.0.0 Safari\\\\/537.36 Edg\\\\/150.0.0.0\\"}"', '2026-07-19 21:51:19', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0', 'api/auth/login', '2026-07-19 19:51:20', '2026-07-19 19:51:20'),
+	(21, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-19 21:53:53', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-19 19:53:53', '2026-07-19 19:53:53'),
+	(22, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-19 21:53:56', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-19 19:53:56', '2026-07-19 19:53:56'),
+	(23, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\\\\/537.36 (KHTML, like Gecko) Chrome\\\\/150.0.0.0 Safari\\\\/537.36\\"}"', '2026-07-19 21:55:49', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', 'api/auth/login', '2026-07-19 19:55:49', '2026-07-19 19:55:49'),
+	(24, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\\\\/537.36 (KHTML, like Gecko) Chrome\\\\/150.0.0.0 Safari\\\\/537.36\\"}"', '2026-07-19 21:56:00', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', 'api/auth/login', '2026-07-19 19:56:00', '2026-07-19 19:56:00'),
+	(25, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-19 21:59:11', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-19 19:59:11', '2026-07-19 19:59:11'),
+	(26, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-19 21:59:14', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-19 19:59:14', '2026-07-19 19:59:14'),
+	(27, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-19 22:01:28', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-19 20:01:28', '2026-07-19 20:01:28'),
+	(28, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-19 22:01:42', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-19 20:01:42', '2026-07-19 20:01:42'),
+	(29, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-19 22:12:04', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-19 20:12:04', '2026-07-19 20:12:04'),
+	(30, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-19 22:37:12', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-19 20:37:12', '2026-07-19 20:37:12'),
+	(31, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-19 23:25:24', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-19 21:25:24', '2026-07-19 21:25:24'),
+	(32, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-19 23:25:27', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-19 21:25:27', '2026-07-19 21:25:27'),
+	(33, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-20 10:12:58', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-20 08:12:58', '2026-07-20 08:12:58'),
+	(34, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-20 10:13:02', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-20 08:13:02', '2026-07-20 08:13:02'),
+	(35, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-20 10:19:49', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-20 08:19:49', '2026-07-20 08:19:49'),
+	(36, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-20 10:48:13', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-20 08:48:13', '2026-07-20 08:48:13'),
+	(37, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-20 10:48:15', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-20 08:48:15', '2026-07-20 08:48:15'),
+	(38, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-20 12:08:11', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-20 10:08:11', '2026-07-20 10:08:11'),
+	(39, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-20 12:08:14', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-20 10:08:14', '2026-07-20 10:08:14'),
+	(40, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-20 14:48:29', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-20 12:48:29', '2026-07-20 12:48:29'),
+	(41, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-20 14:49:00', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-20 12:49:00', '2026-07-20 12:49:00'),
+	(42, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-20 14:50:07', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-20 12:50:07', '2026-07-20 12:50:07'),
+	(43, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-20 19:14:29', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-20 17:14:29', '2026-07-20 17:14:29'),
+	(44, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-20 19:14:31', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-20 17:14:31', '2026-07-20 17:14:31'),
+	(45, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 09:47:18', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 07:47:18', '2026-07-21 07:47:18'),
+	(46, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 09:49:43', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 07:49:43', '2026-07-21 07:49:43'),
+	(47, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 09:50:38', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 07:50:38', '2026-07-21 07:50:38'),
+	(48, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 09:52:36', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 07:52:36', '2026-07-21 07:52:36'),
+	(49, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-21 10:08:08', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-21 08:08:08', '2026-07-21 08:08:08'),
+	(50, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 10:08:12', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 08:08:12', '2026-07-21 08:08:12'),
+	(51, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-21 10:38:45', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-21 08:38:45', '2026-07-21 08:38:45'),
+	(52, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 10:38:48', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 08:38:48', '2026-07-21 08:38:48'),
+	(53, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 11:40:57', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 09:40:57', '2026-07-21 09:40:57'),
+	(54, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 11:54:05', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 09:54:05', '2026-07-21 09:54:05'),
+	(55, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 11:54:32', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 09:54:32', '2026-07-21 09:54:32'),
+	(56, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 11:56:29', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 09:56:29', '2026-07-21 09:56:29'),
+	(57, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-21 13:20:19', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-21 11:20:19', '2026-07-21 11:20:19'),
+	(58, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 13:20:26', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 11:20:26', '2026-07-21 11:20:26'),
+	(59, 1, 'UPDATE', 'bons', 2, NULL, NULL, '2026-07-21 13:20:54', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', NULL, '2026-07-21 11:20:54', '2026-07-21 11:20:54'),
+	(60, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-21 13:24:17', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-21 11:24:17', '2026-07-21 11:24:17'),
+	(61, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 13:24:20', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 11:24:20', '2026-07-21 11:24:20'),
+	(62, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-21 13:25:34', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-21 11:25:34', '2026-07-21 11:25:34'),
+	(63, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 13:25:37', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 11:25:37', '2026-07-21 11:25:37'),
+	(64, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-21 13:32:46', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-21 11:32:46', '2026-07-21 11:32:46'),
+	(65, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 13:32:49', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 11:32:49', '2026-07-21 11:32:49'),
+	(66, 1, 'UPDATE', '', 0, NULL, '"{\\"mot_de_passe_confirmation\\":null}"', '2026-07-21 13:37:22', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', NULL, '2026-07-21 11:37:22', '2026-07-21 11:37:22'),
+	(67, 1, 'UPDATE', '', 0, NULL, '"{\\"mot_de_passe_confirmation\\":null}"', '2026-07-21 13:37:27', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', NULL, '2026-07-21 11:37:27', '2026-07-21 11:37:27'),
+	(68, 1, 'UPDATE', '', 0, NULL, '"{\\"mot_de_passe_confirmation\\":null}"', '2026-07-21 13:37:28', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', NULL, '2026-07-21 11:37:28', '2026-07-21 11:37:28'),
+	(69, 1, 'UPDATE', '', 0, NULL, '"{\\"mot_de_passe_confirmation\\":\\"12345678\\"}"', '2026-07-21 13:37:44', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', NULL, '2026-07-21 11:37:44', '2026-07-21 11:37:44'),
+	(70, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-21 13:39:27', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-21 11:39:27', '2026-07-21 11:39:27'),
+	(71, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 13:39:30', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 11:39:30', '2026-07-21 11:39:30'),
+	(72, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-21 13:39:58', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-21 11:39:58', '2026-07-21 11:39:58'),
+	(73, 2, 'LOGIN_SUCCESS', 'auth', 2, NULL, '"{\\"email\\":\\"ngoma@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 13:40:09', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 11:40:09', '2026-07-21 11:40:09'),
+	(74, 2, 'LOGOUT', 'auth', 2, NULL, '"{\\"email\\":\\"ngoma@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-21 13:41:14', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-21 11:41:14', '2026-07-21 11:41:14'),
+	(75, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 13:41:25', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 11:41:25', '2026-07-21 11:41:25'),
+	(76, 1, 'UPDATE', 'role', 7, '"{\\"id\\":7,\\"nom\\":\\"Super Admin\\",\\"description\\":\\"Il a droit presque a toute l\'application\\",\\"actif\\":true,\\"deleted_at\\":null,\\"created_at\\":\\"2026-07-21T13:11:33.000000Z\\",\\"updated_at\\":\\"2026-07-21T13:11:33.000000Z\\"}"', '"{\\"nom\\":\\"Super Admin\\",\\"description\\":\\"Il a droit presque a toute l\'application\\",\\"actif\\":true,\\"permissions\\":[84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196]}"', '2026-07-21 13:41:59', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', NULL, '2026-07-21 11:41:59', '2026-07-21 11:41:59'),
+	(77, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-21 13:42:05', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-21 11:42:05', '2026-07-21 11:42:05'),
+	(78, 2, 'LOGIN_SUCCESS', 'auth', 2, NULL, '"{\\"email\\":\\"ngoma@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 13:42:17', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 11:42:17', '2026-07-21 11:42:17'),
+	(79, 2, 'LOGOUT', 'auth', 2, NULL, '"{\\"email\\":\\"ngoma@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-21 13:45:16', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-21 11:45:16', '2026-07-21 11:45:16'),
+	(80, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 13:45:19', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 11:45:19', '2026-07-21 11:45:19'),
+	(81, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-21 13:49:46', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-21 11:49:46', '2026-07-21 11:49:46'),
+	(82, 2, 'LOGIN_SUCCESS', 'auth', 2, NULL, '"{\\"email\\":\\"ngoma@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 13:49:55', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 11:49:55', '2026-07-21 11:49:55'),
+	(83, 2, 'LOGOUT', 'auth', 2, NULL, '"{\\"email\\":\\"ngoma@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-21 13:52:56', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-21 11:52:56', '2026-07-21 11:52:56'),
+	(84, 2, 'LOGIN_SUCCESS', 'auth', 2, NULL, '"{\\"email\\":\\"ngoma@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 13:53:08', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 11:53:08', '2026-07-21 11:53:08'),
+	(85, 2, 'LOGOUT', 'auth', 2, NULL, '"{\\"email\\":\\"ngoma@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-21 13:57:18', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-21 11:57:18', '2026-07-21 11:57:18'),
+	(86, 2, 'LOGIN_SUCCESS', 'auth', 2, NULL, '"{\\"email\\":\\"ngoma@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 13:57:28', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 11:57:28', '2026-07-21 11:57:28'),
+	(87, 2, 'LOGOUT', 'auth', 2, NULL, '"{\\"email\\":\\"ngoma@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-21 14:01:04', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-21 12:01:04', '2026-07-21 12:01:04'),
+	(88, 2, 'LOGIN_SUCCESS', 'auth', 2, NULL, '"{\\"email\\":\\"ngoma@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 14:01:14', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 12:01:14', '2026-07-21 12:01:14'),
+	(89, 2, 'INSERT', 'utilisateur', 0, NULL, '"{\\"nom\\":\\"AMULI\\",\\"prenom\\":\\"Claude\\",\\"email\\":\\"amuli@gmail.com\\",\\"id_role\\":\\"3\\",\\"id_ville\\":\\"1\\",\\"id_departement\\":\\"4\\",\\"id_zone\\":\\"2\\",\\"id_emplacement\\":null,\\"actif\\":true,\\"mot_de_passe_confirmation\\":\\"12345678\\"}"', '2026-07-21 14:05:39', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', NULL, '2026-07-21 12:05:39', '2026-07-21 12:05:39'),
+	(90, 2, 'UPDATE', 'role', 3, '"{\\"id\\":3,\\"nom\\":\\"COMMERCIAL\\",\\"description\\":\\"Commercial - Cr\\\\u00e9ation de commandes et suivi fournisseurs\\",\\"actif\\":true,\\"deleted_at\\":null,\\"created_at\\":\\"2026-07-18T14:26:27.000000Z\\",\\"updated_at\\":\\"2026-07-18T14:26:27.000000Z\\"}"', '"{\\"nom\\":\\"COMMERCIAL\\",\\"description\\":\\"Commercial - Cr\\\\u00e9ation de commandes et suivi fournisseurs\\",\\"actif\\":true,\\"permissions\\":[84,85,86,87,88,89,96,97,98,99,100,101,114,115,116,117,118,196,195,194,193,192,191,190,189,188,187,186,185,184,183,182]}"', '2026-07-21 14:08:27', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', NULL, '2026-07-21 12:08:27', '2026-07-21 12:08:27'),
+	(91, 2, 'LOGOUT', 'auth', 2, NULL, '"{\\"email\\":\\"ngoma@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-21 14:08:36', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-21 12:08:36', '2026-07-21 12:08:36'),
+	(92, 3, 'LOGIN_SUCCESS', 'auth', 3, NULL, '"{\\"email\\":\\"amuli@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 14:08:45', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 12:08:45', '2026-07-21 12:08:45'),
+	(93, 3, 'LOGOUT', 'auth', 3, NULL, '"{\\"email\\":\\"amuli@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-21 14:09:37', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-21 12:09:37', '2026-07-21 12:09:37'),
+	(94, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 14:09:41', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 12:09:41', '2026-07-21 12:09:41'),
+	(95, 1, 'UPDATE', 'role', 3, '"{\\"id\\":3,\\"nom\\":\\"COMMERCIAL\\",\\"description\\":\\"Commercial - Cr\\\\u00e9ation de commandes et suivi fournisseurs\\",\\"actif\\":true,\\"deleted_at\\":null,\\"created_at\\":\\"2026-07-18T14:26:27.000000Z\\",\\"updated_at\\":\\"2026-07-18T14:26:27.000000Z\\"}"', '"{\\"nom\\":\\"COMMERCIAL\\",\\"description\\":\\"Commercial - Cr\\\\u00e9ation de commandes et suivi fournisseurs\\",\\"actif\\":true,\\"permissions\\":[]}"', '2026-07-21 14:10:03', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', NULL, '2026-07-21 12:10:03', '2026-07-21 12:10:03'),
+	(96, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-21 14:10:08', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-21 12:10:08', '2026-07-21 12:10:08'),
+	(97, 3, 'LOGIN_SUCCESS', 'auth', 3, NULL, '"{\\"email\\":\\"amuli@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 14:10:17', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 12:10:17', '2026-07-21 12:10:17'),
+	(98, 3, 'LOGOUT', 'auth', 3, NULL, '"{\\"email\\":\\"amuli@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-21 14:13:12', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-21 12:13:12', '2026-07-21 12:13:12'),
+	(99, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 14:13:15', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 12:13:15', '2026-07-21 12:13:15'),
+	(100, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-21 14:13:21', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-21 12:13:21', '2026-07-21 12:13:21'),
+	(101, 2, 'LOGIN_SUCCESS', 'auth', 2, NULL, '"{\\"email\\":\\"ngoma@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 14:13:58', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 12:13:58', '2026-07-21 12:13:58'),
+	(102, 2, 'UPDATE', 'role', 3, '"{\\"id\\":3,\\"nom\\":\\"COMMERCIAL\\",\\"description\\":\\"Commercial - Cr\\\\u00e9ation de commandes et suivi fournisseurs\\",\\"actif\\":true,\\"deleted_at\\":null,\\"created_at\\":\\"2026-07-18T14:26:27.000000Z\\",\\"updated_at\\":\\"2026-07-18T14:26:27.000000Z\\"}"', '"{\\"nom\\":\\"COMMERCIAL\\",\\"description\\":\\"Commercial - Cr\\\\u00e9ation de commandes et suivi fournisseurs\\",\\"actif\\":true,\\"permissions\\":[84,88,87,92,96,100,104,108,112,116,120,124,128,132,136,141,145,150,154,158,164,169,173,177,180,189,188]}"', '2026-07-21 18:15:35', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', NULL, '2026-07-21 16:15:35', '2026-07-21 16:15:35'),
+	(103, 2, 'LOGOUT', 'auth', 2, NULL, '"{\\"email\\":\\"ngoma@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-21 18:16:35', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-21 16:16:35', '2026-07-21 16:16:35'),
+	(104, 3, 'LOGIN_SUCCESS', 'auth', 3, NULL, '"{\\"email\\":\\"amuli@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 18:16:47', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 16:16:47', '2026-07-21 16:16:47'),
+	(105, 3, 'UPDATE', 'role', 7, '"{\\"id\\":7,\\"nom\\":\\"Super Admin\\",\\"description\\":\\"Il a droit presque a toute l\'application\\",\\"actif\\":true,\\"deleted_at\\":null,\\"created_at\\":\\"2026-07-21T13:11:33.000000Z\\",\\"updated_at\\":\\"2026-07-21T13:11:33.000000Z\\"}"', '"{\\"nom\\":\\"Super Admin\\",\\"description\\":\\"Il a droit presque a toute l\'application\\",\\"actif\\":true,\\"permissions\\":[84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128,129,130,131,132,133,134,135,136,137,138,139,140,141,142,143,144,145,146,147,148,149,150,151,152,153,154,155,156,157,158,159,160,161,162,163,164,165,166,167,168,169,170,171,172,173,174,175,176,177,178,179,180,181,182,183,184,185,186,187,188,189,190,191,192,193,194,195,196]}"', '2026-07-21 18:18:10', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', NULL, '2026-07-21 16:18:10', '2026-07-21 16:18:10'),
+	(106, 3, 'LOGOUT', 'auth', 3, NULL, '"{\\"email\\":\\"amuli@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-21 18:18:22', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-21 16:18:22', '2026-07-21 16:18:22'),
+	(107, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 18:18:25', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 16:18:25', '2026-07-21 16:18:25'),
+	(108, 1, 'UPDATE', 'role', 3, '"{\\"id\\":3,\\"nom\\":\\"COMMERCIAL\\",\\"description\\":\\"Commercial - Cr\\\\u00e9ation de commandes et suivi fournisseurs\\",\\"actif\\":true,\\"deleted_at\\":null,\\"created_at\\":\\"2026-07-18T14:26:27.000000Z\\",\\"updated_at\\":\\"2026-07-18T14:26:27.000000Z\\"}"', '"{\\"nom\\":\\"COMMERCIAL\\",\\"description\\":\\"Commercial - Cr\\\\u00e9ation de commandes et suivi fournisseurs\\",\\"actif\\":true,\\"permissions\\":[84,87,88,92,96,100,104,108,124,128,132,136,141,145,150,154,158,164,169,173,177,180,188,189]}"', '2026-07-21 18:19:03', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', NULL, '2026-07-21 16:19:03', '2026-07-21 16:19:03'),
+	(109, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-21 18:19:09', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-21 16:19:09', '2026-07-21 16:19:09'),
+	(110, 3, 'LOGIN_SUCCESS', 'auth', 3, NULL, '"{\\"email\\":\\"amuli@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 18:19:19', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 16:19:19', '2026-07-21 16:19:19'),
+	(111, 3, 'UPDATE', '', 0, NULL, '"{\\"mot_de_passe_confirmation\\":null}"', '2026-07-21 18:26:49', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', NULL, '2026-07-21 16:26:49', '2026-07-21 16:26:49'),
+	(112, 3, 'UPDATE', '', 0, NULL, '"{\\"mot_de_passe_confirmation\\":\\"12345\\"}"', '2026-07-21 18:27:12', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', NULL, '2026-07-21 16:27:12', '2026-07-21 16:27:12'),
+	(113, 3, 'UPDATE', '', 0, NULL, '"{\\"mot_de_passe_confirmation\\":\\"123456\\"}"', '2026-07-21 18:27:20', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', NULL, '2026-07-21 16:27:20', '2026-07-21 16:27:20'),
+	(114, 3, 'LOGOUT', 'auth', 3, NULL, '"{\\"email\\":\\"amuli@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-21 18:27:26', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-21 16:27:26', '2026-07-21 16:27:26'),
+	(115, 3, 'LOGIN_SUCCESS', 'auth', 3, NULL, '"{\\"email\\":\\"amuli@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 18:27:35', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 16:27:35', '2026-07-21 16:27:35'),
+	(116, 3, 'LOGOUT', 'auth', 3, NULL, '"{\\"email\\":\\"amuli@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-21 18:27:49', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/logout', '2026-07-21 16:27:49', '2026-07-21 16:27:49'),
+	(117, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko\\\\/20100101 Firefox\\\\/153.0\\"}"', '2026-07-21 18:27:54', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', 'api/auth/login', '2026-07-21 16:27:54', '2026-07-21 16:27:54'),
+	(118, 1, 'INSERT', 'bons', 0, NULL, '"{\\"numero_commande\\":\\"BC-025874\\",\\"id_partenaire\\":\\"4\\",\\"id_ville_destination\\":\\"1\\",\\"date_commande\\":\\"2026-07-21\\",\\"date_livraison_prevue\\":\\"2026-07-31\\",\\"id_devise\\":\\"1\\",\\"commentaire\\":null,\\"lignes\\":[{\\"id_produit\\":\\"8\\",\\"quantite_commandee\\":\\"3\\",\\"prix_unitaire_ht\\":\\"10.00\\",\\"id_devise\\":\\"1\\"},{\\"id_produit\\":\\"1\\",\\"quantite_commandee\\":\\"3\\",\\"prix_unitaire_ht\\":\\"6.00\\",\\"id_devise\\":\\"1\\"}]}"', '2026-07-21 18:41:42', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:153.0) Gecko/20100101 Firefox/153.0', NULL, '2026-07-21 16:41:42', '2026-07-21 16:41:42');
+
+-- Listage de la structure de table bd_gst_bejamin. avoir
+CREATE TABLE IF NOT EXISTS `avoir` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `numero_avoir` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `date_avoir` date NOT NULL,
+  `id_partenaire_client` bigint unsigned NOT NULL,
+  `id_facture_origine` bigint unsigned DEFAULT NULL,
+  `id_retour` bigint unsigned DEFAULT NULL,
+  `id_devise` bigint unsigned NOT NULL,
+  `montant_ht` decimal(12,2) NOT NULL,
+  `id_utilisateur` bigint unsigned DEFAULT NULL,
+  `commentaire` text COLLATE utf8mb4_unicode_ci,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `avoir_numero_avoir_unique` (`numero_avoir`),
+  KEY `avoir_id_devise_foreign` (`id_devise`),
+  KEY `avoir_id_utilisateur_foreign` (`id_utilisateur`),
+  KEY `avoir_numero_avoir_index` (`numero_avoir`),
+  KEY `avoir_id_partenaire_client_index` (`id_partenaire_client`),
+  KEY `avoir_id_facture_origine_index` (`id_facture_origine`),
+  KEY `avoir_id_retour_index` (`id_retour`),
+  CONSTRAINT `avoir_id_devise_foreign` FOREIGN KEY (`id_devise`) REFERENCES `devises` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `avoir_id_facture_origine_foreign` FOREIGN KEY (`id_facture_origine`) REFERENCES `facture` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `avoir_id_partenaire_client_foreign` FOREIGN KEY (`id_partenaire_client`) REFERENCES `partenaires` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `avoir_id_retour_foreign` FOREIGN KEY (`id_retour`) REFERENCES `retour` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `avoir_id_utilisateur_foreign` FOREIGN KEY (`id_utilisateur`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.avoir : ~0 rows (environ)
+INSERT INTO `avoir` (`id`, `numero_avoir`, `date_avoir`, `id_partenaire_client`, `id_facture_origine`, `id_retour`, `id_devise`, `montant_ht`, `id_utilisateur`, `commentaire`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(1, 'AV-2026-001', '2026-07-19', 2, 1, NULL, 1, 100.00, 1, 'Avoir suite à retour de produits', '2026-07-21 09:45:09', '2026-07-19 12:18:18', '2026-07-21 09:45:09'),
+	(2, 'AV-TEST-005', '2026-07-21', 1, 1, NULL, 1, 150.00, 1, 'Test', '2026-07-21 09:45:15', '2026-07-21 09:43:42', '2026-07-21 09:45:15'),
+	(3, 'AV-ERR-1', '2026-07-21', 1, 1, NULL, 1, 100.00, 1, 'Test1', NULL, '2026-07-21 09:44:27', '2026-07-21 09:44:27'),
+	(4, 'AV-202254', '2026-07-21', 4, 2, NULL, 1, 25000.00, 1, NULL, '2026-07-21 09:45:22', '2026-07-21 09:44:30', '2026-07-21 09:45:22'),
+	(5, 'AV-01547', '2026-07-21', 3, 1, NULL, 1, 15000.00, 1, NULL, NULL, '2026-07-21 09:45:57', '2026-07-21 09:45:57');
+
+-- Listage de la structure de table bd_gst_bejamin. bon_commande
+CREATE TABLE IF NOT EXISTS `bon_commande` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `numero_commande` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id_partenaire` bigint unsigned NOT NULL,
+  `id_ville_destination` bigint unsigned NOT NULL,
+  `date_commande` date NOT NULL,
+  `date_livraison_prevue` date DEFAULT NULL,
+  `statut` enum('BROUILLON','ENVOYÉ','REÇU PARTIELLEMENT','REÇU','ANNULE') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'BROUILLON',
+  `montant_total_ht` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `id_devise` bigint unsigned DEFAULT NULL,
+  `id_utilisateur` bigint unsigned DEFAULT NULL,
+  `commentaire` text COLLATE utf8mb4_unicode_ci,
+  `valide_par` bigint unsigned DEFAULT NULL,
+  `date_validation` datetime DEFAULT NULL,
+  `statut_validation` enum('EN ATTENTE','VALIDÉ','REJETÉ') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'EN ATTENTE',
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `bon_commande_numero_commande_unique` (`numero_commande`),
+  KEY `bon_commande_id_devise_foreign` (`id_devise`),
+  KEY `bon_commande_id_utilisateur_foreign` (`id_utilisateur`),
+  KEY `bon_commande_valide_par_foreign` (`valide_par`),
+  KEY `bon_commande_numero_commande_index` (`numero_commande`),
+  KEY `bon_commande_id_partenaire_index` (`id_partenaire`),
+  KEY `bon_commande_id_ville_destination_index` (`id_ville_destination`),
+  KEY `bon_commande_statut_index` (`statut`),
+  KEY `bon_commande_date_commande_index` (`date_commande`),
+  KEY `bon_commande_statut_validation_index` (`statut_validation`),
+  KEY `bon_commande_statut_date_commande_index` (`statut`,`date_commande`),
+  KEY `bon_commande_id_ville_destination_statut_index` (`id_ville_destination`,`statut`),
+  CONSTRAINT `bon_commande_id_devise_foreign` FOREIGN KEY (`id_devise`) REFERENCES `devises` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `bon_commande_id_partenaire_foreign` FOREIGN KEY (`id_partenaire`) REFERENCES `partenaires` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `bon_commande_id_utilisateur_foreign` FOREIGN KEY (`id_utilisateur`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `bon_commande_id_ville_destination_foreign` FOREIGN KEY (`id_ville_destination`) REFERENCES `villes` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `bon_commande_valide_par_foreign` FOREIGN KEY (`valide_par`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.bon_commande : ~5 rows (environ)
+INSERT INTO `bon_commande` (`id`, `numero_commande`, `id_partenaire`, `id_ville_destination`, `date_commande`, `date_livraison_prevue`, `statut`, `montant_total_ht`, `id_devise`, `id_utilisateur`, `commentaire`, `valide_par`, `date_validation`, `statut_validation`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(1, 'BC-2026-001', 1, 1, '2026-07-19', '2026-07-25', 'REÇU', 1238.00, 1, 1, 'Commande complète pour vol AF-001 - Kinshasa', 1, '2026-07-18 17:04:03', 'VALIDÉ', NULL, '2026-07-18 14:57:41', '2026-07-18 15:12:22'),
+	(2, 'BC-2026-002', 1, 2, '2026-07-19', '2026-07-26', 'ENVOYÉ', 1102.00, 1, 1, 'Commande pour vol ET-002 - Lubumbashi', 1, '2026-07-21 13:20:54', 'VALIDÉ', NULL, '2026-07-18 15:01:33', '2026-07-21 11:20:54'),
+	(3, 'CMD-DEV-2026-001', 2, 1, '2026-07-19', NULL, 'ENVOYÉ', 710.00, 1, 1, 'Commande issue du devis DEV-2026-001', 1, '2026-07-21 11:13:37', 'VALIDÉ', NULL, '2026-07-19 12:07:40', '2026-07-21 09:13:37'),
+	(4, 'BN-145875', 1, 1, '2026-07-20', '2026-07-29', 'REÇU', 9.60, 1, 1, 'RAS', 1, '2026-07-20 10:27:50', 'VALIDÉ', NULL, '2026-07-20 08:27:38', '2026-07-21 09:08:38'),
+	(5, 'BS-025874', 3, 1, '2026-07-21', '2026-07-31', 'REÇU', 55.60, 1, 1, NULL, 1, '2026-07-21 10:43:55', 'VALIDÉ', NULL, '2026-07-21 08:43:42', '2026-07-21 09:07:47'),
+	(6, 'BC-025874', 4, 1, '2026-07-21', '2026-07-31', 'BROUILLON', 48.00, 1, 1, NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-21 16:41:41', '2026-07-21 16:41:41');
+
+-- Listage de la structure de table bd_gst_bejamin. categories
+CREATE TABLE IF NOT EXISTS `categories` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `nom` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `actif` tinyint(1) NOT NULL DEFAULT '1',
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `categories_nom_unique` (`nom`),
+  KEY `categories_actif_index` (`actif`),
+  KEY `categories_nom_index` (`nom`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.categories : ~7 rows (environ)
+INSERT INTO `categories` (`id`, `nom`, `description`, `actif`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(2, 'Entrée', 'Hors-d\'œuvre, salades, etc.', 1, NULL, '2026-07-18 12:36:27', '2026-07-18 12:36:27'),
+	(3, 'Plat principal', 'Viandes, poissons, pâtes, riz, etc.', 1, NULL, '2026-07-18 12:36:27', '2026-07-18 12:36:27'),
+	(4, 'Dessert', 'Pâtisseries, fruits, etc.', 1, NULL, '2026-07-18 12:36:27', '2026-07-18 12:36:27'),
+	(5, 'Boisson', 'Jus, eau, soda, café, thé', 1, NULL, '2026-07-18 12:36:27', '2026-07-18 12:36:27'),
+	(6, 'Snack', 'Sandwichs, barres céréalières', 1, NULL, '2026-07-18 12:36:27', '2026-07-18 12:36:27'),
+	(7, 'Linge & Textile', 'Nappes, serviettes, blouses', 1, NULL, '2026-07-18 12:36:27', '2026-07-18 12:36:27'),
+	(8, 'Hygiène & Entretien', 'Produits de nettoyage, désinfectants', 1, NULL, '2026-07-18 12:36:27', '2026-07-18 12:36:27');
+
+-- Listage de la structure de table bd_gst_bejamin. departements
+CREATE TABLE IF NOT EXISTS `departements` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `nom` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `code` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `id_ville` bigint unsigned NOT NULL,
+  `actif` tinyint(1) NOT NULL DEFAULT '1',
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `departements_id_ville_index` (`id_ville`),
+  KEY `departements_actif_index` (`actif`),
+  KEY `departements_id_ville_actif_index` (`id_ville`,`actif`),
+  CONSTRAINT `departements_id_ville_foreign` FOREIGN KEY (`id_ville`) REFERENCES `villes` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.departements : ~5 rows (environ)
+INSERT INTO `departements` (`id`, `nom`, `code`, `id_ville`, `actif`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(1, 'Kinshasa CentreS', 'KIN-C', 1, 1, NULL, '2026-07-18 11:41:31', '2026-07-18 11:42:43'),
+	(2, 'Kinshasa Centre', 'KIN-C', 1, 1, NULL, '2026-07-18 12:35:44', '2026-07-18 12:35:44'),
+	(3, 'Kinshasa Est', 'KIN-E', 1, 1, NULL, '2026-07-18 12:35:44', '2026-07-18 12:35:44'),
+	(4, 'Kinshasa Ouest', 'KIN-O', 1, 1, NULL, '2026-07-18 12:35:44', '2026-07-18 12:35:44'),
+	(5, 'Kinshasa Sud', 'KIN-S', 1, 1, NULL, '2026-07-18 12:35:44', '2026-07-18 12:35:44');
+
+-- Listage de la structure de table bd_gst_bejamin. devis
+CREATE TABLE IF NOT EXISTS `devis` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `numero_devis` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `date_devis` date NOT NULL,
+  `date_validite` date DEFAULT NULL,
+  `id_partenaire_client` bigint unsigned NOT NULL,
+  `id_ville` bigint unsigned NOT NULL,
+  `id_devise` bigint unsigned NOT NULL,
+  `montant_ht` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `id_utilisateur` bigint unsigned DEFAULT NULL,
+  `statut` enum('BROUILLON','ENVOYE','ACCEPTE','REFUSE','TRANSFORME_EN_COMMANDE') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'BROUILLON',
+  `commentaire` text COLLATE utf8mb4_unicode_ci,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `devis_numero_devis_unique` (`numero_devis`),
+  KEY `devis_id_devise_foreign` (`id_devise`),
+  KEY `devis_id_utilisateur_foreign` (`id_utilisateur`),
+  KEY `devis_numero_devis_index` (`numero_devis`),
+  KEY `devis_id_partenaire_client_index` (`id_partenaire_client`),
+  KEY `devis_id_ville_index` (`id_ville`),
+  KEY `devis_statut_index` (`statut`),
+  CONSTRAINT `devis_id_devise_foreign` FOREIGN KEY (`id_devise`) REFERENCES `devises` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `devis_id_partenaire_client_foreign` FOREIGN KEY (`id_partenaire_client`) REFERENCES `partenaires` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `devis_id_utilisateur_foreign` FOREIGN KEY (`id_utilisateur`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `devis_id_ville_foreign` FOREIGN KEY (`id_ville`) REFERENCES `villes` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.devis : ~2 rows (environ)
+INSERT INTO `devis` (`id`, `numero_devis`, `date_devis`, `date_validite`, `id_partenaire_client`, `id_ville`, `id_devise`, `montant_ht`, `id_utilisateur`, `statut`, `commentaire`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(1, 'DEV-2026-001', '2026-07-19', '2026-08-19', 2, 1, 1, 647.00, 1, 'TRANSFORME_EN_COMMANDE', 'Devis pour Ethiopian Airlines', NULL, '2026-07-19 12:03:26', '2026-07-19 12:07:40'),
+	(2, 'DEV-005', '2026-07-21', '2026-08-01', 4, 1, 1, 200.00, 1, 'ACCEPTE', NULL, NULL, '2026-07-21 09:28:20', '2026-07-21 09:28:55');
+
+-- Listage de la structure de table bd_gst_bejamin. devises
+CREATE TABLE IF NOT EXISTS `devises` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `code` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nom` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `symbole` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `actif` tinyint(1) NOT NULL DEFAULT '1',
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `devises_code_unique` (`code`),
+  KEY `devises_actif_index` (`actif`),
+  KEY `devises_code_index` (`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.devises : ~2 rows (environ)
+INSERT INTO `devises` (`id`, `code`, `nom`, `symbole`, `actif`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(1, 'CDF', 'Franc Congolais', 'FR', 1, NULL, '2026-07-18 11:52:28', '2026-07-19 21:22:05'),
+	(2, 'USD', 'Dollar US', '$', 1, NULL, '2026-07-18 12:34:21', '2026-07-18 12:34:21'),
+	(3, 'EUR', 'Euro', '€', 1, NULL, '2026-07-18 12:34:21', '2026-07-18 12:34:21'),
+	(4, 'MM', 'R', 'p', 1, '2026-07-19 21:21:46', '2026-07-19 21:21:39', '2026-07-19 21:21:46');
+
+-- Listage de la structure de table bd_gst_bejamin. emplacements
+CREATE TABLE IF NOT EXISTS `emplacements` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `nom` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id_zone` bigint unsigned NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `actif` tinyint(1) NOT NULL DEFAULT '1',
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `emplacements_id_zone_index` (`id_zone`),
+  KEY `emplacements_actif_index` (`actif`),
+  KEY `emplacements_id_zone_actif_index` (`id_zone`,`actif`),
+  CONSTRAINT `emplacements_id_zone_foreign` FOREIGN KEY (`id_zone`) REFERENCES `zones` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.emplacements : ~1 rows (environ)
+INSERT INTO `emplacements` (`id`, `nom`, `id_zone`, `description`, `actif`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(1, 'Four n°1', 1, 'Four principal pour les viandes rôties', 1, NULL, '2026-07-18 11:46:18', '2026-07-18 11:48:02');
+
+-- Listage de la structure de table bd_gst_bejamin. facture
+CREATE TABLE IF NOT EXISTS `facture` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `numero_facture` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `date_facture` date NOT NULL,
+  `date_echeance` date NOT NULL,
+  `id_partenaire_client` bigint unsigned NOT NULL,
+  `id_bon_commande` bigint unsigned DEFAULT NULL,
+  `id_ville` bigint unsigned NOT NULL,
+  `id_devise` bigint unsigned NOT NULL,
+  `montant_ht` decimal(12,2) NOT NULL,
+  `montant_ttc` decimal(12,2) NOT NULL,
+  `id_utilisateur` bigint unsigned DEFAULT NULL,
+  `statut` enum('BROUILLON','EMISE','PAYEE','ANNULEE') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'BROUILLON',
+  `commentaire` text COLLATE utf8mb4_unicode_ci,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `facture_numero_facture_unique` (`numero_facture`),
+  KEY `facture_id_devise_foreign` (`id_devise`),
+  KEY `facture_id_utilisateur_foreign` (`id_utilisateur`),
+  KEY `facture_numero_facture_index` (`numero_facture`),
+  KEY `facture_id_partenaire_client_index` (`id_partenaire_client`),
+  KEY `facture_id_bon_commande_index` (`id_bon_commande`),
+  KEY `facture_id_ville_index` (`id_ville`),
+  KEY `facture_statut_index` (`statut`),
+  KEY `facture_date_facture_index` (`date_facture`),
+  CONSTRAINT `facture_id_bon_commande_foreign` FOREIGN KEY (`id_bon_commande`) REFERENCES `bon_commande` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `facture_id_devise_foreign` FOREIGN KEY (`id_devise`) REFERENCES `devises` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `facture_id_partenaire_client_foreign` FOREIGN KEY (`id_partenaire_client`) REFERENCES `partenaires` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `facture_id_utilisateur_foreign` FOREIGN KEY (`id_utilisateur`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `facture_id_ville_foreign` FOREIGN KEY (`id_ville`) REFERENCES `villes` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.facture : ~2 rows (environ)
+INSERT INTO `facture` (`id`, `numero_facture`, `date_facture`, `date_echeance`, `id_partenaire_client`, `id_bon_commande`, `id_ville`, `id_devise`, `montant_ht`, `montant_ttc`, `id_utilisateur`, `statut`, `commentaire`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(1, 'FAC-2026-001', '2026-07-19', '2026-08-19', 2, 1, 1, 1, 87.00, 87.00, 1, 'EMISE', 'Facture pour Ethiopian Airlines', NULL, '2026-07-19 12:12:36', '2026-07-19 12:13:47'),
+	(2, 'FAC-2026-02-02', '2026-07-21', '2026-07-24', 3, NULL, 1, 1, 304.00, 304.00, 1, 'PAYEE', NULL, NULL, '2026-07-21 09:22:32', '2026-07-21 09:23:01');
+
+-- Listage de la structure de table bd_gst_bejamin. failed_jobs
+CREATE TABLE IF NOT EXISTS `failed_jobs` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `uuid` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `connection` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `queue` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `payload` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `exception` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `failed_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `failed_jobs_uuid_unique` (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.failed_jobs : ~0 rows (environ)
+
+-- Listage de la structure de table bd_gst_bejamin. fiche_technique
+CREATE TABLE IF NOT EXISTS `fiche_technique` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `code` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nom` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `id_produit_fini` bigint unsigned NOT NULL,
+  `rendement` int NOT NULL DEFAULT '1' COMMENT 'Nombre de portions',
+  `id_ville` bigint unsigned NOT NULL,
+  `cout_total` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT 'Coût total de la recette',
+  `cout_unitaire` decimal(10,2) NOT NULL DEFAULT '0.00' COMMENT 'Coût par portion',
+  `actif` tinyint(1) NOT NULL DEFAULT '1',
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `fiche_technique_code_unique` (`code`),
+  KEY `fiche_technique_code_index` (`code`),
+  KEY `fiche_technique_id_produit_fini_index` (`id_produit_fini`),
+  KEY `fiche_technique_id_ville_index` (`id_ville`),
+  KEY `fiche_technique_actif_index` (`actif`),
+  CONSTRAINT `fiche_technique_id_produit_fini_foreign` FOREIGN KEY (`id_produit_fini`) REFERENCES `produits` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `fiche_technique_id_ville_foreign` FOREIGN KEY (`id_ville`) REFERENCES `villes` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.fiche_technique : ~6 rows (environ)
+INSERT INTO `fiche_technique` (`id`, `code`, `nom`, `description`, `id_produit_fini`, `rendement`, `id_ville`, `cout_total`, `cout_unitaire`, `actif`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(1, 'FT-001', 'Poulet rôti', 'Recette du poulet rôti aux herbes', 1, 10, 1, 9.85, 0.99, 1, NULL, '2026-07-19 13:38:45', '2026-07-19 13:38:45'),
+	(2, 'FT-0015', 'Poulet rôti aux herbes', 'Recette du poulet rôti aux herbes provençales', 2, 10, 1, 0.90, 0.09, 1, NULL, '2026-07-19 13:43:30', '2026-07-19 13:43:30'),
+	(3, 'FT-002', 'Tiramisu', 'Recette du tiramisu italien', 4, 8, 1, 0.54, 0.07, 1, NULL, '2026-07-19 13:44:00', '2026-07-19 13:44:00'),
+	(4, 'FT-0071', 'poulet au mwambe', NULL, 3, 2, 1, 8.60, 4.30, 1, NULL, '2026-07-21 08:13:48', '2026-07-21 08:13:48'),
+	(5, 'FT-0057', 'Poulet à la sauce tomaate', NULL, 2, 3, 1, 17.40, 5.80, 1, NULL, '2026-07-21 08:26:24', '2026-07-21 08:26:24'),
+	(6, 'FT-0057-COPY', 'Poulet à la sauce tomaate (Copie)', NULL, 2, 3, 1, 17.40, 5.80, 0, NULL, '2026-07-21 08:27:06', '2026-07-21 08:27:06');
+
+-- Listage de la structure de table bd_gst_bejamin. historique_prix
+CREATE TABLE IF NOT EXISTS `historique_prix` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `id_produit` bigint unsigned NOT NULL,
+  `prix_achat_ht` decimal(10,2) NOT NULL,
+  `prix_vente_ht` decimal(10,2) DEFAULT NULL,
+  `id_devise` bigint unsigned NOT NULL,
+  `date_application` date NOT NULL,
+  `commentaire` text COLLATE utf8mb4_unicode_ci,
+  `id_utilisateur` bigint unsigned DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `historique_prix_id_utilisateur_foreign` (`id_utilisateur`),
+  KEY `historique_prix_id_produit_index` (`id_produit`),
+  KEY `historique_prix_date_application_index` (`date_application`),
+  KEY `historique_prix_id_devise_index` (`id_devise`),
+  KEY `historique_prix_id_produit_date_application_index` (`id_produit`,`date_application`),
+  CONSTRAINT `historique_prix_id_devise_foreign` FOREIGN KEY (`id_devise`) REFERENCES `devises` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `historique_prix_id_produit_foreign` FOREIGN KEY (`id_produit`) REFERENCES `produits` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `historique_prix_id_utilisateur_foreign` FOREIGN KEY (`id_utilisateur`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.historique_prix : ~12 rows (environ)
+INSERT INTO `historique_prix` (`id`, `id_produit`, `prix_achat_ht`, `prix_vente_ht`, `id_devise`, `date_application`, `commentaire`, `id_utilisateur`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(1, 1, 2.50, 6.00, 1, '2026-07-18', 'Prix d\'introduction', 1, NULL, '2026-07-18 13:22:13', '2026-07-18 13:22:13'),
+	(2, 1, 6.00, 13.50, 1, '2026-07-18', 'Augmentation de prix', 1, NULL, '2026-07-18 13:26:18', '2026-07-18 13:26:18'),
+	(3, 2, 5.50, 12.00, 1, '2026-07-19', 'Prix initial', 1, NULL, '2026-07-18 14:52:16', '2026-07-18 14:52:16'),
+	(4, 3, 3.20, 8.50, 1, '2026-07-19', 'Prix initial', 1, NULL, '2026-07-18 14:52:54', '2026-07-18 14:52:54'),
+	(5, 4, 2.80, 6.50, 1, '2026-07-19', 'Prix initial', 1, NULL, '2026-07-18 14:53:27', '2026-07-18 14:53:27'),
+	(6, 5, 1.50, 3.50, 1, '2026-07-19', 'Prix initial', 1, NULL, '2026-07-18 14:54:46', '2026-07-18 14:54:46'),
+	(7, 6, 1.80, 4.00, 1, '2026-07-19', 'Prix initial', 1, NULL, '2026-07-18 14:55:20', '2026-07-18 14:55:20'),
+	(8, 7, 0.80, 2.00, 1, '2026-07-19', 'Prix initial', 1, NULL, '2026-07-18 14:55:47', '2026-07-18 14:55:47'),
+	(9, 8, 10.00, NULL, 1, '2026-07-19', 'Prix initial', 1, NULL, '2026-07-19 12:40:01', '2026-07-19 12:40:01'),
+	(10, 9, 42.00, NULL, 1, '2026-07-19', 'Prix initial', 1, NULL, '2026-07-19 21:39:51', '2026-07-19 21:39:51'),
+	(11, 2, 100.00, 150.00, 1, '2026-07-19', NULL, 1, NULL, '2026-07-19 21:57:11', '2026-07-19 21:57:11'),
+	(12, 10, 10.00, 20.00, 1, '2026-07-20', 'Prix initial', 1, NULL, '2026-07-19 22:02:02', '2026-07-19 22:02:02'),
+	(13, 10, 10.00, 30.00, 1, '2026-07-20', NULL, 1, '2026-07-19 22:08:04', '2026-07-19 22:07:51', '2026-07-19 22:08:04');
+
+-- Listage de la structure de table bd_gst_bejamin. inventaire
+CREATE TABLE IF NOT EXISTS `inventaire` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `id_periode_inventaire` bigint unsigned NOT NULL,
+  `id_produit` bigint unsigned NOT NULL,
+  `id_ville` bigint unsigned NOT NULL,
+  `stock_theorique` int NOT NULL DEFAULT '0',
+  `stock_physique_compte` int NOT NULL DEFAULT '0',
+  `ecart` int GENERATED ALWAYS AS ((`stock_physique_compte` - `stock_theorique`)) VIRTUAL,
+  `date_saisie` datetime DEFAULT NULL,
+  `id_utilisateur` bigint unsigned DEFAULT NULL,
+  `commentaire` text COLLATE utf8mb4_unicode_ci,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `inventaire_id_utilisateur_foreign` (`id_utilisateur`),
+  KEY `inventaire_id_periode_inventaire_index` (`id_periode_inventaire`),
+  KEY `inventaire_id_produit_index` (`id_produit`),
+  KEY `inventaire_id_ville_index` (`id_ville`),
+  KEY `inventaire_id_periode_inventaire_id_produit_index` (`id_periode_inventaire`,`id_produit`),
+  CONSTRAINT `inventaire_id_periode_inventaire_foreign` FOREIGN KEY (`id_periode_inventaire`) REFERENCES `periode_inventaire` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `inventaire_id_produit_foreign` FOREIGN KEY (`id_produit`) REFERENCES `produits` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `inventaire_id_utilisateur_foreign` FOREIGN KEY (`id_utilisateur`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `inventaire_id_ville_foreign` FOREIGN KEY (`id_ville`) REFERENCES `villes` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.inventaire : ~0 rows (environ)
+INSERT INTO `inventaire` (`id`, `id_periode_inventaire`, `id_produit`, `id_ville`, `stock_theorique`, `stock_physique_compte`, `date_saisie`, `id_utilisateur`, `commentaire`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(1, 2, 1, 1, 135, 95, '2026-07-19 13:27:25', 1, 'Comptage physique', NULL, '2026-07-19 11:27:25', '2026-07-19 11:27:25');
+
+-- Listage de la structure de table bd_gst_bejamin. ligne_commande
+CREATE TABLE IF NOT EXISTS `ligne_commande` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `id_bon_commande` bigint unsigned NOT NULL,
+  `id_produit` bigint unsigned NOT NULL,
+  `quantite_commandee` int NOT NULL,
+  `prix_unitaire_ht` decimal(10,2) NOT NULL,
+  `id_devise` bigint unsigned NOT NULL,
+  `quantite_recue` int NOT NULL DEFAULT '0',
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ligne_commande_id_devise_foreign` (`id_devise`),
+  KEY `ligne_commande_id_bon_commande_index` (`id_bon_commande`),
+  KEY `ligne_commande_id_produit_index` (`id_produit`),
+  KEY `ligne_commande_id_bon_commande_id_produit_index` (`id_bon_commande`,`id_produit`),
+  CONSTRAINT `ligne_commande_id_bon_commande_foreign` FOREIGN KEY (`id_bon_commande`) REFERENCES `bon_commande` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `ligne_commande_id_devise_foreign` FOREIGN KEY (`id_devise`) REFERENCES `devises` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `ligne_commande_id_produit_foreign` FOREIGN KEY (`id_produit`) REFERENCES `produits` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.ligne_commande : ~15 rows (environ)
+INSERT INTO `ligne_commande` (`id`, `id_bon_commande`, `id_produit`, `quantite_commandee`, `prix_unitaire_ht`, `id_devise`, `quantite_recue`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(1, 1, 1, 100, 5.50, 1, 100, NULL, '2026-07-18 14:57:41', '2026-07-18 15:12:22'),
+	(2, 1, 2, 50, 3.20, 1, 50, NULL, '2026-07-18 14:57:41', '2026-07-18 15:12:22'),
+	(3, 1, 3, 60, 2.80, 1, 60, NULL, '2026-07-18 14:57:41', '2026-07-18 15:12:22'),
+	(4, 1, 4, 200, 1.50, 1, 200, NULL, '2026-07-18 14:57:41', '2026-07-18 15:12:22'),
+	(5, 1, 5, 30, 2.00, 1, 30, NULL, '2026-07-18 14:57:41', '2026-07-18 15:12:22'),
+	(6, 2, 1, 80, 5.50, 1, 0, NULL, '2026-07-18 15:01:33', '2026-07-18 15:01:33'),
+	(7, 2, 3, 40, 2.80, 1, 0, NULL, '2026-07-18 15:01:33', '2026-07-18 15:01:33'),
+	(8, 2, 3, 100, 2.50, 1, 0, NULL, '2026-07-18 15:01:33', '2026-07-18 15:01:33'),
+	(9, 2, 4, 300, 0.80, 1, 0, NULL, '2026-07-18 15:01:33', '2026-07-18 15:01:33'),
+	(10, 2, 5, 200, 0.30, 1, 0, NULL, '2026-07-18 15:01:33', '2026-07-18 15:01:33'),
+	(11, 3, 1, 100, 5.50, 1, 0, NULL, '2026-07-19 12:07:40', '2026-07-19 12:07:40'),
+	(12, 3, 2, 50, 3.20, 1, 0, NULL, '2026-07-19 12:07:40', '2026-07-19 12:07:40'),
+	(13, 4, 3, 3, 3.20, 1, 3, NULL, '2026-07-20 08:27:38', '2026-07-21 09:08:38'),
+	(14, 5, 8, 5, 10.00, 1, 5, NULL, '2026-07-21 08:43:42', '2026-07-21 09:07:47'),
+	(15, 5, 4, 2, 2.80, 1, 2, NULL, '2026-07-21 08:43:42', '2026-07-21 09:07:47'),
+	(16, 6, 8, 3, 10.00, 1, 0, NULL, '2026-07-21 16:41:41', '2026-07-21 16:41:41'),
+	(17, 6, 1, 3, 6.00, 1, 0, NULL, '2026-07-21 16:41:41', '2026-07-21 16:41:41');
+
+-- Listage de la structure de table bd_gst_bejamin. ligne_devis
+CREATE TABLE IF NOT EXISTS `ligne_devis` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `id_devis` bigint unsigned NOT NULL,
+  `id_produit` bigint unsigned NOT NULL,
+  `quantite` int NOT NULL,
+  `prix_unitaire_ht` decimal(10,2) NOT NULL,
+  `remise` decimal(5,2) NOT NULL DEFAULT '0.00',
+  `montant_ht` decimal(12,2) GENERATED ALWAYS AS (((`quantite` * `prix_unitaire_ht`) * (1 - (`remise` / 100)))) VIRTUAL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ligne_devis_id_devis_index` (`id_devis`),
+  KEY `ligne_devis_id_produit_index` (`id_produit`),
+  CONSTRAINT `ligne_devis_id_devis_foreign` FOREIGN KEY (`id_devis`) REFERENCES `devis` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `ligne_devis_id_produit_foreign` FOREIGN KEY (`id_produit`) REFERENCES `produits` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.ligne_devis : ~3 rows (environ)
+INSERT INTO `ligne_devis` (`id`, `id_devis`, `id_produit`, `quantite`, `prix_unitaire_ht`, `remise`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(1, 1, 1, 100, 5.50, 10.00, NULL, '2026-07-19 12:03:26', '2026-07-19 12:03:26'),
+	(2, 1, 2, 50, 3.20, 5.00, NULL, '2026-07-19 12:03:26', '2026-07-19 12:03:26'),
+	(3, 2, 8, 2, 100.00, 0.00, NULL, '2026-07-21 09:28:20', '2026-07-21 09:28:20');
+
+-- Listage de la structure de table bd_gst_bejamin. ligne_facture
+CREATE TABLE IF NOT EXISTS `ligne_facture` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `id_facture` bigint unsigned NOT NULL,
+  `id_produit` bigint unsigned NOT NULL,
+  `id_lot` bigint unsigned DEFAULT NULL,
+  `quantite` int NOT NULL,
+  `prix_unitaire_ht` decimal(10,2) NOT NULL,
+  `remise` decimal(5,2) NOT NULL DEFAULT '0.00',
+  `montant_ht` decimal(12,2) GENERATED ALWAYS AS (((`quantite` * `prix_unitaire_ht`) * (1 - (`remise` / 100)))) VIRTUAL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ligne_facture_id_facture_index` (`id_facture`),
+  KEY `ligne_facture_id_produit_index` (`id_produit`),
+  KEY `ligne_facture_id_lot_index` (`id_lot`),
+  CONSTRAINT `ligne_facture_id_facture_foreign` FOREIGN KEY (`id_facture`) REFERENCES `facture` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `ligne_facture_id_lot_foreign` FOREIGN KEY (`id_lot`) REFERENCES `lots` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `ligne_facture_id_produit_foreign` FOREIGN KEY (`id_produit`) REFERENCES `produits` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.ligne_facture : ~4 rows (environ)
+INSERT INTO `ligne_facture` (`id`, `id_facture`, `id_produit`, `id_lot`, `quantite`, `prix_unitaire_ht`, `remise`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(1, 1, 1, NULL, 10, 5.50, 0.00, NULL, '2026-07-19 12:12:36', '2026-07-19 12:12:36'),
+	(2, 1, 2, NULL, 10, 3.20, 0.00, NULL, '2026-07-19 12:12:36', '2026-07-19 12:12:36'),
+	(3, 2, 2, NULL, 2, 150.00, 1.00, NULL, '2026-07-21 09:22:32', '2026-07-21 09:22:32'),
+	(4, 2, 5, NULL, 2, 3.50, 0.00, NULL, '2026-07-21 09:22:32', '2026-07-21 09:22:32');
+
+-- Listage de la structure de table bd_gst_bejamin. ligne_fiche_technique
+CREATE TABLE IF NOT EXISTS `ligne_fiche_technique` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `id_fiche_technique` bigint unsigned NOT NULL,
+  `id_produit_ingredient` bigint unsigned NOT NULL,
+  `quantite_ingredient` decimal(10,2) NOT NULL,
+  `id_unite` bigint unsigned NOT NULL,
+  `prix_unitaire` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `cout_total` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `commentaire` text COLLATE utf8mb4_unicode_ci,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ligne_fiche_technique_id_fiche_technique_index` (`id_fiche_technique`),
+  KEY `ligne_fiche_technique_id_produit_ingredient_index` (`id_produit_ingredient`),
+  KEY `ligne_fiche_technique_id_unite_index` (`id_unite`),
+  CONSTRAINT `ligne_fiche_technique_id_fiche_technique_foreign` FOREIGN KEY (`id_fiche_technique`) REFERENCES `fiche_technique` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `ligne_fiche_technique_id_produit_ingredient_foreign` FOREIGN KEY (`id_produit_ingredient`) REFERENCES `produits` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `ligne_fiche_technique_id_unite_foreign` FOREIGN KEY (`id_unite`) REFERENCES `unites` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.ligne_fiche_technique : ~10 rows (environ)
+INSERT INTO `ligne_fiche_technique` (`id`, `id_fiche_technique`, `id_produit_ingredient`, `quantite_ingredient`, `id_unite`, `prix_unitaire`, `cout_total`, `commentaire`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(1, 1, 2, 1.50, 4, 5.50, 8.25, 'Poulet frais', NULL, '2026-07-19 13:38:45', '2026-07-19 13:38:45'),
+	(2, 1, 3, 0.50, 4, 3.20, 1.60, 'Herbes', NULL, '2026-07-19 13:38:45', '2026-07-19 13:38:45'),
+	(3, 2, 6, 0.50, 7, 1.80, 0.90, 'Sauce tomate', NULL, '2026-07-19 13:43:30', '2026-07-19 13:43:30'),
+	(4, 3, 6, 0.30, 7, 1.80, 0.54, 'Sauce tomate pour le tiramisu', NULL, '2026-07-19 13:44:00', '2026-07-19 13:44:00'),
+	(5, 4, 4, 2.00, 6, 2.80, 5.60, NULL, NULL, '2026-07-21 08:13:48', '2026-07-21 08:13:48'),
+	(6, 4, 5, 2.00, 6, 1.50, 3.00, NULL, NULL, '2026-07-21 08:13:48', '2026-07-21 08:13:48'),
+	(7, 5, 1, 2.00, 6, 6.00, 12.00, NULL, NULL, '2026-07-21 08:26:24', '2026-07-21 08:26:24'),
+	(8, 5, 6, 3.00, 6, 1.80, 5.40, NULL, NULL, '2026-07-21 08:26:24', '2026-07-21 08:26:24'),
+	(9, 6, 1, 2.00, 6, 6.00, 12.00, NULL, NULL, '2026-07-21 08:27:06', '2026-07-21 08:27:06'),
+	(10, 6, 6, 3.00, 6, 1.80, 5.40, NULL, NULL, '2026-07-21 08:27:06', '2026-07-21 08:27:06');
+
+-- Listage de la structure de table bd_gst_bejamin. ligne_retour
+CREATE TABLE IF NOT EXISTS `ligne_retour` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `id_retour` bigint unsigned NOT NULL,
+  `id_lot` bigint unsigned NOT NULL,
+  `quantite_retournee` int NOT NULL,
+  `motif` text COLLATE utf8mb4_unicode_ci,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `ligne_retour_id_retour_index` (`id_retour`),
+  KEY `ligne_retour_id_lot_index` (`id_lot`),
+  CONSTRAINT `ligne_retour_id_lot_foreign` FOREIGN KEY (`id_lot`) REFERENCES `lots` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `ligne_retour_id_retour_foreign` FOREIGN KEY (`id_retour`) REFERENCES `retour` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.ligne_retour : ~3 rows (environ)
+INSERT INTO `ligne_retour` (`id`, `id_retour`, `id_lot`, `quantite_retournee`, `motif`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(2, 2, 1, 20, 'Vol annulé - produits excédentaires', NULL, '2026-07-19 11:00:05', '2026-07-19 11:00:05'),
+	(3, 2, 2, 10, 'Produits non utilisés', NULL, '2026-07-19 11:00:05', '2026-07-19 11:00:05'),
+	(4, 3, 4, 50, 'Produits périmés - date de péremption dépassée', NULL, '2026-07-19 11:07:31', '2026-07-19 11:07:31');
+
+-- Listage de la structure de table bd_gst_bejamin. lots
+CREATE TABLE IF NOT EXISTS `lots` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `id_produit` bigint unsigned NOT NULL,
+  `id_ville` bigint unsigned NOT NULL,
+  `id_zone` bigint unsigned NOT NULL,
+  `id_emplacement` bigint unsigned DEFAULT NULL,
+  `numero_lot` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `code_qr` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `quantite_recue` int NOT NULL,
+  `quantite_disponible` int NOT NULL,
+  `date_fabrication` date DEFAULT NULL,
+  `date_peremption` date NOT NULL,
+  `date_reception` datetime DEFAULT NULL,
+  `id_partenaire` bigint unsigned DEFAULT NULL,
+  `prix_achat_ht_unitaire` decimal(10,2) DEFAULT NULL,
+  `id_devise` bigint unsigned DEFAULT NULL,
+  `valide_par` bigint unsigned DEFAULT NULL,
+  `date_validation` datetime DEFAULT NULL,
+  `statut_validation` enum('EN ATTENTE','VALIDÉ','REJETÉ','OBSOLÈTE') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'EN ATTENTE',
+  `commentaire` text COLLATE utf8mb4_unicode_ci,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lots_code_qr_unique` (`code_qr`),
+  KEY `lots_id_partenaire_foreign` (`id_partenaire`),
+  KEY `lots_id_devise_foreign` (`id_devise`),
+  KEY `lots_valide_par_foreign` (`valide_par`),
+  KEY `lots_id_produit_index` (`id_produit`),
+  KEY `lots_id_ville_index` (`id_ville`),
+  KEY `lots_id_zone_index` (`id_zone`),
+  KEY `lots_id_emplacement_index` (`id_emplacement`),
+  KEY `lots_numero_lot_index` (`numero_lot`),
+  KEY `lots_code_qr_index` (`code_qr`),
+  KEY `lots_date_peremption_index` (`date_peremption`),
+  KEY `lots_statut_validation_index` (`statut_validation`),
+  KEY `lots_id_ville_date_peremption_index` (`id_ville`,`date_peremption`),
+  KEY `lots_id_produit_id_ville_index` (`id_produit`,`id_ville`),
+  CONSTRAINT `lots_id_devise_foreign` FOREIGN KEY (`id_devise`) REFERENCES `devises` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `lots_id_emplacement_foreign` FOREIGN KEY (`id_emplacement`) REFERENCES `emplacements` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `lots_id_partenaire_foreign` FOREIGN KEY (`id_partenaire`) REFERENCES `partenaires` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `lots_id_produit_foreign` FOREIGN KEY (`id_produit`) REFERENCES `produits` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `lots_id_ville_foreign` FOREIGN KEY (`id_ville`) REFERENCES `villes` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `lots_id_zone_foreign` FOREIGN KEY (`id_zone`) REFERENCES `zones` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `lots_valide_par_foreign` FOREIGN KEY (`valide_par`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.lots : ~15 rows (environ)
+INSERT INTO `lots` (`id`, `id_produit`, `id_ville`, `id_zone`, `id_emplacement`, `numero_lot`, `code_qr`, `quantite_recue`, `quantite_disponible`, `date_fabrication`, `date_peremption`, `date_reception`, `id_partenaire`, `prix_achat_ht_unitaire`, `id_devise`, `valide_par`, `date_validation`, `statut_validation`, `commentaire`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(1, 1, 1, 1, 1, 'LOT-2026-001', 'QR-LOT-2026-001-6a5ba0488fa14', 100, 135, '2026-07-18', '2026-08-20', '2026-07-18 15:48:24', 1, 5.50, 1, 1, '2026-07-18 16:10:46', 'VALIDÉ', 'Premier lot de poulet rôti', NULL, '2026-07-18 13:48:24', '2026-07-19 11:00:05'),
+	(2, 1, 1, 1, 1, 'LOT-2026-001', 'QR-LOT-2026-001-6a5ba21a636f2', 100, 90, '2026-07-18', '2026-08-20', '2026-07-18 15:56:10', 1, 5.50, 1, NULL, NULL, 'EN ATTENTE', 'Premier lot de poulet rôti', NULL, '2026-07-18 13:56:10', '2026-07-19 11:00:05'),
+	(3, 1, 1, 1, 1, 'LOT-2026-001', 'QR-LOT-2026-001-6a5ba291bb9ad', 100, 100, '2026-07-18', '2026-08-20', '2026-07-18 15:58:09', 1, 5.50, 1, NULL, NULL, 'EN ATTENTE', 'Premier lot de poulet rôti', NULL, '2026-07-18 13:58:09', '2026-07-18 13:58:09'),
+	(4, 1, 1, 1, 1, 'LOT-2026-001', 'QR-LOT-2026-001-6a5ba51c9dc1a', 100, 50, '2026-07-19', '2026-08-20', '2026-07-18 16:09:00', 1, 5.50, 1, NULL, NULL, 'EN ATTENTE', 'Premier lot', NULL, '2026-07-18 14:09:00', '2026-07-19 11:07:31'),
+	(5, 1, 1, 1, 1, 'LOT-2026-001', 'QR-LOT-2026-001-6a5bb3f687a6a', 100, 100, NULL, '2026-08-20', '2026-07-18 17:12:22', 1, 5.50, 1, NULL, NULL, 'EN ATTENTE', NULL, NULL, '2026-07-18 15:12:22', '2026-07-18 15:12:22'),
+	(6, 2, 1, 1, 1, 'LOT-2026-002', 'QR-LOT-2026-002-6a5bb3f68ae95', 50, 50, NULL, '2026-08-15', '2026-07-18 17:12:22', 1, 3.20, 1, NULL, NULL, 'EN ATTENTE', NULL, NULL, '2026-07-18 15:12:22', '2026-07-18 15:12:22'),
+	(7, 3, 1, 1, 1, 'LOT-2026-003', 'QR-LOT-2026-003-6a5bb3f68ce59', 60, 60, NULL, '2026-08-25', '2026-07-18 17:12:22', 1, 2.80, 1, 1, '2026-07-20 11:33:22', 'VALIDÉ', NULL, NULL, '2026-07-18 15:12:22', '2026-07-20 09:33:22'),
+	(8, 4, 1, 1, 1, 'LOT-2026-004', 'QR-LOT-2026-004-6a5bb3f68f1f4', 200, 196, NULL, '2026-09-01', '2026-07-18 17:12:22', 1, 1.50, 1, 1, '2026-07-20 11:33:18', 'VALIDÉ', NULL, NULL, '2026-07-18 15:12:22', '2026-07-21 08:15:46'),
+	(9, 5, 1, 1, 1, 'LOT-2026-005', 'QR-LOT-2026-005-6a5bb3f69147c', 30, 26, NULL, '2026-12-31', '2026-07-18 17:12:22', 1, 2.00, 1, 1, '2026-07-20 11:33:15', 'VALIDÉ', NULL, NULL, '2026-07-18 15:12:22', '2026-07-21 08:15:46'),
+	(10, 6, 1, 1, 1, 'LOT-SAUC-001', 'QR-LOT-SAUC-001-6a5cf0e6a1fa1', 100, 100, '2026-07-19', '2026-08-20', '2026-07-19 15:44:38', 1, 1.80, 1, 1, '2026-07-20 11:33:10', 'REJETÉ', 'Lot de sauce tomate pour production', NULL, '2026-07-19 13:44:38', '2026-07-20 09:33:10'),
+	(11, 7, 1, 1, 1, 'LOT-25648', 'QR-LOT-25648-6a5e072b3223e', 100, 97, '2025-01-30', '2028-04-21', '2026-07-20 11:31:55', 1, NULL, NULL, 1, '2026-07-20 11:32:36', 'VALIDÉ', NULL, NULL, '2026-07-20 09:31:55', '2026-07-20 17:17:54'),
+	(12, 3, 1, 1, 1, 'PROD-FT-0071-20260721101546', 'QR-PROD-6a5f46d257b9c', 4, 4, '2026-07-21', '2026-07-28', '2026-07-21 10:15:46', NULL, 4.30, NULL, NULL, NULL, 'EN ATTENTE', NULL, NULL, '2026-07-21 08:15:46', '2026-07-21 08:15:46'),
+	(13, 8, 1, 2, NULL, 'LOT-07100', 'QR-LOT-07100-6a5f5303ca5e5', 5, 5, NULL, '2028-03-17', '2026-07-21 11:07:47', 3, 10.00, 1, NULL, NULL, 'EN ATTENTE', NULL, NULL, '2026-07-21 09:07:47', '2026-07-21 09:07:47'),
+	(14, 4, 1, 1, NULL, 'LOT-07100', 'QR-LOT-07100-6a5f5303cdc21', 2, 2, NULL, '2026-07-21', '2026-07-21 11:07:47', 3, 2.80, 1, NULL, NULL, 'EN ATTENTE', NULL, NULL, '2026-07-21 09:07:47', '2026-07-21 09:07:47'),
+	(15, 3, 1, 1, NULL, 'LOT-07100', 'QR-LOT-07100-6a5f533645253', 3, 3, NULL, '2026-07-21', '2026-07-21 11:08:38', 1, 3.20, 1, NULL, NULL, 'EN ATTENTE', NULL, NULL, '2026-07-21 09:08:38', '2026-07-21 09:08:38');
+
+-- Listage de la structure de table bd_gst_bejamin. migrations
+CREATE TABLE IF NOT EXISTS `migrations` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `migration` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `batch` int NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.migrations : ~36 rows (environ)
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
+	(1, '2014_10_12_000000_create_users_table', 1),
+	(2, '2014_10_12_100000_create_password_reset_tokens_table', 1),
+	(3, '2019_08_19_000000_create_failed_jobs_table', 1),
+	(4, '2019_12_14_000001_create_personal_access_tokens_table', 1),
+	(5, '2026_07_18_124826_create_unites_table', 1),
+	(6, '2026_07_18_125056_create_villes_table', 1),
+	(7, '2026_07_18_125316_create_departements_table', 1),
+	(8, '2026_07_18_125556_create_zones_table', 1),
+	(9, '2026_07_18_125700_create_emplacements_table', 1),
+	(10, '2026_07_18_125905_create_categories_table', 1),
+	(11, '2026_07_18_130016_create_devises_table', 1),
+	(12, '2026_07_18_135727_create_permissions_table', 2),
+	(13, '2026_07_18_135727_create_roles_table', 2),
+	(14, '2026_07_18_135728_create_role_permission_table', 2),
+	(15, '2026_07_18_135728_create_utilisateurs_table', 2),
+	(16, '2026_07_18_150329_create_partenaires_table', 3),
+	(17, '2026_07_18_151847_create_produits_table', 4),
+	(18, '2026_07_18_151919_create_historique_prix_table', 4),
+	(19, '2026_07_18_154221_create_lots_table', 5),
+	(20, '2026_07_18_155028_create_type_mouvement_table', 6),
+	(21, '2026_07_18_155347_create_periode_inventaire_table', 7),
+	(22, '2026_07_18_155519_create_mouvement_stock_table', 8),
+	(23, '2026_07_18_163635_create_bon_commande_table', 9),
+	(24, '2026_07_18_164524_create_ligne_commande_table', 9),
+	(25, '2026_07_19_123338_create_retour_table', 10),
+	(26, '2026_07_19_124451_create_ligne_retour_table', 11),
+	(27, '2026_07_19_131408_create_inventaire_table', 12),
+	(28, '2026_07_19_135033_create_devis_table', 13),
+	(29, '2026_07_19_135121_create_ligne_devis_table', 14),
+	(30, '2026_07_19_135200_create_facture_table', 15),
+	(31, '2026_07_19_135247_create_ligne_facture_table', 16),
+	(32, '2026_07_19_135323_create_paiement_table', 16),
+	(33, '2026_07_19_135402_create_avoir_table', 17),
+	(34, '2026_07_19_142810_create_audits_table', 18),
+	(35, '2026_07_19_152221_create_fiche_technique_table', 19),
+	(36, '2026_07_19_152300_create_ligne_fiche_technique_table', 20);
+
+-- Listage de la structure de table bd_gst_bejamin. mouvement_stock
+CREATE TABLE IF NOT EXISTS `mouvement_stock` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `id_lot` bigint unsigned NOT NULL,
+  `id_type_mouvement` bigint unsigned NOT NULL,
+  `quantite` int NOT NULL,
+  `date_mouvement` datetime DEFAULT NULL,
+  `id_utilisateur` bigint unsigned DEFAULT NULL,
+  `reference_document` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `commentaire` text COLLATE utf8mb4_unicode_ci,
+  `id_periode_inventaire` bigint unsigned DEFAULT NULL,
+  `valide_par` bigint unsigned DEFAULT NULL,
+  `date_validation` datetime DEFAULT NULL,
+  `statut_validation` enum('EN ATTENTE','VALIDÉ','REJETÉ') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'EN ATTENTE',
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `mouvement_stock_id_periode_inventaire_foreign` (`id_periode_inventaire`),
+  KEY `mouvement_stock_valide_par_foreign` (`valide_par`),
+  KEY `mouvement_stock_id_lot_index` (`id_lot`),
+  KEY `mouvement_stock_id_type_mouvement_index` (`id_type_mouvement`),
+  KEY `mouvement_stock_date_mouvement_index` (`date_mouvement`),
+  KEY `mouvement_stock_id_utilisateur_index` (`id_utilisateur`),
+  KEY `mouvement_stock_reference_document_index` (`reference_document`),
+  KEY `mouvement_stock_statut_validation_index` (`statut_validation`),
+  KEY `mouvement_stock_id_lot_date_mouvement_index` (`id_lot`,`date_mouvement`),
+  CONSTRAINT `mouvement_stock_id_lot_foreign` FOREIGN KEY (`id_lot`) REFERENCES `lots` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `mouvement_stock_id_periode_inventaire_foreign` FOREIGN KEY (`id_periode_inventaire`) REFERENCES `periode_inventaire` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `mouvement_stock_id_type_mouvement_foreign` FOREIGN KEY (`id_type_mouvement`) REFERENCES `type_mouvement` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `mouvement_stock_id_utilisateur_foreign` FOREIGN KEY (`id_utilisateur`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `mouvement_stock_valide_par_foreign` FOREIGN KEY (`valide_par`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.mouvement_stock : ~22 rows (environ)
+INSERT INTO `mouvement_stock` (`id`, `id_lot`, `id_type_mouvement`, `quantite`, `date_mouvement`, `id_utilisateur`, `reference_document`, `commentaire`, `id_periode_inventaire`, `valide_par`, `date_validation`, `statut_validation`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(2, 4, 1, 100, NULL, 1, 'LOT-2026-001', 'Réception de lot', NULL, 1, '2026-07-18 16:17:46', 'VALIDÉ', NULL, '2026-07-18 14:09:00', '2026-07-18 14:17:46'),
+	(3, 1, 1, 50, '2026-07-18 16:12:05', 1, 'BL-2026-001', 'Réception supplémentaire de 50 unités', NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-18 14:12:05', '2026-07-18 14:12:05'),
+	(4, 1, 2, 20, '2026-07-18 16:13:29', 1, 'BC-2026-001', 'Sortie pour commande client', NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-18 14:13:29', '2026-07-18 14:13:29'),
+	(5, 1, 3, 10, '2026-07-18 16:14:35', 1, 'AJUST-001', 'Ajustement suite à inventaire', NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-18 14:14:35', '2026-07-18 14:14:35'),
+	(6, 1, 5, 15, '2026-07-18 16:15:13', 1, 'TRANS-001', 'Transfert vers Lubumbashi', NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-18 14:15:13', '2026-07-18 14:15:13'),
+	(7, 5, 1, 100, '2026-07-18 17:12:22', 1, 'BC-2026-001', 'Réception du bon de commande #BC-2026-001', NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-18 15:12:22', '2026-07-18 15:12:22'),
+	(8, 6, 1, 50, '2026-07-18 17:12:22', 1, 'BC-2026-001', 'Réception du bon de commande #BC-2026-001', NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-18 15:12:22', '2026-07-18 15:12:22'),
+	(9, 7, 1, 60, '2026-07-18 17:12:22', 1, 'BC-2026-001', 'Réception du bon de commande #BC-2026-001', NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-18 15:12:22', '2026-07-18 15:12:22'),
+	(10, 8, 1, 200, '2026-07-18 17:12:22', 1, 'BC-2026-001', 'Réception du bon de commande #BC-2026-001', NULL, 1, '2026-07-20 12:17:12', 'REJETÉ', NULL, '2026-07-18 15:12:22', '2026-07-20 10:17:12'),
+	(11, 9, 1, 30, '2026-07-18 17:12:22', 1, 'BC-2026-001', 'Réception du bon de commande #BC-2026-001', NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-18 15:12:22', '2026-07-18 15:12:22'),
+	(13, 1, 7, 20, '2026-07-19 13:00:05', 1, 'RET-2026-001', 'Retour: Vol annulé - produits excédentaires', NULL, 1, '2026-07-20 12:17:02', 'VALIDÉ', NULL, '2026-07-19 11:00:05', '2026-07-20 10:17:02'),
+	(14, 2, 7, 10, '2026-07-19 13:00:05', 1, 'RET-2026-001', 'Retour: Produits non utilisés', NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-19 11:00:05', '2026-07-19 11:00:05'),
+	(15, 4, 7, 50, '2026-07-19 13:07:31', 1, 'RET-2026-003', 'Retour: Produits périmés - date de péremption dépassée', NULL, 1, '2026-07-20 12:14:41', 'VALIDÉ', NULL, '2026-07-19 11:07:31', '2026-07-20 10:14:41'),
+	(16, 10, 1, 100, NULL, 1, 'LOT-SAUC-001', 'Réception de lot', NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-19 13:44:38', '2026-07-19 13:44:38'),
+	(17, 11, 1, 100, NULL, 1, 'LOT-25648', 'Réception de lot', NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-20 09:31:55', '2026-07-20 09:31:55'),
+	(18, 11, 1, 5, '2026-07-20 00:00:00', 1, NULL, NULL, NULL, 1, '2026-07-20 12:14:34', 'VALIDÉ', NULL, '2026-07-20 09:46:40', '2026-07-20 10:14:34'),
+	(19, 11, 3, 5, '2026-07-20 00:00:00', 1, NULL, NULL, NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-20 10:18:19', '2026-07-20 10:18:19'),
+	(20, 11, 2, 13, '2026-07-20 00:00:00', 1, 'SR-5247', 'RAS', NULL, 1, '2026-07-20 19:18:05', 'VALIDÉ', NULL, '2026-07-20 17:17:54', '2026-07-20 17:18:05'),
+	(21, 8, 2, 4, '2026-07-21 00:00:00', 1, 'FT-0071', 'Consommation pour production: poulet au mwambe (x2)', NULL, NULL, NULL, 'VALIDÉ', NULL, '2026-07-21 08:15:46', '2026-07-21 08:15:46'),
+	(22, 9, 2, 4, '2026-07-21 00:00:00', 1, 'FT-0071', 'Consommation pour production: poulet au mwambe (x2)', NULL, NULL, NULL, 'VALIDÉ', NULL, '2026-07-21 08:15:46', '2026-07-21 08:15:46'),
+	(23, 12, 1, 4, '2026-07-21 00:00:00', 1, 'FT-0071', 'Production: poulet au mwambe (x2)', NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-21 08:15:46', '2026-07-21 08:15:46'),
+	(24, 13, 1, 5, '2026-07-21 11:07:47', 1, 'BS-025874', 'Réception du bon de commande #BS-025874', NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-21 09:07:47', '2026-07-21 09:07:47'),
+	(25, 14, 1, 2, '2026-07-21 11:07:47', 1, 'BS-025874', 'Réception du bon de commande #BS-025874', NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-21 09:07:47', '2026-07-21 09:07:47'),
+	(26, 15, 1, 3, '2026-07-21 11:08:38', 1, 'BN-145875', 'Réception du bon de commande #BN-145875', NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-21 09:08:38', '2026-07-21 09:08:38');
+
+-- Listage de la structure de table bd_gst_bejamin. paiement
+CREATE TABLE IF NOT EXISTS `paiement` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `id_facture` bigint unsigned NOT NULL,
+  `montant` decimal(12,2) NOT NULL,
+  `date_paiement` date NOT NULL,
+  `mode_paiement` enum('VIREMENT','CHEQUE','ESPECES','CARTE','AUTRE') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'VIREMENT',
+  `reference` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `id_utilisateur` bigint unsigned DEFAULT NULL,
+  `commentaire` text COLLATE utf8mb4_unicode_ci,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `paiement_id_utilisateur_foreign` (`id_utilisateur`),
+  KEY `paiement_id_facture_index` (`id_facture`),
+  KEY `paiement_date_paiement_index` (`date_paiement`),
+  CONSTRAINT `paiement_id_facture_foreign` FOREIGN KEY (`id_facture`) REFERENCES `facture` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `paiement_id_utilisateur_foreign` FOREIGN KEY (`id_utilisateur`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.paiement : ~0 rows (environ)
+INSERT INTO `paiement` (`id`, `id_facture`, `montant`, `date_paiement`, `mode_paiement`, `reference`, `id_utilisateur`, `commentaire`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(1, 1, 87.00, '2026-07-19', 'VIREMENT', 'VIR-2026-001', 1, 'Paiement intégral', NULL, '2026-07-19 12:16:26', '2026-07-19 12:16:26');
+
+-- Listage de la structure de table bd_gst_bejamin. partenaires
+CREATE TABLE IF NOT EXISTS `partenaires` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `type` enum('fournisseur','client','both') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'fournisseur',
+  `type_client` enum('aerien','non_aerien','both') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `code_iata` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `nom` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `adresse` text COLLATE utf8mb4_unicode_ci,
+  `telephone` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `identifiant_fiscal` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `id_ville` bigint unsigned DEFAULT NULL,
+  `actif` tinyint(1) NOT NULL DEFAULT '1',
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `partenaires_type_index` (`type`),
+  KEY `partenaires_type_client_index` (`type_client`),
+  KEY `partenaires_code_iata_index` (`code_iata`),
+  KEY `partenaires_nom_index` (`nom`),
+  KEY `partenaires_id_ville_index` (`id_ville`),
+  KEY `partenaires_type_actif_index` (`type`,`actif`),
+  CONSTRAINT `partenaires_id_ville_foreign` FOREIGN KEY (`id_ville`) REFERENCES `villes` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.partenaires : ~4 rows (environ)
+INSERT INTO `partenaires` (`id`, `type`, `type_client`, `code_iata`, `nom`, `adresse`, `telephone`, `email`, `identifiant_fiscal`, `id_ville`, `actif`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(1, 'fournisseur', NULL, NULL, 'FraisVol SARL', '123 Avenue des Vols, Kinshasa-Lubumbashi', '+243 812345678', 'contact@fraisvol.cd', 'FRAIS-001', 1, 1, NULL, '2026-07-18 13:12:20', '2026-07-19 20:29:56'),
+	(2, 'both', 'non_aerien', NULL, 'Catering Services SA', '15 Avenue de l\'Industrie, Lubumbashi', '+243 812222333', 'contact@cateringservices.cd', 'CS-002', 1, 1, NULL, '2026-07-18 13:13:58', '2026-07-18 13:16:08'),
+	(3, 'client', 'aerien', NULL, 'Air France', 'Paris 15', '+243898596501', 'airfrance@fr.com', '14587', 1, 1, NULL, '2026-07-19 20:19:05', '2026-07-19 20:19:05'),
+	(4, 'client', 'non_aerien', NULL, 'Palose', 'Kingu 45', '+24381898596501', 'palose@gmail.com', '4587', 1, 1, NULL, '2026-07-19 20:28:57', '2026-07-19 20:28:57');
+
+-- Listage de la structure de table bd_gst_bejamin. password_reset_tokens
+CREATE TABLE IF NOT EXISTS `password_reset_tokens` (
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `token` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.password_reset_tokens : ~0 rows (environ)
+
+-- Listage de la structure de table bd_gst_bejamin. periode_inventaire
+CREATE TABLE IF NOT EXISTS `periode_inventaire` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `libelle` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `date_debut` date NOT NULL,
+  `date_fin` date NOT NULL,
+  `statut` enum('PREVU','EN_COURS','CLOTURE','ANNULE') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PREVU',
+  `id_ville` bigint unsigned NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `periode_inventaire_id_ville_index` (`id_ville`),
+  KEY `periode_inventaire_statut_index` (`statut`),
+  KEY `periode_inventaire_date_debut_date_fin_index` (`date_debut`,`date_fin`),
+  CONSTRAINT `periode_inventaire_id_ville_foreign` FOREIGN KEY (`id_ville`) REFERENCES `villes` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.periode_inventaire : ~3 rows (environ)
+INSERT INTO `periode_inventaire` (`id`, `libelle`, `date_debut`, `date_fin`, `statut`, `id_ville`, `description`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(1, 'Inventaire Juillet 2026', '2026-07-01', '2026-07-31', 'PREVU', 1, 'Inventaire mensuel de juillet', NULL, '2026-07-18 14:28:50', '2026-07-18 14:28:50'),
+	(2, 'Inventaire Juillet 2026', '2026-07-01', '2026-07-31', 'CLOTURE', 1, 'Inventaire mensuel de juillet', NULL, '2026-07-18 14:29:24', '2026-07-19 11:30:27'),
+	(3, 'Inventaire Juillet 2026 - Kinshasa', '2026-07-01', '2026-07-31', 'CLOTURE', 1, 'Inventaire mensuel de juillet 2026 pour Kinshasa', NULL, '2026-07-19 11:23:50', '2026-07-20 09:11:12');
+
+-- Listage de la structure de table bd_gst_bejamin. permissions
+CREATE TABLE IF NOT EXISTS `permissions` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `nom` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `code` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `actif` tinyint(1) NOT NULL DEFAULT '1',
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `permissions_nom_unique` (`nom`),
+  UNIQUE KEY `permissions_code_unique` (`code`),
+  KEY `permissions_actif_index` (`actif`),
+  KEY `permissions_code_index` (`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=197 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.permissions : ~113 rows (environ)
+INSERT INTO `permissions` (`id`, `nom`, `code`, `description`, `actif`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(84, 'Voir les unités', 'config:unites:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(85, 'Créer une unité', 'config:unites:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(86, 'Modifier une unité', 'config:unites:update', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(87, 'Supprimer une unité', 'config:unites:delete', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(88, 'Voir les villes', 'config:villes:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(89, 'Créer une ville', 'config:villes:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(90, 'Modifier une ville', 'config:villes:update', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(91, 'Supprimer une ville', 'config:villes:delete', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(92, 'Voir les départements', 'config:departements:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(93, 'Créer un département', 'config:departements:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(94, 'Modifier un département', 'config:departements:update', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(95, 'Supprimer un département', 'config:departements:delete', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(96, 'Voir les zones', 'config:zones:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(97, 'Créer une zone', 'config:zones:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(98, 'Modifier une zone', 'config:zones:update', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(99, 'Supprimer une zone', 'config:zones:delete', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(100, 'Voir les emplacements', 'config:emplacements:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(101, 'Créer un emplacement', 'config:emplacements:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(102, 'Modifier un emplacement', 'config:emplacements:update', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(103, 'Supprimer un emplacement', 'config:emplacements:delete', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(104, 'Voir les catégories', 'config:categories:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(105, 'Créer une catégorie', 'config:categories:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(106, 'Modifier une catégorie', 'config:categories:update', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(107, 'Supprimer une catégorie', 'config:categories:delete', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(108, 'Voir les devises', 'config:devises:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(109, 'Créer une devise', 'config:devises:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(110, 'Modifier une devise', 'config:devises:update', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(111, 'Supprimer une devise', 'config:devises:delete', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(112, 'Voir les utilisateurs', 'config:utilisateurs:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(113, 'Créer un utilisateur', 'config:utilisateurs:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(114, 'Modifier un utilisateur', 'config:utilisateurs:update', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(115, 'Supprimer un utilisateur', 'config:utilisateurs:delete', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(116, 'Voir les rôles', 'config:roles:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(117, 'Créer un rôle', 'config:roles:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(118, 'Modifier un rôle', 'config:roles:update', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(119, 'Supprimer un rôle', 'config:roles:delete', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(120, 'Voir les permissions', 'config:permissions:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(121, 'Créer une permission', 'config:permissions:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(122, 'Modifier une permission', 'config:permissions:update', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(123, 'Supprimer une permission', 'config:permissions:delete', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(124, 'Voir les partenaires', 'config:partenaires:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(125, 'Créer un partenaire', 'config:partenaires:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(126, 'Modifier un partenaire', 'config:partenaires:update', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(127, 'Supprimer un partenaire', 'config:partenaires:delete', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(128, 'Voir les produits', 'config:produits:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(129, 'Créer un produit', 'config:produits:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(130, 'Modifier un produit', 'config:produits:update', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(131, 'Supprimer un produit', 'config:produits:delete', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(132, 'Voir l\'historique des prix', 'config:historique_prix:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(133, 'Ajouter un prix', 'config:historique_prix:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(134, 'Modifier un prix', 'config:historique_prix:update', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(135, 'Supprimer un prix', 'config:historique_prix:delete', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(136, 'Voir les lots', 'config:lots:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(137, 'Créer un lot', 'config:lots:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(138, 'Modifier un lot', 'config:lots:update', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(139, 'Supprimer un lot', 'config:lots:delete', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(140, 'Valider un lot', 'config:lots:validate', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(141, 'Voir les types de mouvement', 'config:type_mouvement:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(142, 'Créer un type de mouvement', 'config:type_mouvement:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(143, 'Modifier un type de mouvement', 'config:type_mouvement:update', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(144, 'Supprimer un type de mouvement', 'config:type_mouvement:delete', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(145, 'Voir les mouvements', 'config:mouvements:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(146, 'Créer un mouvement', 'config:mouvements:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(147, 'Modifier un mouvement', 'config:mouvements:update', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(148, 'Supprimer un mouvement', 'config:mouvements:delete', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(149, 'Valider un mouvement', 'config:mouvements:validate', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(150, 'Voir les périodes d\'inventaire', 'config:periode_inventaire:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(151, 'Créer une période', 'config:periode_inventaire:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(152, 'Modifier une période', 'config:periode_inventaire:update', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(153, 'Supprimer une période', 'config:periode_inventaire:delete', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(154, 'Voir les inventaires', 'config:inventaire:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(155, 'Créer un inventaire', 'config:inventaire:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(156, 'Modifier un inventaire', 'config:inventaire:update', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(157, 'Supprimer un inventaire', 'config:inventaire:delete', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(158, 'Voir les bons de commande', 'config:bon_commande:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(159, 'Créer un bon de commande', 'config:bon_commande:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(160, 'Modifier un bon de commande', 'config:bon_commande:update', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(161, 'Supprimer un bon de commande', 'config:bon_commande:delete', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(162, 'Valider un bon de commande', 'config:bon_commande:validate', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(163, 'Réceptionner un bon de commande', 'config:bon_commande:receive', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(164, 'Voir les retours', 'config:retours:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(165, 'Créer un retour', 'config:retours:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(166, 'Modifier un retour', 'config:retours:update', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(167, 'Supprimer un retour', 'config:retours:delete', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(168, 'Valider un retour', 'config:retours:validate', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(169, 'Voir les devis', 'facturation:devis:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(170, 'Créer un devis', 'facturation:devis:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(171, 'Modifier un devis', 'facturation:devis:update', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(172, 'Supprimer un devis', 'facturation:devis:delete', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(173, 'Voir les factures', 'facturation:facture:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(174, 'Créer une facture', 'facturation:facture:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(175, 'Modifier une facture', 'facturation:facture:update', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(176, 'Supprimer une facture', 'facturation:facture:delete', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(177, 'Voir les paiements', 'facturation:paiement:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(178, 'Créer un paiement', 'facturation:paiement:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(179, 'Supprimer un paiement', 'facturation:paiement:delete', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(180, 'Voir les avoirs', 'facturation:avoir:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(181, 'Créer un avoir', 'facturation:avoir:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(182, 'Supprimer un avoir', 'facturation:avoir:delete', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(183, 'Voir les rapports de commandes', 'rapport:commande', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(184, 'Voir les rapports de stock', 'rapport:stock', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(185, 'Voir les rapports de clients', 'rapport:client', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(186, 'Voir les rapports d\'inventaire', 'rapport:inventaire', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(187, 'Voir les rapports de recettes', 'rapport:recette', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(188, 'Voir les rapports de facturation', 'rapport:facturation', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(189, 'Voir les audits', 'audit:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(190, 'Exporter les audits', 'audit:export', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(191, 'Supprimer les audits', 'audit:delete', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(192, 'Voir les fiches techniques', 'config:fiche_technique:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(193, 'Créer une fiche technique', 'config:fiche_technique:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(194, 'Modifier une fiche technique', 'config:fiche_technique:update', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(195, 'Supprimer une fiche technique', 'config:fiche_technique:delete', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
+	(196, 'Produire à partir d\'une recette', 'config:recette:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31');
+
+-- Listage de la structure de table bd_gst_bejamin. personal_access_tokens
+CREATE TABLE IF NOT EXISTS `personal_access_tokens` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `tokenable_type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `tokenable_id` bigint unsigned NOT NULL,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `token` varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `abilities` text COLLATE utf8mb4_unicode_ci,
+  `last_used_at` timestamp NULL DEFAULT NULL,
+  `expires_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `personal_access_tokens_token_unique` (`token`),
+  KEY `personal_access_tokens_tokenable_type_tokenable_id_index` (`tokenable_type`,`tokenable_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=67 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.personal_access_tokens : ~23 rows (environ)
+INSERT INTO `personal_access_tokens` (`id`, `tokenable_type`, `tokenable_id`, `name`, `token`, `abilities`, `last_used_at`, `expires_at`, `created_at`, `updated_at`) VALUES
+	(1, 'App\\Models\\Utilisateur', 1, 'auth_token', '3944e25fef301db7cbaad4f9f8640ee01c0381d467100502ba6d61bf6c786a7a', '["*"]', '2026-07-19 12:24:08', NULL, '2026-07-18 12:47:09', '2026-07-19 12:24:08'),
+	(2, 'App\\Models\\Utilisateur', 1, 'auth_token', '1c3e5655d82557e3d92667f017c19de7528c5006a0de86dc42166370ca784521', '["*"]', '2026-07-19 12:51:07', NULL, '2026-07-19 12:38:22', '2026-07-19 12:51:07'),
+	(3, 'App\\Models\\Utilisateur', 1, 'auth_token', 'f11eedbdf6454b60af333bf817234cde5b45a7be0d164dc9bd4aec55b7a451f4', '["*"]', '2026-07-19 12:57:02', NULL, '2026-07-19 12:56:15', '2026-07-19 12:57:02'),
+	(4, 'App\\Models\\Utilisateur', 1, 'auth_token', '0295d1cfb75a87e285c930da950307d2fe8dc7d24863b83bc44ae04fadf1ca94', '["*"]', '2026-07-19 13:04:23', NULL, '2026-07-19 13:03:48', '2026-07-19 13:04:23'),
+	(5, 'App\\Models\\Utilisateur', 1, 'auth_token', 'b8171ba5ce5c04f96f5a316126231e3b413d686b0a7c431ee870246eabd4fef5', '["*"]', '2026-07-19 13:10:35', NULL, '2026-07-19 13:08:26', '2026-07-19 13:10:35'),
+	(6, 'App\\Models\\Utilisateur', 1, 'auth_token', 'e04f98c85443dcbfd15dee95d5839251fe9120c817e9aae10da239a7dae09800', '["*"]', '2026-07-19 13:47:08', NULL, '2026-07-19 13:11:03', '2026-07-19 13:47:08'),
+	(7, 'App\\Models\\Utilisateur', 1, 'auth_token', '1e1599cfc72aea2c5201e60c1ce4b289d88131f937612492d2142608a2e30b13', '["*"]', NULL, NULL, '2026-07-19 19:24:12', '2026-07-19 19:24:12'),
+	(8, 'App\\Models\\Utilisateur', 1, 'auth_token', 'b8cdf347a41df38ddbcec8bc08337cb9295a70fd1036924603ae8ff3177ebdef', '["*"]', '2026-07-19 19:55:44', NULL, '2026-07-19 19:24:50', '2026-07-19 19:55:44'),
+	(14, 'App\\Models\\Utilisateur', 1, 'auth_token', '9d89ae85ddb24de11e273da82ae8b25251821bdda33c334154e6179ce62ed97c', '["*"]', '2026-07-19 19:45:47', NULL, '2026-07-19 19:41:49', '2026-07-19 19:45:47'),
+	(17, 'App\\Models\\Utilisateur', 1, 'auth_token', '4529c1f28b52785ae908e21f84074f8d071393a0ed80b91c345fcc593ec921ce', '["*"]', '2026-07-20 11:41:37', NULL, '2026-07-19 19:51:20', '2026-07-20 11:41:37'),
+	(19, 'App\\Models\\Utilisateur', 1, 'auth_token', '6a4de38a92f4563ad62d9e26f0f3e80b749faa4d22150a9fc17ecda5bfd5339e', '["*"]', NULL, NULL, '2026-07-19 19:55:49', '2026-07-19 19:55:49'),
+	(20, 'App\\Models\\Utilisateur', 1, 'auth_token', '6850646aae2fb86badd91ab7202cc4b8bda3f6e0474c99ad240395615916fbca', '["*"]', '2026-07-20 07:55:51', NULL, '2026-07-19 19:56:00', '2026-07-20 07:55:51'),
+	(22, 'App\\Models\\Utilisateur', 1, 'auth_token', '741f2e9cf3495edbf6dde2bf891d37a42e8dc5f21a3c102c49d8c0e19f934dbd', '["*"]', '2026-07-19 20:11:59', NULL, '2026-07-19 20:01:42', '2026-07-19 20:11:59'),
+	(23, 'App\\Models\\Utilisateur', 1, 'auth_token', '20c79403899d60185a817363db691c57da0973e733a761192e14bb1991cacef9', '["*"]', '2026-07-19 20:37:10', NULL, '2026-07-19 20:12:04', '2026-07-19 20:37:10'),
+	(26, 'App\\Models\\Utilisateur', 1, 'auth_token', 'c7c138fe71276520a3e20b4801b5aa724d2fa1021014f8f150a4d028ffa35ed8', '["*"]', '2026-07-20 08:19:44', NULL, '2026-07-20 08:13:02', '2026-07-20 08:19:44'),
+	(29, 'App\\Models\\Utilisateur', 1, 'auth_token', 'b427eabec2a874d58c64afd7b9ca6ed19381d7889c8c30c61fcce735a5e87225', '["*"]', '2026-07-20 11:16:45', NULL, '2026-07-20 10:08:14', '2026-07-20 11:16:45'),
+	(31, 'App\\Models\\Utilisateur', 1, 'auth_token', '2f407d09ba2f504182db07f501dbf672f2d3bc5643523b4bef703c13e968d58a', '["*"]', '2026-07-20 12:59:57', NULL, '2026-07-20 12:50:07', '2026-07-20 12:59:57'),
+	(32, 'App\\Models\\Utilisateur', 1, 'auth_token', '8fe6e8aac83cc5fb3028df442dbcab28c01535fde7c1222573cccc2bbd91c27a', '["*"]', NULL, NULL, '2026-07-20 17:14:29', '2026-07-20 17:14:29'),
+	(33, 'App\\Models\\Utilisateur', 1, 'auth_token', '83bfcd0fd5712e941bbbeb3c186c0d93f0c309729aa0c0bd6315c91b536222c8', '["*"]', '2026-07-21 07:47:11', NULL, '2026-07-20 17:14:31', '2026-07-21 07:47:11'),
+	(34, 'App\\Models\\Utilisateur', 1, 'auth_token', '237e029f372fc4e5f65fa2dc0612a526e8411819529f0514668794bce8eb908b', '["*"]', '2026-07-21 07:47:39', NULL, '2026-07-21 07:47:18', '2026-07-21 07:47:39'),
+	(35, 'App\\Models\\Utilisateur', 1, 'auth_token', '2de4697f5042e01ba9aa02a125df705fcdc7c8200e48661ab502b0bf77a21ef4', '["*"]', '2026-07-21 07:49:54', NULL, '2026-07-21 07:49:43', '2026-07-21 07:49:54'),
+	(36, 'App\\Models\\Utilisateur', 1, 'auth_token', '9020651b6be83287b9151dcc3adbcd2b3bc1a4061c0fed1b69e172cb52fb9391', '["*"]', '2026-07-21 07:51:51', NULL, '2026-07-21 07:50:38', '2026-07-21 07:51:51'),
+	(39, 'App\\Models\\Utilisateur', 1, 'auth_token', '1aaa32535abda67f3a5d7f51977ae33c090a00660cf4a57394e749de6056da22', '["*"]', '2026-07-21 10:02:48', NULL, '2026-07-21 08:38:48', '2026-07-21 10:02:48'),
+	(40, 'App\\Models\\Utilisateur', 1, 'auth_token', '96bccc23ae97b1d38978bc9b2cec1f5d468e3ed9f20cd84bdc5c4c64b9675d5c', '["*"]', '2026-07-21 09:54:02', NULL, '2026-07-21 09:40:57', '2026-07-21 09:54:02'),
+	(41, 'App\\Models\\Utilisateur', 1, 'auth_token', '4f6a0a9888269c96f2354556ac52f7348af3c25cde44ce400d279c02d7c8d366', '["*"]', '2026-07-21 09:54:30', NULL, '2026-07-21 09:54:05', '2026-07-21 09:54:30'),
+	(42, 'App\\Models\\Utilisateur', 1, 'auth_token', '4c7ca0d50022a92f9f253475e5821692fdff485f200d66169dc2a8445f9a10c0', '["*"]', '2026-07-21 09:56:26', NULL, '2026-07-21 09:54:32', '2026-07-21 09:56:26'),
+	(66, 'App\\Models\\Utilisateur', 1, 'auth_token', '230e1fd0dec0fbb2d8fdb1de13c4709138d1d61d1b10dd7a1dd868d37fd7374d', '["*"]', '2026-07-21 16:42:28', NULL, '2026-07-21 16:27:54', '2026-07-21 16:42:28');
+
+-- Listage de la structure de table bd_gst_bejamin. produits
+CREATE TABLE IF NOT EXISTS `produits` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `code_article` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `code_barre` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `nom` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `id_categorie` bigint unsigned DEFAULT NULL,
+  `id_partenaire_principal` bigint unsigned DEFAULT NULL,
+  `id_unite` bigint unsigned NOT NULL,
+  `seuil_alerte` int NOT NULL DEFAULT '0',
+  `actif` tinyint(1) NOT NULL DEFAULT '1',
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `produits_code_article_unique` (`code_article`),
+  UNIQUE KEY `produits_code_barre_unique` (`code_barre`),
+  KEY `produits_nom_index` (`nom`),
+  KEY `produits_code_article_index` (`code_article`),
+  KEY `produits_actif_index` (`actif`),
+  KEY `produits_id_categorie_index` (`id_categorie`),
+  KEY `produits_id_partenaire_principal_index` (`id_partenaire_principal`),
+  KEY `produits_id_unite_index` (`id_unite`),
+  KEY `produits_actif_id_categorie_index` (`actif`,`id_categorie`),
+  CONSTRAINT `produits_id_categorie_foreign` FOREIGN KEY (`id_categorie`) REFERENCES `categories` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `produits_id_partenaire_principal_foreign` FOREIGN KEY (`id_partenaire_principal`) REFERENCES `partenaires` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `produits_id_unite_foreign` FOREIGN KEY (`id_unite`) REFERENCES `unites` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.produits : ~10 rows (environ)
+INSERT INTO `produits` (`id`, `code_article`, `code_barre`, `nom`, `description`, `id_categorie`, `id_partenaire_principal`, `id_unite`, `seuil_alerte`, `actif`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(1, 'P004', '1234567890126', 'Riz pilaf', 'Riz pilaf aux légumes', 2, NULL, 4, 40, 1, NULL, '2026-07-18 13:22:13', '2026-07-18 13:32:51'),
+	(2, 'P001', '1234567890123', 'Poulet rôti aux herbes', 'Poulet rôti avec un mélange d\'herbes provençales', 2, NULL, 4, 50, 1, NULL, '2026-07-18 14:52:16', '2026-07-18 14:52:16'),
+	(3, 'P002', '1234567890124', 'Salade César', 'Salade César avec poulet grillé, parmesan et croûtons', 2, NULL, 4, 30, 1, NULL, '2026-07-18 14:52:54', '2026-07-18 14:52:54'),
+	(4, 'P003', '1234567890125', 'Tiramisu', 'Tiramisu italien au café et mascarpone', 3, NULL, 4, 20, 1, NULL, '2026-07-18 14:53:27', '2026-07-18 14:53:27'),
+	(5, 'P0010', '1234567890122', 'Jus d\'orange frais', 'Jus d\'orange 100% pur jus, sans sucre ajouté', 4, NULL, 4, 100, 1, NULL, '2026-07-18 14:54:46', '2026-07-18 14:54:46'),
+	(6, 'P007', '1234567890129', 'Sauce tomate italienne', 'Sauce tomate avec basilic et origan', 2, NULL, 7, 30, 1, NULL, '2026-07-18 14:55:20', '2026-07-18 14:55:20'),
+	(7, 'P008', '1234567890130', 'Eau minérale 50cl', 'Eau minérale naturelle en bouteille 50cl', 4, NULL, 8, 200, 1, NULL, '2026-07-18 14:55:47', '2026-07-18 14:55:47'),
+	(8, 'AUDIT-001', NULL, 'Audit Test Produit', NULL, 2, 1, 6, 30, 1, NULL, '2026-07-19 12:40:01', '2026-07-19 22:13:50'),
+	(9, 'm', '455555555', 'k', NULL, 6, 1, 11, 20, 1, '2026-07-19 21:40:46', '2026-07-19 21:39:51', '2026-07-19 21:40:46'),
+	(10, 'kk', '4552222', 'kk', 'lll', 6, 1, 4, 20, 1, '2026-07-19 22:08:20', '2026-07-19 22:02:02', '2026-07-19 22:08:20');
+
+-- Listage de la structure de table bd_gst_bejamin. retour
+CREATE TABLE IF NOT EXISTS `retour` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `numero_retour` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `date_retour` date NOT NULL,
+  `id_partenaire_client` bigint unsigned DEFAULT NULL,
+  `id_zone_provenance` bigint unsigned DEFAULT NULL,
+  `id_emplacement_provenance` bigint unsigned DEFAULT NULL,
+  `id_partenaire_dest` bigint unsigned DEFAULT NULL,
+  `id_zone_dest` bigint unsigned DEFAULT NULL,
+  `id_emplacement_dest` bigint unsigned DEFAULT NULL,
+  `id_ville` bigint unsigned NOT NULL,
+  `id_utilisateur` bigint unsigned DEFAULT NULL,
+  `commentaire` text COLLATE utf8mb4_unicode_ci,
+  `valide_par` bigint unsigned DEFAULT NULL,
+  `date_validation` datetime DEFAULT NULL,
+  `statut_validation` enum('EN ATTENTE','VALIDÉ','REJETÉ','TRAITÉ') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'EN ATTENTE',
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `retour_numero_retour_unique` (`numero_retour`),
+  KEY `retour_id_emplacement_provenance_foreign` (`id_emplacement_provenance`),
+  KEY `retour_id_partenaire_dest_foreign` (`id_partenaire_dest`),
+  KEY `retour_id_zone_dest_foreign` (`id_zone_dest`),
+  KEY `retour_id_emplacement_dest_foreign` (`id_emplacement_dest`),
+  KEY `retour_id_utilisateur_foreign` (`id_utilisateur`),
+  KEY `retour_valide_par_foreign` (`valide_par`),
+  KEY `retour_numero_retour_index` (`numero_retour`),
+  KEY `retour_date_retour_index` (`date_retour`),
+  KEY `retour_id_ville_index` (`id_ville`),
+  KEY `retour_id_partenaire_client_index` (`id_partenaire_client`),
+  KEY `retour_id_zone_provenance_index` (`id_zone_provenance`),
+  KEY `retour_statut_validation_index` (`statut_validation`),
+  CONSTRAINT `retour_id_emplacement_dest_foreign` FOREIGN KEY (`id_emplacement_dest`) REFERENCES `emplacements` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `retour_id_emplacement_provenance_foreign` FOREIGN KEY (`id_emplacement_provenance`) REFERENCES `emplacements` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `retour_id_partenaire_client_foreign` FOREIGN KEY (`id_partenaire_client`) REFERENCES `partenaires` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `retour_id_partenaire_dest_foreign` FOREIGN KEY (`id_partenaire_dest`) REFERENCES `partenaires` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `retour_id_utilisateur_foreign` FOREIGN KEY (`id_utilisateur`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `retour_id_ville_foreign` FOREIGN KEY (`id_ville`) REFERENCES `villes` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `retour_id_zone_dest_foreign` FOREIGN KEY (`id_zone_dest`) REFERENCES `zones` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `retour_id_zone_provenance_foreign` FOREIGN KEY (`id_zone_provenance`) REFERENCES `zones` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `retour_valide_par_foreign` FOREIGN KEY (`valide_par`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.retour : ~2 rows (environ)
+INSERT INTO `retour` (`id`, `numero_retour`, `date_retour`, `id_partenaire_client`, `id_zone_provenance`, `id_emplacement_provenance`, `id_partenaire_dest`, `id_zone_dest`, `id_emplacement_dest`, `id_ville`, `id_utilisateur`, `commentaire`, `valide_par`, `date_validation`, `statut_validation`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(2, 'RET-2026-001', '2026-07-20', 2, NULL, NULL, 1, NULL, NULL, 1, 1, 'Retour de produits non utilisés par Ethiopian Airlines - Modifié', 1, '2026-07-19 13:09:24', 'TRAITÉ', NULL, '2026-07-19 11:00:05', '2026-07-19 11:09:50'),
+	(3, 'RET-2026-003', '2026-07-19', 1, NULL, NULL, 1, NULL, NULL, 1, 1, 'Retour de produits périmés', 1, '2026-07-20 11:41:00', 'VALIDÉ', NULL, '2026-07-19 11:07:31', '2026-07-20 09:41:00');
+
+-- Listage de la structure de table bd_gst_bejamin. roles
+CREATE TABLE IF NOT EXISTS `roles` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `nom` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `actif` tinyint(1) NOT NULL DEFAULT '1',
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `roles_nom_unique` (`nom`),
+  KEY `roles_actif_index` (`actif`),
+  KEY `roles_nom_index` (`nom`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.roles : ~5 rows (environ)
+INSERT INTO `roles` (`id`, `nom`, `description`, `actif`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(1, 'ADMIN', 'Administrateur - Accès total au système', 1, NULL, '2026-07-18 12:26:27', '2026-07-18 12:26:27'),
+	(2, 'RESP_STOCK', 'Responsable des stocks - Gestion et validation des lots', 1, NULL, '2026-07-18 12:26:27', '2026-07-18 12:26:27'),
+	(3, 'COMMERCIAL', 'Commercial - Création de commandes et suivi fournisseurs', 1, NULL, '2026-07-18 12:26:27', '2026-07-18 12:26:27'),
+	(4, 'MAGASINIER', 'Magasinier - Réception, mouvements physiques, scan QR', 1, NULL, '2026-07-18 12:26:27', '2026-07-18 12:26:27'),
+	(5, 'CONSULTATION', 'Consultation - Lecture seule sur les rapports', 1, NULL, '2026-07-18 12:26:27', '2026-07-18 12:26:27'),
+	(7, 'Super Admin', 'Il a droit presque a toute l\'application', 1, NULL, '2026-07-21 11:11:33', '2026-07-21 11:11:33');
+
+-- Listage de la structure de table bd_gst_bejamin. role_permission
+CREATE TABLE IF NOT EXISTS `role_permission` (
+  `id_role` bigint unsigned NOT NULL,
+  `id_permission` bigint unsigned NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id_role`,`id_permission`),
+  KEY `role_permission_id_role_index` (`id_role`),
+  KEY `role_permission_id_permission_index` (`id_permission`),
+  CONSTRAINT `role_permission_id_permission_foreign` FOREIGN KEY (`id_permission`) REFERENCES `permissions` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `role_permission_id_role_foreign` FOREIGN KEY (`id_role`) REFERENCES `roles` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.role_permission : ~0 rows (environ)
+INSERT INTO `role_permission` (`id_role`, `id_permission`, `created_at`, `updated_at`) VALUES
+	(3, 84, NULL, NULL),
+	(3, 87, NULL, NULL),
+	(3, 88, NULL, NULL),
+	(3, 92, NULL, NULL),
+	(3, 96, NULL, NULL),
+	(3, 100, NULL, NULL),
+	(3, 104, NULL, NULL),
+	(3, 108, NULL, NULL),
+	(3, 124, NULL, NULL),
+	(3, 128, NULL, NULL),
+	(3, 132, NULL, NULL),
+	(3, 136, NULL, NULL),
+	(3, 141, NULL, NULL),
+	(3, 145, NULL, NULL),
+	(3, 150, NULL, NULL),
+	(3, 154, NULL, NULL),
+	(3, 158, NULL, NULL),
+	(3, 164, NULL, NULL),
+	(3, 169, NULL, NULL),
+	(3, 173, NULL, NULL),
+	(3, 177, NULL, NULL),
+	(3, 180, NULL, NULL),
+	(3, 188, NULL, NULL),
+	(3, 189, NULL, NULL),
+	(7, 84, NULL, NULL),
+	(7, 85, NULL, NULL),
+	(7, 86, NULL, NULL),
+	(7, 87, NULL, NULL),
+	(7, 88, NULL, NULL),
+	(7, 89, NULL, NULL),
+	(7, 90, NULL, NULL),
+	(7, 91, NULL, NULL),
+	(7, 92, NULL, NULL),
+	(7, 93, NULL, NULL),
+	(7, 94, NULL, NULL),
+	(7, 95, NULL, NULL),
+	(7, 96, NULL, NULL),
+	(7, 97, NULL, NULL),
+	(7, 98, NULL, NULL),
+	(7, 99, NULL, NULL),
+	(7, 100, NULL, NULL),
+	(7, 101, NULL, NULL),
+	(7, 102, NULL, NULL),
+	(7, 103, NULL, NULL),
+	(7, 104, NULL, NULL),
+	(7, 105, NULL, NULL),
+	(7, 106, NULL, NULL),
+	(7, 107, NULL, NULL),
+	(7, 108, NULL, NULL),
+	(7, 109, NULL, NULL),
+	(7, 110, NULL, NULL),
+	(7, 111, NULL, NULL),
+	(7, 112, NULL, NULL),
+	(7, 113, NULL, NULL),
+	(7, 114, NULL, NULL),
+	(7, 115, NULL, NULL),
+	(7, 116, NULL, NULL),
+	(7, 117, NULL, NULL),
+	(7, 118, NULL, NULL),
+	(7, 119, NULL, NULL),
+	(7, 120, NULL, NULL),
+	(7, 121, NULL, NULL),
+	(7, 122, NULL, NULL),
+	(7, 123, NULL, NULL),
+	(7, 124, NULL, NULL),
+	(7, 125, NULL, NULL),
+	(7, 126, NULL, NULL),
+	(7, 127, NULL, NULL),
+	(7, 128, NULL, NULL),
+	(7, 129, NULL, NULL),
+	(7, 130, NULL, NULL),
+	(7, 131, NULL, NULL),
+	(7, 132, NULL, NULL),
+	(7, 133, NULL, NULL),
+	(7, 134, NULL, NULL),
+	(7, 135, NULL, NULL),
+	(7, 136, NULL, NULL),
+	(7, 137, NULL, NULL),
+	(7, 138, NULL, NULL),
+	(7, 139, NULL, NULL),
+	(7, 140, NULL, NULL),
+	(7, 141, NULL, NULL),
+	(7, 142, NULL, NULL),
+	(7, 143, NULL, NULL),
+	(7, 144, NULL, NULL),
+	(7, 145, NULL, NULL),
+	(7, 146, NULL, NULL),
+	(7, 147, NULL, NULL),
+	(7, 148, NULL, NULL),
+	(7, 149, NULL, NULL),
+	(7, 150, NULL, NULL),
+	(7, 151, NULL, NULL),
+	(7, 152, NULL, NULL),
+	(7, 153, NULL, NULL),
+	(7, 154, NULL, NULL),
+	(7, 155, NULL, NULL),
+	(7, 156, NULL, NULL),
+	(7, 157, NULL, NULL),
+	(7, 158, NULL, NULL),
+	(7, 159, NULL, NULL),
+	(7, 160, NULL, NULL),
+	(7, 161, NULL, NULL),
+	(7, 162, NULL, NULL),
+	(7, 163, NULL, NULL),
+	(7, 164, NULL, NULL),
+	(7, 165, NULL, NULL),
+	(7, 166, NULL, NULL),
+	(7, 167, NULL, NULL),
+	(7, 168, NULL, NULL),
+	(7, 169, NULL, NULL),
+	(7, 170, NULL, NULL),
+	(7, 171, NULL, NULL),
+	(7, 172, NULL, NULL),
+	(7, 173, NULL, NULL),
+	(7, 174, NULL, NULL),
+	(7, 175, NULL, NULL),
+	(7, 176, NULL, NULL),
+	(7, 177, NULL, NULL),
+	(7, 178, NULL, NULL),
+	(7, 179, NULL, NULL),
+	(7, 180, NULL, NULL),
+	(7, 181, NULL, NULL),
+	(7, 182, NULL, NULL),
+	(7, 183, NULL, NULL),
+	(7, 184, NULL, NULL),
+	(7, 185, NULL, NULL),
+	(7, 186, NULL, NULL),
+	(7, 187, NULL, NULL),
+	(7, 188, NULL, NULL),
+	(7, 189, NULL, NULL),
+	(7, 190, NULL, NULL),
+	(7, 191, NULL, NULL),
+	(7, 192, NULL, NULL),
+	(7, 193, NULL, NULL),
+	(7, 194, NULL, NULL),
+	(7, 195, NULL, NULL),
+	(7, 196, NULL, NULL);
+
+-- Listage de la structure de table bd_gst_bejamin. type_mouvement
+CREATE TABLE IF NOT EXISTS `type_mouvement` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `libelle` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sens` tinyint NOT NULL DEFAULT '1' COMMENT '+1=entrée, -1=sortie',
+  `actif` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `type_mouvement_libelle_index` (`libelle`),
+  KEY `type_mouvement_sens_index` (`sens`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.type_mouvement : ~6 rows (environ)
+INSERT INTO `type_mouvement` (`id`, `libelle`, `sens`, `actif`, `created_at`, `updated_at`) VALUES
+	(1, 'Entrée (réception)', 1, 1, '2026-07-18 14:04:06', '2026-07-18 14:04:06'),
+	(2, 'Sortie (consommation)', -1, 1, '2026-07-18 14:04:30', '2026-07-18 14:04:30'),
+	(3, 'Ajustement positif', 1, 1, '2026-07-18 14:04:49', '2026-07-18 14:04:49'),
+	(4, 'Ajustement négatif', -1, 1, '2026-07-18 14:05:11', '2026-07-18 14:05:11'),
+	(5, 'Transfert entrant', 1, 1, '2026-07-18 14:05:38', '2026-07-18 14:05:38'),
+	(6, 'Retour fournisseur', -1, 1, '2026-07-18 14:06:04', '2026-07-18 14:06:04'),
+	(7, 'Retour client', -1, 1, '2026-07-18 14:06:21', '2026-07-18 14:06:21');
+
+-- Listage de la structure de table bd_gst_bejamin. unites
+CREATE TABLE IF NOT EXISTS `unites` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `nom` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `symbole` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `actif` tinyint(1) NOT NULL DEFAULT '1',
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `unites_nom_unique` (`nom`),
+  UNIQUE KEY `unites_symbole_unique` (`symbole`),
+  KEY `unites_actif_index` (`actif`),
+  KEY `unites_nom_index` (`nom`)
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.unites : ~8 rows (environ)
+INSERT INTO `unites` (`id`, `nom`, `symbole`, `description`, `actif`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(4, 'pièce', 'pc', 'Unité individuelle', 1, NULL, '2026-07-18 12:33:34', '2026-07-18 12:33:34'),
+	(5, 'kilogramme', 'kg', 'Poids en kilogrammes', 1, NULL, '2026-07-18 12:33:34', '2026-07-18 12:33:34'),
+	(6, 'gramme', 'g', 'Poids en grammes', 1, NULL, '2026-07-18 12:33:34', '2026-07-18 12:33:34'),
+	(7, 'litre', 'l', 'Volume en litres', 1, NULL, '2026-07-18 12:33:34', '2026-07-18 12:33:34'),
+	(8, 'millilitre', 'ml', 'Volume en millilitres', 1, NULL, '2026-07-18 12:33:34', '2026-07-18 12:33:34'),
+	(9, 'mètre', 'm', 'Longueur en mètres', 1, NULL, '2026-07-18 12:33:34', '2026-07-18 12:33:34'),
+	(10, 'centimètre', 'cm', 'Longueur en centimètres', 1, NULL, '2026-07-18 12:33:34', '2026-07-18 12:33:34'),
+	(11, 'unités', 'u', 'Unités génériques', 1, NULL, '2026-07-18 12:33:34', '2026-07-18 12:33:34'),
+	(12, 'carton', 'ctn', 'Unité de mesure pour les cartons', 1, NULL, '2026-07-18 12:49:32', '2026-07-18 12:49:32');
+
+-- Listage de la structure de table bd_gst_bejamin. users
+CREATE TABLE IF NOT EXISTS `users` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email_verified_at` timestamp NULL DEFAULT NULL,
+  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `remember_token` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `users_email_unique` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.users : ~0 rows (environ)
+
+-- Listage de la structure de table bd_gst_bejamin. utilisateurs
+CREATE TABLE IF NOT EXISTS `utilisateurs` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `nom` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `prenom` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `mot_de_passe_hash` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id_role` bigint unsigned NOT NULL,
+  `id_ville` bigint unsigned NOT NULL,
+  `id_departement` bigint unsigned NOT NULL,
+  `id_zone` bigint unsigned DEFAULT NULL,
+  `id_emplacement` bigint unsigned DEFAULT NULL,
+  `actif` tinyint(1) NOT NULL DEFAULT '1',
+  `derniere_connexion` datetime DEFAULT NULL,
+  `remember_token` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `utilisateurs_email_unique` (`email`),
+  KEY `utilisateurs_id_zone_foreign` (`id_zone`),
+  KEY `utilisateurs_id_emplacement_foreign` (`id_emplacement`),
+  KEY `utilisateurs_email_index` (`email`),
+  KEY `utilisateurs_actif_index` (`actif`),
+  KEY `utilisateurs_id_role_index` (`id_role`),
+  KEY `utilisateurs_id_ville_index` (`id_ville`),
+  KEY `utilisateurs_id_departement_index` (`id_departement`),
+  KEY `utilisateurs_id_ville_actif_index` (`id_ville`,`actif`),
+  KEY `utilisateurs_id_departement_actif_index` (`id_departement`,`actif`),
+  CONSTRAINT `utilisateurs_id_departement_foreign` FOREIGN KEY (`id_departement`) REFERENCES `departements` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `utilisateurs_id_emplacement_foreign` FOREIGN KEY (`id_emplacement`) REFERENCES `emplacements` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `utilisateurs_id_role_foreign` FOREIGN KEY (`id_role`) REFERENCES `roles` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `utilisateurs_id_ville_foreign` FOREIGN KEY (`id_ville`) REFERENCES `villes` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `utilisateurs_id_zone_foreign` FOREIGN KEY (`id_zone`) REFERENCES `zones` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.utilisateurs : ~0 rows (environ)
+INSERT INTO `utilisateurs` (`id`, `nom`, `prenom`, `email`, `mot_de_passe_hash`, `id_role`, `id_ville`, `id_departement`, `id_zone`, `id_emplacement`, `actif`, `derniere_connexion`, `remember_token`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(1, 'Famba', 'Pierre', 'pierre@gmail.com', '$2y$12$GUpicGH/T3PCol5EOquW4uI9XkXKaKkobxg3mhbNstXb7z.YtF6NW', 1, 1, 1, NULL, NULL, 1, '2026-07-21 18:27:54', NULL, NULL, '2026-07-18 12:26:29', '2026-07-21 16:27:54'),
+	(2, 'NGOMA', 'David', 'ngoma@gmail.com', '$2y$12$33R.KiRWCGEaEgT9XbIcXOy9pxnoqK2xmz7rZVxl9Dedwb/OgzTru', 7, 1, 2, 1, 1, 1, '2026-07-21 14:13:58', NULL, NULL, '2026-07-21 11:12:52', '2026-07-21 12:13:58'),
+	(3, 'AMULI', 'Claude', 'amuli@gmail.com', '$2y$12$P3gU2SyVIGJ7uqQFcADVbuQW4kjpTbE5IwgkmWsywINyeO5QImdbO', 3, 1, 4, 2, NULL, 1, '2026-07-21 18:27:35', NULL, NULL, '2026-07-21 12:05:39', '2026-07-21 16:27:35');
+
+-- Listage de la structure de table bd_gst_bejamin. villes
+CREATE TABLE IF NOT EXISTS `villes` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `nom` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `code` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `pays` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'RDC',
+  `actif` tinyint(1) NOT NULL DEFAULT '1',
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `villes_code_unique` (`code`),
+  KEY `villes_actif_index` (`actif`),
+  KEY `villes_nom_index` (`nom`),
+  KEY `villes_code_index` (`code`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.villes : ~4 rows (environ)
+INSERT INTO `villes` (`id`, `nom`, `code`, `pays`, `actif`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(1, 'Kinshasa', 'KIN', 'RDC', 1, NULL, '2026-07-18 11:38:46', '2026-07-18 11:38:46'),
+	(2, 'Lubumbashi', 'LUB', 'RDC', 1, NULL, '2026-07-18 11:39:03', '2026-07-18 11:40:45'),
+	(3, 'Goma', 'GOM', 'RDC', 1, NULL, '2026-07-18 12:34:54', '2026-07-18 12:34:54'),
+	(4, 'Bukavu', 'BUK', 'RDC', 1, NULL, '2026-07-18 12:34:54', '2026-07-19 21:16:37'),
+	(5, 'M', 'M', 'RDC', 1, '2026-07-19 21:17:23', '2026-07-19 21:17:15', '2026-07-19 21:17:23');
+
+-- Listage de la structure de table bd_gst_bejamin. zones
+CREATE TABLE IF NOT EXISTS `zones` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `nom` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id_ville` bigint unsigned NOT NULL,
+  `type_zone` enum('production','stockage','service','hygiene') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'stockage',
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `actif` tinyint(1) NOT NULL DEFAULT '1',
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `zones_id_ville_index` (`id_ville`),
+  KEY `zones_actif_index` (`actif`),
+  KEY `zones_id_ville_actif_index` (`id_ville`,`actif`),
+  KEY `zones_type_zone_index` (`type_zone`),
+  CONSTRAINT `zones_id_ville_foreign` FOREIGN KEY (`id_ville`) REFERENCES `villes` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Listage des données de la table bd_gst_bejamin.zones : ~1 rows (environ)
+INSERT INTO `zones` (`id`, `nom`, `id_ville`, `type_zone`, `description`, `actif`, `deleted_at`, `created_at`, `updated_at`) VALUES
+	(1, 'Cuisine Chaud', 1, 'production', 'Zone de préparation des plats chauds', 1, NULL, '2026-07-18 11:44:00', '2026-07-18 11:45:29'),
+	(2, 'Cuisine Froid', 1, 'stockage', 'Zone de préparation des plats chaud', 1, NULL, '2026-07-19 21:06:47', '2026-07-19 21:06:47');
+
+/*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
+/*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
+/*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40111 SET SQL_NOTES=IFNULL(@OLD_SQL_NOTES, 1) */;
