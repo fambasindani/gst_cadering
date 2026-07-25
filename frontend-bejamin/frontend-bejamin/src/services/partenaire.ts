@@ -22,4 +22,10 @@ export const partenaireService = {
 
   getVilles: () =>
     api.get<VilleListResponse>('/config/villes'),
+
+  getClients: (params?: Record<string, string>) =>
+    api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/partenaires/clients', { params: { ...params, per_page: '200' } }),
+
+  getFournisseurs: (params?: Record<string, string>) =>
+    api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/partenaires/fournisseurs', { params: { ...params, per_page: '200' } }),
 };

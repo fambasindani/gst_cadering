@@ -5,9 +5,7 @@ import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { Label } from '../components/ui/label';
 import { Card, CardContent } from '../components/ui/card';
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '../components/ui/select';
+import { SearchableSelect } from '../components/ui/SearchableSelect';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '../components/ui/table';
@@ -188,7 +186,7 @@ export function FicheTechniqueForm() {
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <Card className="border-0 shadow-sm overflow-hidden">
+            <Card className="border-0 shadow-sm">
               <div className="h-1.5 bg-gradient-to-r from-royal-500 to-royal-700" />
               <CardContent className="p-6 space-y-5">
                 <div className="flex items-center gap-2 pb-3 border-b border-gray-100">
@@ -216,27 +214,29 @@ export function FicheTechniqueForm() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <LabelIcon icon={Package} required error={fieldErrors.id_produit_fini}>Produit fini</LabelIcon>
-                    <Select value={values.id_produit_fini} onValueChange={(v) => set('id_produit_fini', v)} disabled={isView}>
-                      <SelectTrigger className={cn('w-full h-11 border-gray-200 shadow-sm', errorClass(fieldErrors.id_produit_fini))}>
-                        <SelectValue placeholder="Sélectionner" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {produits.map((p) => (<SelectItem key={p.id} value={String(p.id)}>{p.code_article ? `[${p.code_article}] ${p.nom}` : p.nom}</SelectItem>))}
-                      </SelectContent>
-                    </Select>
-                    {fieldErrors.id_produit_fini && <p className="text-xs text-red-500 mt-1">{fieldErrors.id_produit_fini}</p>}
+                    <SearchableSelect
+                      options={produits.map(p => ({ id: p.id, nom: p.nom, sousTitre: p.code_article ? `[${p.code_article}]` : undefined }))}
+                      value={values.id_produit_fini}
+                      onValueChange={(v) => set('id_produit_fini', v)}
+                      placeholder="Sélectionner"
+                      searchPlaceholder="Rechercher un produit..."
+                      error={fieldErrors.id_produit_fini}
+                      disabled={isView}
+                      className={cn('w-full', errorClass(fieldErrors.id_produit_fini))}
+                    />
                   </div>
                   <div>
                     <LabelIcon icon={MapPin} required error={fieldErrors.id_ville}>Ville</LabelIcon>
-                    <Select value={values.id_ville} onValueChange={(v) => set('id_ville', v)} disabled={isView}>
-                      <SelectTrigger className={cn('w-full h-11 border-gray-200 shadow-sm', errorClass(fieldErrors.id_ville))}>
-                        <SelectValue placeholder="Sélectionner" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {villes.map((v) => (<SelectItem key={v.id} value={String(v.id)}>{v.nom}</SelectItem>))}
-                      </SelectContent>
-                    </Select>
-                    {fieldErrors.id_ville && <p className="text-xs text-red-500 mt-1">{fieldErrors.id_ville}</p>}
+                    <SearchableSelect
+                      options={villes.map(v => ({ id: v.id, nom: v.nom }))}
+                      value={values.id_ville}
+                      onValueChange={(v) => set('id_ville', v)}
+                      placeholder="Sélectionner"
+                      searchPlaceholder="Rechercher une ville..."
+                      error={fieldErrors.id_ville}
+                      disabled={isView}
+                      className={cn('w-full', errorClass(fieldErrors.id_ville))}
+                    />
                   </div>
                 </div>
 
@@ -259,7 +259,7 @@ export function FicheTechniqueForm() {
           </div>
 
           <div className="space-y-6">
-            <Card className="border-0 shadow-sm overflow-hidden">
+            <Card className="border-0 shadow-sm">
               <div className="h-1.5 bg-gradient-to-r from-amber-500 to-amber-700" />
               <CardContent className="p-6 space-y-4">
                 <div className="flex items-center gap-2 pb-3 border-b border-gray-100">
@@ -279,7 +279,7 @@ export function FicheTechniqueForm() {
           </div>
         </div>
 
-        <Card className="border-0 shadow-sm overflow-hidden mt-6">
+        <Card className="border-0 shadow-sm mt-6">
           <div className="h-1.5 bg-gradient-to-r from-emerald-500 to-emerald-700" />
           <CardContent className="p-6">
             <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
@@ -295,7 +295,7 @@ export function FicheTechniqueForm() {
               )}
             </div>
 
-            <div className="overflow-x-auto rounded-lg border border-gray-200">
+            <div className="rounded-lg border border-gray-200">
               <Table>
                 <TableHeader className="bg-gray-50">
                   <TableRow>
@@ -310,24 +310,24 @@ export function FicheTechniqueForm() {
                   {ingredients.map((r, i) => (
                     <TableRow key={r.key} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
                       <TableCell className="min-w-[200px]">
-                        <Select value={r.id_produit_ingredient} onValueChange={(v) => updateIngredient(r.key, 'id_produit_ingredient', v)} disabled={isView}>
-                          <SelectTrigger className="w-full border-gray-200 shadow-sm">
-                            <SelectValue placeholder="Ingrédient" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {produits.map((p) => (<SelectItem key={p.id} value={String(p.id)}>{p.code_article ? `[${p.code_article}] ${p.nom}` : p.nom}</SelectItem>))}
-                          </SelectContent>
-                        </Select>
+                        <SearchableSelect
+                          options={produits.map(p => ({ id: p.id, nom: p.nom, sousTitre: p.code_article ? `[${p.code_article}]` : undefined }))}
+                          value={r.id_produit_ingredient}
+                          onValueChange={(v) => updateIngredient(r.key, 'id_produit_ingredient', v)}
+                          placeholder="Ingrédient"
+                          searchPlaceholder="Rechercher un ingrédient..."
+                          disabled={isView}
+                        />
                       </TableCell>
                       <TableCell className="w-28">
-                        <Select value={r.id_unite} onValueChange={(v) => updateIngredient(r.key, 'id_unite', v)} disabled={isView}>
-                          <SelectTrigger className="w-full border-gray-200 shadow-sm">
-                            <SelectValue placeholder="Unité" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {unites.map((u) => (<SelectItem key={u.id} value={String(u.id)}>{u.symbole || u.nom}</SelectItem>))}
-                          </SelectContent>
-                        </Select>
+                        <SearchableSelect
+                          options={unites.map(u => ({ id: u.id, nom: u.symbole || u.nom }))}
+                          value={r.id_unite}
+                          onValueChange={(v) => updateIngredient(r.key, 'id_unite', v)}
+                          placeholder="Unité"
+                          searchPlaceholder="Rechercher une unité..."
+                          disabled={isView}
+                        />
                       </TableCell>
                       <TableCell className="w-24">
                         <Input type="number" step="0.01" min="0" value={r.quantite_ingredient}

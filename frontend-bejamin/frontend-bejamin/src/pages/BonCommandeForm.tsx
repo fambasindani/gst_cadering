@@ -5,9 +5,7 @@ import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { Label } from '../components/ui/label';
 import { Card, CardContent } from '../components/ui/card';
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '../components/ui/select';
+import { SearchableSelect } from '../components/ui/SearchableSelect';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '../components/ui/table';
@@ -18,7 +16,7 @@ import { ArrowLeft, Save, Loader2, Plus, Trash2, FileText, Building2, MapPin, Ca
 import { cn } from '../lib/utils';
 import { formatCurrency } from '../lib/format';
 
-interface SelectOption { id: number; nom: string; code_article?: string }
+interface SelectOption { id: number; nom: string; code_article?: string; symbole?: string; code?: string }
 
 interface LigneRow {
   key: string;
@@ -47,7 +45,7 @@ export function BonCommandeForm() {
   const [saving, setSaving] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  const [partenaires, setPartenaires] = useState<SelectOption[]>([]);
+  const [fournisseurs, setFournisseurs] = useState<SelectOption[]>([]);
   const [villes, setVilles] = useState<SelectOption[]>([]);
   const [devises, setDevises] = useState<SelectOption[]>([]);
   const [produits, setProduits] = useState<SelectOption[]>([]);
@@ -61,7 +59,7 @@ export function BonCommandeForm() {
   const [lignes, setLignes] = useState<LigneRow[]>([newLigne()]);
 
   useEffect(() => {
-    bonCommandeService.getPartenaires().then((res) => { if (res.success) setPartenaires(res.data.data); });
+    bonCommandeService.getPartenaires({ type: 'fournisseur' }).then((res) => { if (res.success) setFournisseurs(res.data.data); });
     bonCommandeService.getVilles().then((res) => { if (res.success) setVilles(res.data.data); });
     bonCommandeService.getDevises().then((res) => { if (res.success) setDevises(res.data.data); });
     bonCommandeService.getProduits().then((res) => { if (res.success) setProduits(res.data.data); });
@@ -183,7 +181,7 @@ export function BonCommandeForm() {
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <Card className="border-0 shadow-sm overflow-hidden">
+            <Card className="border-0 shadow-sm">
               <div className="h-1.5 bg-gradient-to-r from-royal-500 to-royal-700" />
               <CardContent className="p-6 space-y-5">
                 <div className="flex items-center gap-2 pb-3 border-b border-gray-100">
@@ -200,28 +198,26 @@ export function BonCommandeForm() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <LabelIcon icon={Building2} required error={fieldErrors.id_partenaire}>Partenaire</LabelIcon>
-                    <Select value={values.id_partenaire} onValueChange={(v) => set('id_partenaire', v)}>
-                      <SelectTrigger className={cn('w-full h-11 border-gray-200 shadow-sm', errorClass(fieldErrors.id_partenaire))}>
-                        <SelectValue placeholder="Sélectionner" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {partenaires.map((p) => (<SelectItem key={p.id} value={String(p.id)}>{p.nom}</SelectItem>))}
-                      </SelectContent>
-                    </Select>
-                    {fieldErrors.id_partenaire && <p className="text-xs text-red-500 mt-1">{fieldErrors.id_partenaire}</p>}
+                    <LabelIcon icon={Building2} required error={fieldErrors.id_partenaire}>Fournisseur</LabelIcon>
+                    <SearchableSelect
+                      options={fournisseurs.map(p => ({ id: p.id, nom: p.nom }))}
+                      value={values.id_partenaire}
+                      onValueChange={v => set('id_partenaire', v)}
+                      placeholder="Sélectionner un fournisseur"
+                      searchPlaceholder="Rechercher un fournisseur..."
+                      error={fieldErrors.id_partenaire}
+                    />
                   </div>
                   <div>
                     <LabelIcon icon={MapPin} required error={fieldErrors.id_ville_destination}>Destination</LabelIcon>
-                    <Select value={values.id_ville_destination} onValueChange={(v) => set('id_ville_destination', v)}>
-                      <SelectTrigger className={cn('w-full h-11 border-gray-200 shadow-sm', errorClass(fieldErrors.id_ville_destination))}>
-                        <SelectValue placeholder="Sélectionner" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {villes.map((v) => (<SelectItem key={v.id} value={String(v.id)}>{v.nom}</SelectItem>))}
-                      </SelectContent>
-                    </Select>
-                    {fieldErrors.id_ville_destination && <p className="text-xs text-red-500 mt-1">{fieldErrors.id_ville_destination}</p>}
+                    <SearchableSelect
+                      options={villes.map(v => ({ id: v.id, nom: v.nom }))}
+                      value={values.id_ville_destination}
+                      onValueChange={v => set('id_ville_destination', v)}
+                      placeholder="Sélectionner une ville"
+                      searchPlaceholder="Rechercher une ville..."
+                      error={fieldErrors.id_ville_destination}
+                    />
                   </div>
                 </div>
 
@@ -242,15 +238,14 @@ export function BonCommandeForm() {
 
                 <div>
                   <LabelIcon icon={DollarSign} error={fieldErrors.id_devise}>Devise</LabelIcon>
-                  <Select value={values.id_devise} onValueChange={(v) => set('id_devise', v)}>
-                    <SelectTrigger className={cn('w-full h-11 border-gray-200 shadow-sm', errorClass(fieldErrors.id_devise))}>
-                      <SelectValue placeholder="Sélectionner" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {devises.map((d) => (<SelectItem key={d.id} value={String(d.id)}>{d.nom} ({d.symbole})</SelectItem>))}
-                    </SelectContent>
-                  </Select>
-                  {fieldErrors.id_devise && <p className="text-xs text-red-500 mt-1">{fieldErrors.id_devise}</p>}
+                  <SearchableSelect
+                    options={devises.map(d => ({ id: d.id, nom: d.nom, sousTitre: d.symbole }))}
+                    value={values.id_devise}
+                    onValueChange={v => set('id_devise', v)}
+                    placeholder="Sélectionner une devise"
+                    searchPlaceholder="Rechercher..."
+                    error={fieldErrors.id_devise}
+                  />
                 </div>
 
                 <div>
@@ -263,7 +258,7 @@ export function BonCommandeForm() {
           </div>
 
           <div className="space-y-6">
-            <Card className="border-0 shadow-sm overflow-hidden">
+            <Card className="border-0 shadow-sm">
               <div className="h-1.5 bg-gradient-to-r from-amber-500 to-amber-700" />
               <CardContent className="p-6 space-y-4">
                 <div className="flex items-center gap-2 pb-3 border-b border-gray-100">
@@ -283,7 +278,7 @@ export function BonCommandeForm() {
           </div>
         </div>
 
-        <Card className="border-0 shadow-sm overflow-hidden mt-6">
+        <Card className="border-0 shadow-sm mt-6">
           <div className="h-1.5 bg-gradient-to-r from-emerald-500 to-emerald-700" />
           <CardContent className="p-6">
             <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
@@ -315,18 +310,14 @@ export function BonCommandeForm() {
                   {lignes.map((l, i) => (
                     <TableRow key={l.key} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
                       <TableCell className="min-w-[200px]">
-                        <Select value={l.id_produit} onValueChange={(v) => onProduitChange(l.key, v)}>
-                          <SelectTrigger className={cn('w-full border-gray-200 shadow-sm', fieldErrors[`lignes.${i}.id_produit`] && 'border-red-400')}>
-                            <SelectValue placeholder="Produit" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {produits.map((p) => (
-                              <SelectItem key={p.id} value={String(p.id)}>
-                                {p.code_article ? `[${p.code_article}] ${p.nom}` : p.nom}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <SearchableSelect
+                          options={produits.map(p => ({ id: p.id, nom: p.nom, sousTitre: p.code_article }))}
+                          value={l.id_produit}
+                          onValueChange={(v) => onProduitChange(l.key, v)}
+                          placeholder="Produit"
+                          searchPlaceholder="Rechercher un produit..."
+                          error={fieldErrors[`lignes.${i}.id_produit`]}
+                        />
                       </TableCell>
                       <TableCell className="w-24">
                         <Input type="number" min="1" value={l.quantite_commandee}
@@ -339,14 +330,14 @@ export function BonCommandeForm() {
                           className={cn('text-right h-10 border-gray-200 shadow-sm', fieldErrors[`lignes.${i}.prix_unitaire_ht`] && 'border-red-400')} />
                       </TableCell>
                       <TableCell className="w-36">
-                        <Select value={l.id_devise} onValueChange={(v) => updateLigne(l.key, 'id_devise', v)}>
-                          <SelectTrigger className={cn('w-full border-gray-200 shadow-sm', fieldErrors[`lignes.${i}.id_devise`] && 'border-red-400')}>
-                            <SelectValue placeholder="Devise" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {devises.map((d) => (<SelectItem key={d.id} value={String(d.id)}>{d.code}</SelectItem>))}
-                          </SelectContent>
-                        </Select>
+                        <SearchableSelect
+                          options={devises.map(d => ({ id: d.id, nom: d.nom, sousTitre: d.code }))}
+                          value={l.id_devise}
+                          onValueChange={(v) => updateLigne(l.key, 'id_devise', v)}
+                          placeholder="Devise"
+                          searchPlaceholder="Rechercher..."
+                          error={fieldErrors[`lignes.${i}.id_devise`]}
+                        />
                       </TableCell>
                       <TableCell className="text-right font-mono text-sm font-medium text-gray-900">
                         {formatCurrency((Number(l.quantite_commandee) || 0) * (Number(l.prix_unitaire_ht) || 0))}

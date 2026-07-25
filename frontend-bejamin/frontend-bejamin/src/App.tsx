@@ -13,6 +13,7 @@ import { EntrerStock } from './pages/EntrerStock';
 import { PeriodeInventaire } from './pages/PeriodeInventaire';
 import { Ajustement } from './pages/Ajustement';
 import { AjustementProduit } from './pages/AjustementProduit';
+import { SaisieInventaire } from './pages/SaisieInventaire';
 import { Produits } from './pages/Produits';
 import { ProduitForm } from './pages/ProduitForm';
 import { ProduitDetails } from './pages/ProduitDetails';
@@ -21,6 +22,7 @@ import { StockLotSerieForm } from './pages/StockLotSerieForm';
 import { EntreeStockForm } from './pages/EntreeStockForm';
 import { SortieStockForm } from './pages/SortieStockForm';
 import { RetourStock } from './pages/RetourStock';
+import { RetourForm } from './pages/RetourForm';
 import { RetourDetail } from './pages/RetourDetail';
 import { Partenaires } from './pages/Partenaires';
 import { PartenaireForm } from './pages/PartenaireForm';
@@ -52,6 +54,8 @@ import { RapportAchat } from './pages/rapports/RapportAchat';
 import { RapportFournisseur } from './pages/rapports/RapportFournisseur';
 import { InventaireTheorique } from './pages/rapports/InventaireTheorique';
 import { ConsommationsClients } from './pages/rapports/ConsommationsClients';
+import { RuptureStock } from './pages/rapports/RuptureStock';
+import { StockBas } from './pages/rapports/StockBas';
 import { DevisList } from './pages/facturation/DevisList';
 import { DevisForm } from './pages/facturation/DevisForm';
 import { DevisDetails } from './pages/facturation/DevisDetails';
@@ -96,6 +100,7 @@ function App() {
           <Route path="validation/bon-commande" element={<ValidationBonCommande />} />
           <Route path="validation/entrer-stock" element={<EntrerStock />} />
           <Route path="validation/periode-inventaire" element={<PeriodeInventaire />} />
+          <Route path="validation/saisie-inventaire" element={<SaisieInventaire />} />
           <Route path="validation/ajustement" element={<Ajustement />} />
           <Route path="validation/ajustement-produit" element={<AjustementProduit />} />
           <Route path="configuration/zone" element={<ConfigurationZone />} />
@@ -112,6 +117,8 @@ function App() {
           <Route path="stock/entree" element={<EntreeStockForm />} />
           <Route path="stock/sortie" element={<SortieStockForm />} />
           <Route path="stock/retour" element={<RetourStock />} />
+          <Route path="stock/retour/creer" element={<RetourForm />} />
+          <Route path="stock/retour/:id/modifier" element={<RetourForm />} />
           <Route path="stock/retour/:id" element={<RetourDetail />} />
           <Route path="recettes/creation" element={<FicheTechniqueList />} />
           <Route path="recettes/creation/nouveau" element={<FicheTechniqueForm />} />
@@ -142,6 +149,8 @@ function App() {
           <Route path="rapports/fournisseur" element={<RapportFournisseur />} />
           <Route path="rapports/inventaire-theorique" element={<InventaireTheorique />} />
           <Route path="rapports/consommations" element={<ConsommationsClients />} />
+          <Route path="rapports/rupture-stock" element={<RuptureStock />} />
+          <Route path="rapports/stock-bas" element={<StockBas />} />
           <Route path="configuration/utilisateurs" element={<ConfigurationUtilisateurs />} />
           <Route path="configuration/utilisateurs/nouveau" element={<ConfigurationUtilisateurForm />} />
           <Route path="configuration/utilisateurs/:id/modifier" element={<ConfigurationUtilisateurForm />} />

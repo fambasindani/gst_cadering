@@ -3,9 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '../components/ui/select';
+import { SearchableSelect } from '../components/ui/SearchableSelect';
 import { Card, CardContent } from '../components/ui/card';
 import {
   Building2, Plane, Package, MapPin, Mail, Phone,
@@ -149,7 +147,7 @@ export function PartenaireForm() {
       )}
 
       <form onSubmit={handleSubmit}>
-        <Card className="border-0 shadow-sm overflow-hidden">
+        <Card className="border-0 shadow-sm">
           <div className="h-1.5 bg-gradient-to-r from-royal-500 to-royal-700" />
           <CardContent className="p-6">
             <div className="flex items-center gap-2 pb-4 border-b border-gray-100 mb-5">
@@ -188,7 +186,7 @@ export function PartenaireForm() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm overflow-hidden mt-6">
+        <Card className="border-0 shadow-sm mt-6">
           <div className="h-1.5 bg-gradient-to-r from-emerald-500 to-emerald-700" />
           <CardContent className="p-6 space-y-5">
             <div className="flex items-center gap-2 pb-3 border-b border-gray-100">
@@ -249,14 +247,14 @@ export function PartenaireForm() {
                 <LabelIcon icon={MapPin}>Ville</LabelIcon>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
-                  <Select value={form.id_ville} onValueChange={(value) => handleChange('id_ville', value)}>
-                    <SelectTrigger className="pl-10 h-11 border-gray-200 shadow-sm">
-                      <SelectValue placeholder="Sélectionner une ville" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {villes.map((v) => (<SelectItem key={v.id} value={String(v.id)}>{v.nom}</SelectItem>))}
-                    </SelectContent>
-                  </Select>
+                  <SearchableSelect
+                    options={villes.map(v => ({ id: v.id, nom: v.nom }))}
+                    value={form.id_ville}
+                    onValueChange={(value) => handleChange('id_ville', value)}
+                    placeholder="Sélectionner une ville"
+                    searchPlaceholder="Rechercher une ville..."
+                    error={errors.id_ville}
+                  />
                 </div>
               </div>
             </div>
@@ -272,16 +270,18 @@ export function PartenaireForm() {
                     <LabelIcon icon={Building2}>Type client</LabelIcon>
                     <div className="relative">
                       <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
-                      <Select value={form.type_client} onValueChange={(value) => handleChange('type_client', value)}>
-                        <SelectTrigger className="pl-10 h-11 border-gray-200 shadow-sm">
-                          <SelectValue placeholder="Type de client" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="aerien">Aérien</SelectItem>
-                          <SelectItem value="non_aerien">Non Aérien</SelectItem>
-                          <SelectItem value="both">Les deux</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <SearchableSelect
+                        options={[
+                          { id: 1, nom: 'Aérien' },
+                          { id: 2, nom: 'Non Aérien' },
+                          { id: 3, nom: 'Les deux' },
+                        ]}
+                        value={form.type_client}
+                        onValueChange={(value) => handleChange('type_client', value)}
+                        placeholder="Type de client"
+                        searchPlaceholder="Rechercher un type..."
+                        error={errors.type_client}
+                      />
                     </div>
                   </div>
                   {showIata && (
@@ -301,7 +301,7 @@ export function PartenaireForm() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm overflow-hidden mt-6">
+        <Card className="border-0 shadow-sm mt-6">
           <div className="h-1.5 bg-gradient-to-r from-sky-500 to-sky-700" />
           <CardContent className="p-6">
             <div className="flex items-center gap-2 pb-3 border-b border-gray-100 mb-4">

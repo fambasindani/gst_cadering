@@ -24,10 +24,18 @@ class InventaireController extends Controller
             $periodeId = $request->input('periode_id');
             $villeId = $request->input('ville_id');
             $produitId = $request->input('produit_id');
+            $search = $request->input('search');
             $sortBy = $request->input('sort_by', 'id');
             $sortOrder = $request->input('sort_order', 'desc');
 
             $query = Inventaire::with(['periodeInventaire', 'produit', 'ville', 'utilisateur']);
+
+            if ($search) {
+                $query->whereHas('produit', function ($q) use ($search) {
+                    $q->where('nom', 'like', "%{$search}%")
+                      ->orWhere('code_article', 'like', "%{$search}%");
+                });
+            }
 
             if ($periodeId) {
                 $query->where('id_periode_inventaire', $periodeId);
@@ -258,6 +266,11 @@ class InventaireController extends Controller
             if ($inventaires->isEmpty()) {
                 return response()->json([
                     'success' => true,
+                    'data' => [
+                        'periode' => $periode->libelle,
+                        'total_ecart' => 0,
+                        'ajustements' => [],
+                    ],
                     'message' => 'Aucun écart à ajuster'
                 ]);
             }

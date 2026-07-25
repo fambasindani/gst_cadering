@@ -6,12 +6,6 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '../components/ui/table';
 import { Badge } from '../components/ui/badge';
-import {
-  Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious,
-} from '../components/ui/pagination';
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '../components/ui/select';
 import { Modal } from '../components/ui/modal';
 import { useToast } from '../hooks/useToast';
 import { periodeInventaireService } from '../services/periode-inventaire';
@@ -21,7 +15,6 @@ import {
   Search, RefreshCw, FileText, Package, TrendingUp, TrendingDown, Minus, Loader2, Calendar,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { formatCurrency } from '../lib/format';
 
 export function Ajustement() {
   const { toast } = useToast();
@@ -175,7 +168,7 @@ export function Ajustement() {
                         {new Date(p.date_debut).toLocaleDateString('fr-FR')} - {new Date(p.date_fin).toLocaleDateString('fr-FR')}
                       </TableCell>
                       <TableCell className="text-right font-mono text-sm font-medium text-gray-900">
-                        {p.inventaires ? formatCurrency(p.inventaires.reduce((s, inv) => s + (inv.ecart || 0), 0), 'EUR') : '-'}
+                        {p.inventaires ? `${p.inventaires.reduce((s, inv) => s + (inv.ecart || 0), 0)}` : '-'}
                       </TableCell>
                       <TableCell className="text-center">
                         <Button
@@ -219,7 +212,7 @@ export function Ajustement() {
                 'text-lg font-bold font-mono',
                 totalEcart > 0 ? 'text-green-600' : totalEcart < 0 ? 'text-red-600' : 'text-gray-600',
               )}>
-                {formatCurrency(totalEcart, 'EUR')}
+                {totalEcart > 0 ? '+' : ''}{totalEcart}
               </span>
             </div>
 

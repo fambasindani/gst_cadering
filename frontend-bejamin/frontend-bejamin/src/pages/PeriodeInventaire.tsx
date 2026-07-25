@@ -19,7 +19,7 @@ import { periodeInventaireService } from '../services/periode-inventaire';
 import { bonCommandeService } from '../services/bon-commande';
 import type { PeriodeInventaire } from '../types/validation';
 import {
-  Plus, Search, RefreshCw, Calendar, Play, Square, Pencil, Trash2, Eye, Loader2, FileText,
+  Plus, Search, RefreshCw, Calendar, Play, Square, Pencil, Trash2, Eye, Loader2,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -49,6 +49,8 @@ export function PeriodeInventaire() {
 
   const [deleteTarget, setDeleteTarget] = useState<PeriodeInventaire | null>(null);
   const [deleting, setDeleting] = useState(false);
+
+  const [detailPeriode, setDetailPeriode] = useState<PeriodeInventaire | null>(null);
 
   const [villes, setVilles] = useState<{ id: number; nom: string }[]>([]);
 
@@ -226,7 +228,7 @@ export function PeriodeInventaire() {
 
     return (
       <div className="flex items-center justify-center gap-1">
-        <Button variant="ghost" size="sm"
+        <Button variant="ghost" size="sm" onClick={() => setDetailPeriode(item)}
           className="h-8 w-8 p-0 text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-lg" title="Voir">
           <Eye className="w-4 h-4" />
         </Button>
@@ -452,6 +454,57 @@ export function PeriodeInventaire() {
             </Button>
           </div>
         </form>
+      </SlidePanel>
+
+      <SlidePanel
+        isOpen={!!detailPeriode}
+        onClose={() => setDetailPeriode(null)}
+        title={`Détails - ${detailPeriode?.libelle ?? ''}`}
+        width="md"
+      >
+        {detailPeriode && (
+          <div className="space-y-5">
+            <div>
+              <h3 className="text-sm font-medium text-white/60 mb-1">Libellé</h3>
+              <p className="text-white text-base">{detailPeriode.libelle}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <h3 className="text-sm font-medium text-white/60 mb-1">Date début</h3>
+                <p className="text-white text-base">{detailPeriode.date_debut?.slice(0, 10)}</p>
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-white/60 mb-1">Date fin</h3>
+                <p className="text-white text-base">{detailPeriode.date_fin?.slice(0, 10)}</p>
+              </div>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-white/60 mb-1">Ville</h3>
+              <p className="text-white text-base">{detailPeriode.ville?.nom ?? '—'}</p>
+            </div>
+            <div>
+              <h3 className="text-sm font-medium text-white/60 mb-1">Statut</h3>
+              <Badge variant={STATUT_STYLES[detailPeriode.statut]?.variant ?? 'info'}>
+                {STATUT_STYLES[detailPeriode.statut]?.label ?? detailPeriode.statut}
+              </Badge>
+            </div>
+            {detailPeriode.description && (
+              <div>
+                <h3 className="text-sm font-medium text-white/60 mb-1">Description</h3>
+                <p className="text-white text-base whitespace-pre-wrap">{detailPeriode.description}</p>
+              </div>
+            )}
+            <div className="pt-4 border-t border-royal-700">
+              <Button
+                type="button"
+                onClick={() => setDetailPeriode(null)}
+                className="h-11 px-6 border border-royal-600 bg-royal-700 text-white/80 hover:bg-royal-600 hover:text-white rounded-lg"
+              >
+                Fermer
+              </Button>
+            </div>
+          </div>
+        )}
       </SlidePanel>
 
       <ConfirmModal

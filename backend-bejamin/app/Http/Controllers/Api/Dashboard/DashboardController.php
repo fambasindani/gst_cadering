@@ -256,6 +256,7 @@ class DashboardController extends Controller
                         'retours_en_attente' => $retoursEnAttente,
                         'factures_impayees' => $facturesImpayees,
                         'lots_peremption_proche' => $lotsPeremptionProche,
+                        'produits_stock_bas' => $produitsStockBas->count(),
                     ],
 
                     // Graphiques / Tendances

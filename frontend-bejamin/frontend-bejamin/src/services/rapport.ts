@@ -11,6 +11,8 @@ import type {
   FournisseurRapport,
   InventaireRapportData,
   ConsommationsClientsData,
+  RuptureStockData,
+  StockBasData,
 } from '../types/rapport';
 
 export const rapportService = {
@@ -43,4 +45,10 @@ export const rapportService = {
 
   consommationsClients: (params?: Record<string, string>) =>
     api.get<RapportResponse<ConsommationsClientsData>>('/rapports/consommations-clients', { params }),
+
+  ruptureStock: (params?: Record<string, string>) =>
+    api.get<RapportResponse<RuptureStockData>>('/rapports/rupture-stock', { params }),
+
+  stockBas: (params?: Record<string, string>) =>
+    api.get<RapportResponse<StockBasData>>('/rapports/stock-bas', { params }),
 };

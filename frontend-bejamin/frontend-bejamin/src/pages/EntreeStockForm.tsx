@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '../components/ui/select';
+import { SearchableSelect } from '../components/ui/SearchableSelect';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -68,8 +66,9 @@ export function EntreeStockForm() {
         setDeleteTarget(null);
         fetchData();
       }
-    } catch {
-      toast('Erreur lors de la suppression', 'error');
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      toast(error.message || 'Erreur lors de la suppression', 'error');
     }
   };
 
@@ -151,7 +150,7 @@ export function EntreeStockForm() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="overflow-x-auto rounded-lg border border-gray-200">
+            <div className="rounded-lg border border-gray-200">
               <Table>
                 <TableHeader className="bg-gray-50">
                   <TableRow>
@@ -187,7 +186,7 @@ export function EntreeStockForm() {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto rounded-lg border border-gray-200">
+              <div className="rounded-lg border border-gray-200">
                 <Table>
                   <TableHeader className="bg-gray-50">
                     <TableRow>
@@ -236,22 +235,22 @@ export function EntreeStockForm() {
                                 >
                                   {rejectingId === m.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
                                 </button>
+                                <button
+                                  onClick={() => { setEditingMvt(m); setSlideOpen(true); }}
+                                  className="p-1.5 rounded text-gray-500 hover:text-royal-700 hover:bg-royal-50 transition-colors"
+                                  title="Modifier"
+                                >
+                                  <Pencil className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => setDeleteTarget(m)}
+                                  className="p-1.5 rounded text-gray-500 hover:text-red-700 hover:bg-red-50 transition-colors"
+                                  title="Supprimer"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
                               </>
                             ) : null}
-                            <button
-                              onClick={() => { setEditingMvt(m); setSlideOpen(true); }}
-                              className="p-1.5 rounded text-gray-500 hover:text-royal-700 hover:bg-royal-50 transition-colors"
-                              title="Modifier"
-                            >
-                              <Pencil className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => setDeleteTarget(m)}
-                              className="p-1.5 rounded text-gray-500 hover:text-red-700 hover:bg-red-50 transition-colors"
-                              title="Supprimer"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -280,8 +279,8 @@ export function EntreeStockForm() {
       />
 
       <ConfirmModal
-        open={Boolean(deleteTarget)}
-        onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}
+        isOpen={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
         title="Supprimer l'entrée"
         message={`Supprimer l'entrée du lot "${deleteTarget?.lot?.numero_lot || '-'}" ?`}
@@ -358,21 +357,25 @@ function EntreeFormSlide({ isOpen, editingMvt, onClose, onSuccess }: { isOpen: b
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label className="block text-sm font-medium text-white/80 mb-1">Type d'entrée *</label>
-          <Select value={form.id_type_mouvement} onValueChange={v => setForm(f => ({ ...f, id_type_mouvement: v }))}>
-            <SelectTrigger className="w-full bg-white/10 border-white/20 text-white"><SelectValue placeholder="Type de mouvement" /></SelectTrigger>
-            <SelectContent>
-              {types.map(t => <SelectItem key={t.id} value={String(t.id)}>{t.libelle}</SelectItem>)}
-            </SelectContent>
-          </Select>
+          <SearchableSelect
+            options={types.map(t => ({ id: t.id, nom: t.libelle }))}
+            value={form.id_type_mouvement}
+            onValueChange={v => setForm(f => ({ ...f, id_type_mouvement: v }))}
+            placeholder="Type de mouvement"
+            searchPlaceholder="Rechercher un type..."
+            className="w-full bg-white/10 border-white/20 text-white"
+          />
         </div>
         <div>
           <label className="block text-sm font-medium text-white/80 mb-1">Lot *</label>
-          <Select value={form.id_lot} onValueChange={v => setForm(f => ({ ...f, id_lot: v }))}>
-            <SelectTrigger className="w-full bg-white/10 border-white/20 text-white"><SelectValue placeholder="Sélectionner un lot" /></SelectTrigger>
-            <SelectContent>
-              {lots.map(l => <SelectItem key={l.id} value={String(l.id)}>{l.numero_lot}{l.produit ? ` - ${l.produit.nom}` : ''} (dispo: {l.quantite_disponible})</SelectItem>)}
-            </SelectContent>
-          </Select>
+          <SearchableSelect
+            options={lots.map(l => ({ id: l.id, nom: l.numero_lot, sousTitre: `${l.produit?.nom ? `${l.produit.nom} - ` : ''}dispo: ${l.quantite_disponible}` }))}
+            value={form.id_lot}
+            onValueChange={v => setForm(f => ({ ...f, id_lot: v }))}
+            placeholder="Sélectionner un lot"
+            searchPlaceholder="Rechercher un lot..."
+            className="w-full bg-white/10 border-white/20 text-white"
+          />
         </div>
         <div>
           <label className="block text-sm font-medium text-white/80 mb-1">Quantité *</label>

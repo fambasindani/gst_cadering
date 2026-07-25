@@ -197,26 +197,64 @@ class LotController extends Controller
         try {
             $lot = Lot::findOrFail($id);
 
+            if ($lot->statut_validation === 'VALIDÉ') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Un lot déjà validé ne peut pas être modifié'
+                ], 403);
+            }
+
             $validated = $request->validate([
                 'id_zone' => 'sometimes|required|exists:zones,id',
                 'id_emplacement' => 'nullable|exists:emplacements,id',
-                'date_peremption' => 'sometimes|required|date|after:today',
+                'date_peremption' => 'sometimes|required|date',
                 'commentaire' => 'nullable|string',
+                'numero_lot' => 'sometimes|required|string|max:50',
+                'prix_achat_ht_unitaire' => 'nullable|numeric|min:0',
+                'id_devise' => 'nullable|exists:devises,id',
+                'id_partenaire' => 'nullable|exists:partenaires,id',
+                'quantite_recue' => 'sometimes|required|integer|min:0',
+                'date_fabrication' => 'nullable|date',
             ]);
 
+            if (isset($validated['quantite_recue'])) {
+                $validated['quantite_disponible'] = $validated['quantite_recue'];
+            }
+
             $lot->update($validated);
+
+            $champs = array_keys($validated);
+            $message = 'Lot mis à jour avec succès';
+            if (count($champs) === 1) {
+                $labels = [
+                    'id_zone' => 'la zone',
+                    'id_emplacement' => "l'emplacement",
+                    'date_peremption' => 'la date de péremption',
+                    'commentaire' => 'le commentaire',
+                    'numero_lot' => 'le numéro de lot',
+                    'prix_achat_ht_unitaire' => 'le prix unitaire',
+                    'id_devise' => 'la devise',
+                    'id_partenaire' => 'le fournisseur',
+                    'quantite_recue' => 'la quantité',
+                    'date_fabrication' => 'la date de fabrication',
+                ];
+                $message = $labels[$champs[0]] ?? 'Le lot';
+                $message = ucfirst($message) . ' modifié avec succès';
+            }
 
             return response()->json([
                 'success' => true,
                 'data' => $lot->load(['produit', 'ville', 'zone']),
-                'message' => 'Lot mis à jour avec succès'
+                'message' => $message
             ]);
 
         } catch (ValidationException $e) {
+            $errors = $e->errors();
+            $premier = collect($errors)->flatten()->first() ?? 'Erreur de validation';
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur de validation',
-                'errors' => $e->errors()
+                'message' => $premier,
+                'errors' => $errors
             ], 422);
         } catch (\Exception $e) {
             return response()->json([

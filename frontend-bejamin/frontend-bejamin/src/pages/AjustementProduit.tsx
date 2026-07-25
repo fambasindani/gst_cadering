@@ -15,7 +15,6 @@ import { periodeInventaireService } from '../services/periode-inventaire';
 import type { PeriodeInventaire, Inventaire } from '../types/validation';
 import { Search, RefreshCw, FileText, TrendingUp, TrendingDown, Minus, Loader2 } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { formatCurrency } from '../lib/format';
 
 export function AjustementProduit() {
   const { toast } = useToast();
@@ -29,12 +28,14 @@ export function AjustementProduit() {
   const [total, setTotal] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [generating, setGenerating] = useState(false);
+  const [searchInput, setSearchInput] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
   const fetchPeriodes = useCallback(async () => {
     try {
-      const res = await periodeInventaireService.list({ per_page: '200' });
+      const res = await periodeInventaireService.list({ per_page: '200', sort_by: 'id', sort_order: 'desc' });
       if (res.success) {
-        setPeriodes(res.data.data);
+        setPeriodes(res.data.data.filter((p) => p.statut === 'CLOTURE'));
       }
     } catch {
       //
@@ -55,7 +56,7 @@ export function AjustementProduit() {
     }
     setLoading(true);
     try {
-      const res = await inventaireService.list({ periode_id: selectedPeriodeId, per_page: String(pageSize), page: String(currentPage) });
+      const res = await inventaireService.list({ periode_id: selectedPeriodeId, per_page: String(pageSize), page: String(currentPage), ...(searchTerm && { search: searchTerm }) });
       if (res.success) {
         setData(res.data.data);
         setTotal(res.data.total);
@@ -66,7 +67,7 @@ export function AjustementProduit() {
     } finally {
       setLoading(false);
     }
-  }, [selectedPeriodeId, currentPage]);
+  }, [selectedPeriodeId, currentPage, searchTerm]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -76,7 +77,8 @@ export function AjustementProduit() {
     try {
       const res = await inventaireService.generateAjustements(Number(selectedPeriodeId));
       if (res.success) {
-        toast(`${res.data.ajustements.length} ajustement${res.data.ajustements.length > 1 ? 's' : ''} généré${res.data.ajustements.length > 1 ? 's' : ''}`, 'success');
+        const ajustements = res.data?.ajustements ?? [];
+        toast(`${ajustements.length} ajustement${ajustements.length > 1 ? 's' : ''} généré${ajustements.length > 1 ? 's' : ''}`, 'success');
       }
     } catch (err: unknown) {
       const error = err as { message?: string };
@@ -149,20 +151,42 @@ export function AjustementProduit() {
           <FileText className="w-4 h-4 text-gray-400" />
           <Select
             value={selectedPeriodeId}
-            onValueChange={(v) => { setSelectedPeriodeId(v); setCurrentPage(1); }}
+            onValueChange={(v) => { setSelectedPeriodeId(v); setCurrentPage(1); setSearchInput(''); setSearchTerm(''); }}
           >
             <SelectTrigger className="w-72 h-9 bg-white border-gray-200">
-              <SelectValue placeholder="Sélectionnez une période" />
+              <SelectValue placeholder="Sélectionnez une période clôturée" />
             </SelectTrigger>
             <SelectContent>
-              {periodes.map((p) => (
-                <SelectItem key={p.id} value={String(p.id)}>
-                  {p.libelle} ({p.ville?.nom || '-'})
-                </SelectItem>
-              ))}
+              {periodes.length === 0 ? (
+                <SelectItem value="" disabled>Aucune période clôturée</SelectItem>
+              ) : (
+                periodes.map((p) => (
+                  <SelectItem key={p.id} value={String(p.id)}>
+                    {p.libelle} ({p.ville?.nom || '-'})
+                  </SelectItem>
+                ))
+              )}
             </SelectContent>
           </Select>
         </div>
+        {selectedPeriodeId && (
+          <div className="relative flex-1 w-full sm:max-w-xs">
+            <Input
+              placeholder="Rechercher un produit..."
+              className="pl-3 pr-10 border-gray-200 h-9 text-sm"
+              value={searchInput}
+              onKeyDown={(e) => { if (e.key === 'Enter') { setSearchTerm(searchInput); setCurrentPage(1); } }}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+            <button
+              type="button"
+              onClick={() => { setSearchTerm(searchInput); setCurrentPage(1); }}
+              className="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-royal-700 transition-colors"
+            >
+              <Search className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
       </div>
 
       <Card className="border-0 shadow-sm">

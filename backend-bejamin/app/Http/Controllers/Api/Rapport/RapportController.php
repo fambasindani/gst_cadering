@@ -843,4 +843,126 @@ class RapportController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * 14. Rapport Rupture de Stock (quantité = 0)
+     */
+    public function ruptureStock(Request $request)
+    {
+        try {
+            $villeId = $request->input('ville_id');
+
+            $produits = Produit::with(['categorie', 'unite'])
+                ->when($villeId, function($q) use ($villeId) {
+                    $q->whereHas('lots', fn($l) => $l->where('id_ville', $villeId));
+                })
+                ->get();
+
+            $ruptures = [];
+            foreach ($produits as $produit) {
+                $lots = $produit->lots()
+                    ->where('statut_validation', 'VALIDÉ')
+                    ->when($villeId, fn($q) => $q->where('id_ville', $villeId))
+                    ->get();
+
+                $quantiteTotale = $lots->sum('quantite_disponible');
+
+                if ($quantiteTotale === 0) {
+                    $ruptures[] = [
+                        'produit' => $produit,
+                        'quantite_totale' => 0,
+                        'seuil_alerte' => $produit->seuil_alerte ?? 0,
+                        'lots' => $lots->toArray(),
+                    ];
+                }
+            }
+
+            usort($ruptures, fn($a, $b) => $b['seuil_alerte'] - $a['seuil_alerte']);
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'ruptures' => $ruptures,
+                    'statistiques' => [
+                        'total_ruptures' => count($ruptures),
+                        'total_produits_epuises' => count($ruptures),
+                        'quantite_manquante' => array_sum(array_column($ruptures, 'seuil_alerte')),
+                    ]
+                ],
+                'message' => 'Rapport rupture de stock récupéré avec succès'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la génération du rapport',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * 15. Rapport Stock Bas (0 < quantité <= seuil_alerte)
+     */
+    public function stockBas(Request $request)
+    {
+        try {
+            $villeId = $request->input('ville_id');
+
+            $produits = Produit::with(['categorie', 'unite'])
+                ->where('actif', true)
+                ->when($villeId, function($q) use ($villeId) {
+                    $q->whereHas('lots', fn($l) => $l->where('id_ville', $villeId));
+                })
+                ->get();
+
+            $stockBas = [];
+            foreach ($produits as $produit) {
+                $lots = $produit->lots()
+                    ->with('ville', 'zone')
+                    ->when($villeId, fn($q) => $q->where('id_ville', $villeId))
+                    ->get();
+
+                $quantiteTotale = $lots->sum('quantite_disponible');
+                $seuil = $produit->seuil_alerte ?? 0;
+
+                if ($seuil > 0 && $quantiteTotale > 0 && $quantiteTotale <= $seuil) {
+                    $stockBas[] = [
+                        'produit' => $produit,
+                        'quantite_totale' => $quantiteTotale,
+                        'seuil_alerte' => $seuil,
+                        'lots' => $lots->toArray(),
+                    ];
+                }
+            }
+
+            usort($stockBas, function($a, $b) {
+                $ecartA = $a['seuil_alerte'] - $a['quantite_totale'];
+                $ecartB = $b['seuil_alerte'] - $b['quantite_totale'];
+                return $ecartB - $ecartA;
+            });
+
+            $totalStockBas = count($stockBas);
+            $quantiteManquante = array_sum(array_map(fn($r) => $r['seuil_alerte'] - $r['quantite_totale'], $stockBas));
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'stocks_bas' => $stockBas,
+                    'statistiques' => [
+                        'total_stocks_bas' => $totalStockBas,
+                        'quantite_manquante' => $quantiteManquante,
+                    ]
+                ],
+                'message' => 'Rapport stock bas récupéré avec succès'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la génération du rapport',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }

@@ -24,14 +24,14 @@ export const devisService = {
     api.post<SingleResponse<{ devis: Devis; bon_commande: unknown }>>(`/facturation/devis/${id}/transformer-commande`),
 
   getClients: (params?: Record<string, string>) =>
-    api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/partenaires/clients', { ...params, per_page: '200' }),
+    api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/partenaires/clients', { params: { ...params, per_page: '200' } }),
 
   getVilles: (params?: Record<string, string>) =>
-    api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/villes', { ...params, per_page: '200' }),
+    api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/villes', { params: { ...params, per_page: '200' } }),
 
   getDevises: (params?: Record<string, string>) =>
-    api.get<{ success: boolean; data: { data: { id: number; code: string; nom: string; symbole: string }[] } }>('/config/devises', { ...params, per_page: '200' }),
+    api.get<{ success: boolean; data: { data: { id: number; code: string; nom: string; symbole: string }[] } }>('/config/devises', { params: { ...params, per_page: '200' } }),
 
   getProduits: (params?: Record<string, string>) =>
-    api.get<{ success: boolean; data: { data: { id: number; nom: string; code_article: string }[] } }>('/config/produits', { ...params, per_page: '200' }),
+    api.get<{ success: boolean; data: { data: { id: number; nom: string; code_article: string }[] } }>('/config/produits', { params: { ...params, per_page: '200' } }),
 };

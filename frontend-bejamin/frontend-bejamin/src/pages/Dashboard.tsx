@@ -77,8 +77,9 @@ export function Dashboard() {
     ? [
         { title: 'Produits', value: data.statistiques.total_produits, icon: Package, color: 'blue' as const },
         { title: 'En stock', value: data.statistiques.produits_en_stock, icon: Warehouse, color: 'green' as const },
+        { title: 'Stock bas', value: data.statistiques.produits_stock_bas, icon: AlertTriangle, color: 'orange' as const },
+        { title: 'À valider', value: data.statistiques.commandes_en_attente, icon: FileText, color: 'purple' as const },
         { title: 'Clients Aériens', value: data.statistiques.clients_aeriens, icon: Users, color: 'indigo' as const },
-        { title: 'À valider', value: data.statistiques.commandes_en_attente, icon: FileText, color: 'orange' as const },
         { title: 'Rupture', value: data.statistiques.produits_rupture, icon: AlertTriangle, color: 'red' as const },
       ]
     : [];
@@ -95,7 +96,7 @@ export function Dashboard() {
           ) : (
             <>
               <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-                Salut {user?.full_name}
+                {user?.full_name}
               </h1>
               <p className="text-gray-500 mt-1">
                 {user?.ville?.nom}{user?.ville?.nom && user?.departement?.nom ? ' — ' : ''}{user?.departement?.nom}
@@ -103,10 +104,12 @@ export function Dashboard() {
             </>
           )}
         </div>
-        <Button className="bg-royal-700 hover:bg-royal-800 text-white shadow-lg shadow-royal-200 transition-all">
-          Administration
-          <ArrowRight className="ml-2 h-4 w-4" />
-        </Button>
+        {isAdmin || userPermissions.includes('config:utilisateurs:view') ? (
+          <Button onClick={() => navigate('/configuration/utilisateurs')} className="bg-royal-700 hover:bg-royal-800 text-white shadow-lg shadow-royal-200 transition-all">
+            Administration
+            <ArrowRight className="ml-2 h-4 w-4" />
+          </Button>
+        ) : null}
       </div>
 
       {error && (
@@ -115,9 +118,9 @@ export function Dashboard() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
         {loading
-          ? Array.from({ length: 5 }).map((_, i) => (
+          ? Array.from({ length: 6 }).map((_, i) => (
               <Card key={i} className="border-gray-100 shadow-sm">
                 <CardContent className="p-6">
                   <Skeleton width={80} height={14} />

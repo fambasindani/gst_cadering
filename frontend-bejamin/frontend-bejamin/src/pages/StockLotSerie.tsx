@@ -264,10 +264,12 @@ export function StockLotSerie() {
                                   <Barcode className="w-4 h-4" />
                                 </Button>
                               )}
-                              <Button variant="ghost" size="sm" onClick={() => navigate(`/stock/lot-serie/${l.id}/modifier`)}
-                                className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg" title="Modifier">
-                                <Edit3 className="w-4 h-4" />
-                              </Button>
+                              {l.statut_validation !== 'VALIDÉ' && (
+                                <Button variant="ghost" size="sm" onClick={() => navigate(`/stock/lot-serie/${l.id}/modifier`)}
+                                  className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg" title="Modifier">
+                                  <Edit3 className="w-4 h-4" />
+                                </Button>
+                              )}
                               {l.statut_validation === 'EN ATTENTE' && (
                                 <>
                                   <Button variant="ghost" size="sm" onClick={() => handleValidate(l.id)}
@@ -280,10 +282,12 @@ export function StockLotSerie() {
                                   </Button>
                                 </>
                               )}
-                              <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(l)}
-                                className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg" title="Supprimer">
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
+                              {l.statut_validation !== 'VALIDÉ' && (
+                                <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(l)}
+                                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg" title="Supprimer">
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>

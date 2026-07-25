@@ -271,8 +271,8 @@ export function FicheTechniqueList() {
       </Card>
 
       <ConfirmModal
-        open={Boolean(deleteTarget)}
-        onOpenChange={(o) => { if (!o) setDeleteTarget(null); }}
+        isOpen={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
         title="Supprimer la fiche technique"
         message={`Supprimer "${deleteTarget?.nom}" ? Cette action est irréversible.`}

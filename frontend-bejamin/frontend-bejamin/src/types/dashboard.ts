@@ -2,6 +2,7 @@ export interface DashboardStats {
   total_produits: number;
   produits_en_stock: number;
   produits_rupture: number;
+  produits_stock_bas: number;
   commandes_validees: number;
   commandes_en_attente: number;
   clients_aeriens: number;

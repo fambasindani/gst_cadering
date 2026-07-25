@@ -1,6 +1,5 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, Search, Menu, LogOut } from 'lucide-react';
+import { Search, Menu, LogOut } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
@@ -12,8 +11,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '../ui/dropdown-menu.tsx';
-import { Badge } from '../ui/badge';
 import { useAuthStore } from '../../store/authStore';
+import { NotificationPanel } from './NotificationPanel';
 
 interface HeaderProps {
   onMenuToggle: () => void;
@@ -22,7 +21,6 @@ interface HeaderProps {
 export function Header({ onMenuToggle }: HeaderProps) {
   const navigate = useNavigate();
   const { user, logout } = useAuthStore();
-  const [notifications] = useState(3);
 
   const handleLogout = async () => {
     await logout();
@@ -65,14 +63,7 @@ export function Header({ onMenuToggle }: HeaderProps) {
       </div>
 
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          {notifications > 0 && (
-            <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs bg-red-500 text-white">
-              {notifications}
-            </Badge>
-          )}
-        </Button>
+        <NotificationPanel />
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

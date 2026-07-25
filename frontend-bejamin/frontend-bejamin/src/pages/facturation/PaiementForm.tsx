@@ -8,6 +8,7 @@ import { Card, CardContent } from '../../components/ui/card';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '../../components/ui/select';
+import { SearchableSelect } from '../../components/ui/SearchableSelect';
 import { useToast } from '../../hooks/useToast';
 import { paiementService } from '../../services/paiement';
 import { factureService } from '../../services/facture';
@@ -21,6 +22,7 @@ export function PaiementForm() {
   const [saving, setSaving] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [factures, setFactures] = useState<{ id: number; numero_facture: string; client?: { nom: string } | null }[]>([]);
+  const [loadingFactures, setLoadingFactures] = useState(true);
 
   const [values, setValues] = useState({
     id_facture: '', montant: '', date_paiement: new Date().toISOString().split('T')[0],
@@ -28,9 +30,9 @@ export function PaiementForm() {
   });
 
   useEffect(() => {
-    factureService.list({ per_page: '200' }).then(r => {
+    factureService.list({ per_page: '500' }).then(r => {
       if (r.success) setFactures(r.data.data.map(f => ({ id: f.id, numero_facture: f.numero_facture, client: f.client })));
-    }).catch(() => {});
+    }).catch(() => {}).finally(() => setLoadingFactures(false));
   }, []);
 
   const set = (field: string, value: string) => {
@@ -89,14 +91,20 @@ export function PaiementForm() {
 
             <div>
               <LabelIcon required error={fieldErrors.id_facture}>Facture</LabelIcon>
-              <Select value={values.id_facture} onValueChange={(v) => set('id_facture', v)}>
-                <SelectTrigger className={cn('w-full h-11 border-gray-200 shadow-sm', errorClass(fieldErrors.id_facture))}>
-                  <SelectValue placeholder="Sélectionner une facture" />
-                </SelectTrigger>
-                <SelectContent>
-                  {factures.map((f) => (<SelectItem key={f.id} value={String(f.id)}>{f.numero_facture} - {f.client?.nom || ''}</SelectItem>))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center gap-2">
+                <div className="flex-1">
+                  <SearchableSelect
+                    options={factures.map((f) => ({ id: f.id, nom: `${f.numero_facture} - ${f.client?.nom || ''}` }))}
+                    value={values.id_facture}
+                    onValueChange={(v) => set('id_facture', v)}
+                    placeholder="Sélectionner une facture"
+                    searchPlaceholder="Rechercher une facture..."
+                    error={fieldErrors.id_facture}
+                    loading={loadingFactures}
+                  />
+                </div>
+                <span className="text-xs text-gray-400 whitespace-nowrap mt-1.5">{factures.length} facture{factures.length > 1 ? 's' : ''}</span>
+              </div>
               {fieldErrors.id_facture && <p className="text-xs text-red-500 mt-1">{fieldErrors.id_facture}</p>}
             </div>
 

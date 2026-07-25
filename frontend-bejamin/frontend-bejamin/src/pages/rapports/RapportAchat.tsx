@@ -9,7 +9,7 @@ import { RapportTablePDF } from '../../components/pdf/RapportTablePDF';
 import type { Column } from '../../components/pdf/RapportTablePDF';
 import { rapportService } from '../../services/rapport';
 import type { AchatFullData } from '../../types/rapport';
-import { RefreshCw, FileText, Download, DollarSign, Loader2 } from 'lucide-react';
+import { RefreshCw, FileText, Download, DollarSign } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { formatCurrency } from '../../lib/format';
 import { DataTablePagination } from '../../components/ui/DataTablePagination';
@@ -57,11 +57,11 @@ export function RapportAchat() {
   };
 
   const pdfRows = achats.map((a) => ({
-    numero: a.numero || `#${a.id}`,
-    date: formatDate(a.date_commande || a.created_at),
-    fournisseur: a.fournisseur?.nom || '-',
-    ville: a.fournisseur?.ville || '-',
-    montant: formatCurrency(Number(a.montant_ht) || 0),
+    numero: a.numero_commande || `#${a.id}`,
+    date: formatDate(a.date_commande || a.created_at || ''),
+    fournisseur: a.partenaire?.nom || '-',
+    ville: a.ville_destination?.nom || '-',
+    montant: formatCurrency(Number(a.montant_total_ht) || 0),
   }));
 
   const nbFournisseurs = stats?.par_fournisseur?.length ?? 0;
@@ -238,11 +238,11 @@ export function RapportAchat() {
                 <TableBody>
                   {displayed.map((a, i) => (
                     <TableRow key={a.id} className={cn('hover:bg-royal-50/50 transition-colors', i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50')}>
-                      <TableCell className="font-mono text-sm font-medium text-royal-700">{a.numero || `#${a.id}`}</TableCell>
-                      <TableCell className="text-sm text-gray-600">{formatDate(a.date_commande || a.created_at)}</TableCell>
-                      <TableCell className="font-medium text-gray-900">{a.fournisseur?.nom || '-'}</TableCell>
-                      <TableCell className="text-sm text-gray-600">{a.fournisseur?.ville || '-'}</TableCell>
-                      <TableCell className="text-right font-mono text-sm font-semibold text-gray-900">{formatCurrency(Number(a.montant_ht) || 0)}</TableCell>
+                      <TableCell className="font-mono text-sm font-medium text-royal-700">{a.numero_commande || `#${a.id}`}</TableCell>
+                      <TableCell className="text-sm text-gray-600">{formatDate(a.date_commande || a.created_at || '')}</TableCell>
+                      <TableCell className="font-medium text-gray-900">{a.partenaire?.nom || '-'}</TableCell>
+                      <TableCell className="text-sm text-gray-600">{a.ville_destination?.nom || '-'}</TableCell>
+                      <TableCell className="text-right font-mono text-sm font-semibold text-gray-900">{formatCurrency(Number(a.montant_total_ht) || 0)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

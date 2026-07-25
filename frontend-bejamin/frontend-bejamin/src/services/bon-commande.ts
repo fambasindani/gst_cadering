@@ -27,16 +27,16 @@ export const bonCommandeService = {
     api.patch<BonCommandeResponse>(`/config/bons-commande/${id}/annuler`),
 
   getPartenaires: (params?: Record<string, string>) =>
-    api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/partenaires', { ...params, per_page: '200' }),
+    api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/partenaires', { params: { ...params, per_page: '200' } }),
 
   getVilles: (params?: Record<string, string>) =>
-    api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/villes', { ...params, per_page: '200' }),
+    api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/villes', { params: { ...params, per_page: '200' } }),
 
   getDevises: (params?: Record<string, string>) =>
-    api.get<{ success: boolean; data: { data: { id: number; code: string; nom: string; symbole: string }[] } }>('/config/devises', { ...params, per_page: '200' }),
+    api.get<{ success: boolean; data: { data: { id: number; code: string; nom: string; symbole: string }[] } }>('/config/devises', { params: { ...params, per_page: '200' } }),
 
   getProduits: (params?: Record<string, string>) =>
-    api.get<{ success: boolean; data: { data: { id: number; nom: string; code_article: string }[] } }>('/config/produits', { ...params, per_page: '200' }),
+    api.get<{ success: boolean; data: { data: { id: number; nom: string; code_article: string }[] } }>('/config/produits', { params: { ...params, per_page: '200' } }),
 
   receive: (id: number, data: { receptions: ReceptionItem[] }) =>
     api.patch<BonCommandeResponse>(`/config/bons-commande/${id}/recevoir`, data),

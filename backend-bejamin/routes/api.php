@@ -32,7 +32,8 @@ use App\Http\Controllers\Api\Config\{
     RetourController,
     InventaireController,
     FicheTechniqueController,
-    EntreeRecetteController
+    EntreeRecetteController,
+    NotificationController
 };
 
 /*
@@ -279,6 +280,14 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
         // ✅ ============================================================
         Route::post('entree-recette/produire', [EntreeRecetteController::class, 'produire'])
             ->middleware('permission:config:recette:create');
+
+        // ============================================================
+        // NOTIFICATIONS
+        // ============================================================
+        Route::get('notifications', [NotificationController::class, 'index'])->middleware('permission:config:notifications:view');
+        Route::get('notifications/unread-count', [NotificationController::class, 'unreadCount'])->middleware('permission:config:notifications:view');
+        Route::patch('notifications/{id}/read', [NotificationController::class, 'markAsRead'])->middleware('permission:config:notifications:update');
+        Route::patch('notifications/read-all', [NotificationController::class, 'markAllAsRead'])->middleware('permission:config:notifications:update');
     });
 
     // ============================================================
@@ -335,6 +344,8 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
         Route::get('inventaire-theorique', [RapportController::class, 'inventaireTheorique'])->middleware('permission:rapport:inventaire');
         Route::get('inventaire-valorisee', [RapportController::class, 'inventaireTheoriqueValorisee'])->middleware('permission:rapport:inventaire');
         Route::get('consommations-clients', [RapportController::class, 'consommationsClients'])->middleware('permission:rapport:client');
+        Route::get('rupture-stock', [RapportController::class, 'ruptureStock'])->middleware('permission:rapport:stock');
+        Route::get('stock-bas', [RapportController::class, 'stockBas'])->middleware('permission:rapport:stock');
     });
 
     // ============================================================

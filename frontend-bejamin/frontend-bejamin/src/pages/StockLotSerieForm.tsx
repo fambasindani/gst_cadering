@@ -2,15 +2,13 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '../components/ui/select';
+import { SearchableSelect } from '../components/ui/SearchableSelect';
 import { Card, CardContent } from '../components/ui/card';
 import { useToast } from '../hooks/useToast';
 import { lotService } from '../services/lot';
 import { bonCommandeService } from '../services/bon-commande';
 import {
-  ArrowLeft, Save, Loader2, Package, Barcode, MapPin, Building2, CalendarDays, DollarSign, MessageSquare, Tag, Warehouse,
+  ArrowLeft, Save, Loader2, Package, Barcode, MapPin, Building2, CalendarDays, DollarSign, MessageSquare, Tag, Warehouse, AlertTriangle,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -24,6 +22,9 @@ export function StockLotSerieForm() {
 
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [lotStatut, setLotStatut] = useState<string | null>(null);
+  const estVerrouille = isEdit && lotStatut === 'VALIDÉ';
   const [produits, setProduits] = useState<SelectOption[]>([]);
   const [villes, setVilles] = useState<SelectOption[]>([]);
   const [zones, setZones] = useState<SelectOption[]>([]);
@@ -53,9 +54,11 @@ export function StockLotSerieForm() {
 
   useEffect(() => {
     if (!id) return;
+    setFieldErrors({});
     lotService.get(Number(id)).then(res => {
       if (res.success) {
         const l = res.data;
+        setLotStatut(l.statut_validation);
         setForm({
           id_produit: String(l.id_produit), numero_lot: l.numero_lot || '',
           id_ville: String(l.id_ville), id_zone: String(l.id_zone),
@@ -99,6 +102,7 @@ export function StockLotSerieForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
+    setFieldErrors({});
     try {
       const payload: Record<string, string | number> = {
         id_produit: Number(form.id_produit), numero_lot: form.numero_lot,
@@ -120,7 +124,12 @@ export function StockLotSerieForm() {
       }
       navigate('/stock/lot-serie');
     } catch (err: unknown) {
-      const error = err as { message?: string };
+      const error = err as { errors?: Record<string, string[]>; message?: string };
+      if (error.errors) {
+        const flat: Record<string, string> = {};
+        for (const [k, msgs] of Object.entries(error.errors)) flat[k] = Array.isArray(msgs) ? msgs[0] : String(msgs);
+        setFieldErrors(flat);
+      }
       toast(error.message || "Erreur lors de l'enregistrement", 'error');
     } finally {
       setSaving(false);
@@ -136,6 +145,11 @@ export function StockLotSerieForm() {
   }
 
   const isValid = form.id_produit && form.numero_lot && form.id_ville && form.id_zone && form.quantite_recue && form.date_peremption;
+
+  const errorClass = (field: string) => fieldErrors[field] ? 'border-red-400 focus-visible:border-red-400 focus-visible:ring-red-400/30' : 'border-gray-200';
+
+  const FieldError = ({ field }: { field: string }) =>
+    fieldErrors[field] ? <p className="text-xs text-red-500 mt-1">{fieldErrors[field]}</p> : null;
 
   const FieldCard = ({ children, className }: { children: React.ReactNode; className?: string }) => (
     <div className={cn("p-5 rounded-xl border border-gray-100 bg-white/50 space-y-4", className)}>
@@ -167,9 +181,15 @@ export function StockLotSerieForm() {
       </div>
 
       <form onSubmit={handleSubmit}>
+        {estVerrouille && (
+          <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+            <AlertTriangle className="w-4 h-4 shrink-0" />
+            Ce lot a déjà été validé et ne peut pas être modifié
+          </div>
+        )}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <Card className="border-0 shadow-sm overflow-hidden">
+            <Card className="border-0 shadow-sm">
               <div className="h-1.5 bg-gradient-to-r from-royal-500 to-royal-700" />
               <CardContent className="p-6 space-y-6">
                 <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
@@ -179,28 +199,23 @@ export function StockLotSerieForm() {
 
                 <div>
                   <Label icon={Package} required>Produit</Label>
-                  <Select value={form.id_produit} onValueChange={v => setForm(f => ({ ...f, id_produit: v }))}>
-                    <SelectTrigger className="w-full h-11 border-gray-200 shadow-sm">
-                      <SelectValue placeholder="Sélectionner un produit" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {produits.map(p => (
-                        <SelectItem key={p.id} value={String(p.id)}>
-                          <span className="flex items-center gap-2">
-                            <span className="font-medium">{p.nom}</span>
-                            <span className="text-xs text-gray-400">({p.code})</span>
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <SearchableSelect
+                    options={produits.map(p => ({ id: p.id, nom: p.nom, sousTitre: p.code }))}
+                    value={form.id_produit}
+                    onValueChange={v => { setFieldErrors(f => { const n = { ...f }; delete n.id_produit; return n; }); setForm(f => ({ ...f, id_produit: v })); }}
+                    placeholder="Sélectionner un produit"
+                    searchPlaceholder="Rechercher un produit..."
+                    error={fieldErrors.id_produit}
+                  />
+                  <FieldError field="id_produit" />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label icon={Tag} required>Numéro de lot</Label>
-                    <Input value={form.numero_lot} onChange={e => setForm(f => ({ ...f, numero_lot: e.target.value }))}
-                      className="h-11 border-gray-200 shadow-sm" placeholder="Ex: LOT-2024-001" />
+                    <Input value={form.numero_lot} onChange={e => { setFieldErrors(f => { const n = { ...f }; delete n.numero_lot; return n; }); setForm(f => ({ ...f, numero_lot: e.target.value })); }}
+                      className={cn('h-11 border-gray-200 shadow-sm', errorClass('numero_lot'))} placeholder="Ex: LOT-2024-001" />
+                    <FieldError field="numero_lot" />
                   </div>
                   <div>
                     <Label icon={Barcode}>Code QR</Label>
@@ -212,27 +227,30 @@ export function StockLotSerieForm() {
                   <div>
                     <Label icon={Warehouse} required>Quantité reçue</Label>
                     <Input type="number" min="1" value={form.quantite_recue}
-                      onChange={e => setForm(f => ({ ...f, quantite_recue: e.target.value }))}
-                      className="h-11 border-gray-200 shadow-sm" placeholder="0" />
+                      onChange={e => { setFieldErrors(f => { const n = { ...f }; delete n.quantite_recue; return n; }); setForm(f => ({ ...f, quantite_recue: e.target.value })); }}
+                      className={cn('h-11 border-gray-200 shadow-sm', errorClass('quantite_recue'))} placeholder="0" />
+                    <FieldError field="quantite_recue" />
                   </div>
                   <div>
                     <Label icon={CalendarDays} required>Date de péremption</Label>
                     <Input type="date" value={form.date_peremption}
-                      onChange={e => setForm(f => ({ ...f, date_peremption: e.target.value }))}
-                      className="h-11 border-gray-200 shadow-sm" />
+                      onChange={e => { setFieldErrors(f => { const n = { ...f }; delete n.date_peremption; return n; }); setForm(f => ({ ...f, date_peremption: e.target.value })); }}
+                      className={cn('h-11 border-gray-200 shadow-sm', errorClass('date_peremption'))} />
+                    <FieldError field="date_peremption" />
                   </div>
                 </div>
 
                 <div>
                   <Label icon={CalendarDays}>Date de fabrication</Label>
                   <Input type="date" value={form.date_fabrication}
-                    onChange={e => setForm(f => ({ ...f, date_fabrication: e.target.value }))}
-                    className="h-11 border-gray-200 shadow-sm" />
+                    onChange={e => { setFieldErrors(f => { const n = { ...f }; delete n.date_fabrication; return n; }); setForm(f => ({ ...f, date_fabrication: e.target.value })); }}
+                    className={cn('h-11 border-gray-200 shadow-sm', errorClass('date_fabrication'))} />
+                  <FieldError field="date_fabrication" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-sm overflow-hidden">
+            <Card className="border-0 shadow-sm">
               <div className="h-1.5 bg-gradient-to-r from-emerald-500 to-emerald-700" />
               <CardContent className="p-6 space-y-6">
                 <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
@@ -243,45 +261,50 @@ export function StockLotSerieForm() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label icon={MapPin} required>Ville</Label>
-                    <Select value={form.id_ville} onValueChange={handleVilleChange}>
-                      <SelectTrigger className="w-full h-11 border-gray-200 shadow-sm">
-                        <SelectValue placeholder="Sélectionner une ville" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {villes.map(v => <SelectItem key={v.id} value={String(v.id)}>{v.nom}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+                    <SearchableSelect
+                      options={villes.map(v => ({ id: v.id, nom: v.nom }))}
+                      value={form.id_ville}
+                      onValueChange={v => { setFieldErrors(f => { const n = { ...f }; delete n.id_ville; return n; }); handleVilleChange(v); }}
+                      placeholder="Sélectionner une ville"
+                      searchPlaceholder="Rechercher une ville..."
+                      error={fieldErrors.id_ville}
+                    />
+                    <FieldError field="id_ville" />
                   </div>
                   <div>
                     <Label icon={Warehouse} required>Zone</Label>
-                    <Select value={form.id_zone} onValueChange={handleZoneChange} disabled={!form.id_ville}>
-                      <SelectTrigger className="w-full h-11 border-gray-200 shadow-sm">
-                        <SelectValue placeholder={form.id_ville ? 'Sélectionner une zone' : 'Choisissez une ville d\'abord'} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {zones.map(z => <SelectItem key={z.id} value={String(z.id)}>{z.nom}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+                    <SearchableSelect
+                      options={zones.map(z => ({ id: z.id, nom: z.nom }))}
+                      value={form.id_zone}
+                      onValueChange={v => { setFieldErrors(f => { const n = { ...f }; delete n.id_zone; return n; }); handleZoneChange(v); }}
+                      disabled={!form.id_ville}
+                      placeholder={form.id_ville ? 'Sélectionner une zone' : "Choisissez une ville d'abord"}
+                      searchPlaceholder="Rechercher une zone..."
+                      error={fieldErrors.id_zone}
+                    />
+                    <FieldError field="id_zone" />
                   </div>
                 </div>
 
                 <div>
                   <Label icon={MapPin}>Emplacement</Label>
-                  <Select value={form.id_emplacement} onValueChange={v => setForm(f => ({ ...f, id_emplacement: v }))} disabled={!form.id_zone}>
-                    <SelectTrigger className="w-full h-11 border-gray-200 shadow-sm">
-                      <SelectValue placeholder={form.id_zone ? 'Sélectionner un emplacement (optionnel)' : 'Choisissez une zone d\'abord'} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {emplacements.map(e => <SelectItem key={e.id} value={String(e.id)}>{e.nom}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+<SearchableSelect
+                      options={emplacements.map(e => ({ id: e.id, nom: e.nom }))}
+                      value={form.id_emplacement}
+                      onValueChange={v => { setFieldErrors(f => { const n = { ...f }; delete n.id_emplacement; return n; }); setForm(f => ({ ...f, id_emplacement: v })); }}
+                      disabled={!form.id_zone}
+                      placeholder={form.id_zone ? 'Sélectionner un emplacement (optionnel)' : "Choisissez une zone d'abord"}
+                      searchPlaceholder="Rechercher un emplacement..."
+                      error={fieldErrors.id_emplacement}
+                    />
+                  <FieldError field="id_emplacement" />
                 </div>
               </CardContent>
             </Card>
           </div>
 
           <div className="space-y-6">
-            <Card className="border-0 shadow-sm overflow-hidden">
+            <Card className="border-0 shadow-sm">
               <div className="h-1.5 bg-gradient-to-r from-amber-500 to-amber-700" />
               <CardContent className="p-6 space-y-5">
                 <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
@@ -291,41 +314,44 @@ export function StockLotSerieForm() {
 
                 <div>
                   <Label icon={Building2}>Fournisseur</Label>
-                  <Select value={form.id_partenaire} onValueChange={v => setForm(f => ({ ...f, id_partenaire: v }))}>
-                    <SelectTrigger className="w-full h-11 border-gray-200 shadow-sm">
-                      <SelectValue placeholder="Sélectionner" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {partenaires.map(p => <SelectItem key={p.id} value={String(p.id)}>{p.nom}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+<SearchableSelect
+                      options={partenaires.map(p => ({ id: p.id, nom: p.nom }))}
+                      value={form.id_partenaire}
+                      onValueChange={v => { setFieldErrors(f => { const n = { ...f }; delete n.id_partenaire; return n; }); setForm(f => ({ ...f, id_partenaire: v })); }}
+                      placeholder="Sélectionner"
+                      searchPlaceholder="Rechercher un fournisseur..."
+                      error={fieldErrors.id_partenaire}
+                    />
+                  <FieldError field="id_partenaire" />
                 </div>
 
                 <div>
                   <Label icon={DollarSign}>Prix achat unitaire HT</Label>
                   <div className="relative">
                     <Input type="number" step="0.01" min="0" value={form.prix_achat_ht_unitaire}
-                      onChange={e => setForm(f => ({ ...f, prix_achat_ht_unitaire: e.target.value }))}
-                      className="h-11 border-gray-200 shadow-sm pl-8" placeholder="0,00" />
+                      onChange={e => { setFieldErrors(f => { const n = { ...f }; delete n.prix_achat_ht_unitaire; return n; }); setForm(f => ({ ...f, prix_achat_ht_unitaire: e.target.value })); }}
+                      className={cn('h-11 border-gray-200 shadow-sm pl-8', errorClass('prix_achat_ht_unitaire'))} placeholder="0,00" />
                     <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   </div>
+                  <FieldError field="prix_achat_ht_unitaire" />
                 </div>
 
                 <div>
                   <Label icon={DollarSign}>Devise</Label>
-                  <Select value={form.id_devise} onValueChange={v => setForm(f => ({ ...f, id_devise: v }))}>
-                    <SelectTrigger className="w-full h-11 border-gray-200 shadow-sm">
-                      <SelectValue placeholder="Sélectionner" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {devises.map(d => <SelectItem key={d.id} value={String(d.id)}>{d.code} - {d.nom}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+<SearchableSelect
+                      options={devises.map(d => ({ id: d.id, nom: `${d.code} - ${d.nom}`, sousTitre: d.code }))}
+                      value={form.id_devise}
+                      onValueChange={v => { setFieldErrors(f => { const n = { ...f }; delete n.id_devise; return n; }); setForm(f => ({ ...f, id_devise: v })); }}
+                      placeholder="Sélectionner"
+                      searchPlaceholder="Rechercher une devise..."
+                      error={fieldErrors.id_devise}
+                    />
+                  <FieldError field="id_devise" />
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-sm overflow-hidden">
+            <Card className="border-0 shadow-sm">
               <div className="h-1.5 bg-gradient-to-r from-sky-500 to-sky-700" />
               <CardContent className="p-6 space-y-4">
                 <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
@@ -335,9 +361,10 @@ export function StockLotSerieForm() {
 
                 <div>
                   <Label>Commentaire</Label>
-                  <textarea value={form.commentaire} onChange={e => setForm(f => ({ ...f, commentaire: e.target.value }))}
-                    className="w-full rounded-xl border border-gray-200 shadow-sm px-4 py-3 text-sm min-h-[120px] resize-none focus:outline-none focus:ring-2 focus:ring-royal-500/20 focus:border-royal-500 transition-all"
+                  <textarea value={form.commentaire} onChange={e => { setFieldErrors(f => { const n = { ...f }; delete n.commentaire; return n; }); setForm(f => ({ ...f, commentaire: e.target.value })); }}
+                    className={cn('w-full rounded-xl border border-gray-200 shadow-sm px-4 py-3 text-sm min-h-[120px] resize-none focus:outline-none focus:ring-2 focus:ring-royal-500/20 focus:border-royal-500 transition-all', errorClass('commentaire'))}
                     placeholder="Ajouter une note ou un commentaire..." />
+                  <FieldError field="commentaire" />
                 </div>
               </CardContent>
             </Card>
@@ -349,7 +376,7 @@ export function StockLotSerieForm() {
             className="h-11 px-6 border-gray-300 text-gray-700 hover:bg-gray-50 font-medium rounded-xl">
             Annuler
           </Button>
-          <Button type="submit" disabled={saving || !isValid}
+          <Button type="submit" disabled={saving || !isValid || estVerrouille}
             className="h-11 px-8 bg-royal-700 hover:bg-royal-800 text-white font-medium rounded-xl shadow-sm transition-all disabled:opacity-50">
             {saving ? (
               <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Enregistrement...</>

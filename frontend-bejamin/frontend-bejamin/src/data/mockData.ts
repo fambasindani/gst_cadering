@@ -46,6 +46,7 @@ export const menuItems: MenuItem[] = [
       { title: 'Bon de commande', path: '/validation/bon-commande', permission: 'config:bon_commande:validate' },
       { title: 'Entrer stock', path: '/validation/entrer-stock', permission: 'config:mouvements:create' },
       { title: 'Période inventaire', path: '/validation/periode-inventaire', permission: 'config:periode_inventaire:view' },
+      { title: 'Saisie inventaire', path: '/validation/saisie-inventaire', permission: 'config:inventaire:create' },
       { title: 'Ajustement', path: '/validation/ajustement', permission: 'config:inventaire:view' },
       { title: 'Ajustement produit', path: '/validation/ajustement-produit', permission: 'config:inventaire:view' },
     ]
@@ -136,6 +137,8 @@ export const menuItems: MenuItem[] = [
       { title: 'Rapport Fournisseur', path: '/rapports/fournisseur', permission: 'rapport:stock' },
       { title: 'Inventaire Théorique', path: '/rapports/inventaire-theorique', permission: 'rapport:inventaire' },
       { title: 'Consommations Clients', path: '/rapports/consommations', permission: 'rapport:client' },
+      { title: 'Rupture Stock', path: '/rapports/rupture-stock', permission: 'rapport:stock' },
+      { title: 'Stock bas', path: '/rapports/stock-bas', permission: 'rapport:stock' },
     ]
   },
 ];

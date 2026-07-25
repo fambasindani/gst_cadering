@@ -151,7 +151,7 @@ export function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
   return (
     <>
       {isMobile && isOpen && (
-        <div className="fixed inset-0 bg-black/50 z-40" onClick={onClose} />
+        <div className="fixed inset-0 bg-black/70 z-40" onClick={onClose} />
       )}
 
       <div

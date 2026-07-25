@@ -101,19 +101,11 @@ class RetourController extends Controller
                 'lignes.*.motif' => 'nullable|string|max:255',
             ]);
 
-            // Vérifier qu'au moins une provenance est spécifiée
-            if (!$validated['id_partenaire_client'] && !$validated['id_zone_provenance']) {
+            // Vérifier qu'au moins une provenance ou une destination est spécifiée
+            if (empty($validated['id_partenaire_client']) && empty($validated['id_zone_provenance']) && empty($validated['id_partenaire_dest']) && empty($validated['id_zone_dest'])) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'La provenance (client ou zone) est obligatoire'
-                ], 422);
-            }
-
-            // Vérifier qu'au moins une destination est spécifiée
-            if (!$validated['id_partenaire_dest'] && !$validated['id_zone_dest']) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'La destination (fournisseur ou zone) est obligatoire'
+                    'message' => 'La provenance (client) ou la destination (fournisseur) est obligatoire'
                 ], 422);
             }
 
@@ -136,6 +128,8 @@ class RetourController extends Controller
                     'statut_validation' => 'EN ATTENTE',
                 ]);
 
+                $estRetourClient = !is_null($validated['id_partenaire_client'] ?? null);
+
                 // Créer les lignes de retour
                 foreach ($validated['lignes'] as $ligne) {
                     $lot = Lot::findOrFail($ligne['id_lot']);
@@ -143,11 +137,6 @@ class RetourController extends Controller
                     // Vérifier que le lot est dans la même ville
                     if ($lot->id_ville != $validated['id_ville']) {
                         throw new \Exception('Le lot n\'appartient pas à la même ville');
-                    }
-
-                    // Vérifier la quantité disponible
-                    if ($lot->quantite_disponible < $ligne['quantite_retournee']) {
-                        throw new \Exception("Stock insuffisant pour le lot {$lot->numero_lot}. Disponible: {$lot->quantite_disponible}, Demandé: {$ligne['quantite_retournee']}");
                     }
 
                     // Créer la ligne de retour
@@ -158,21 +147,10 @@ class RetourController extends Controller
                         'motif' => $ligne['motif'] ?? null,
                     ]);
 
-                    // Diminuer la quantité disponible du lot (sortie)
-                    $lot->quantite_disponible -= $ligne['quantite_retournee'];
-                    $lot->save();
+                    // Déterminer le type de mouvement (6 = Retour fournisseur, 7 = Retour client)
+                    $typeMouvementId = $estRetourClient ? 7 : 6;
 
-                    // ✅ CORRECTION : Utiliser les bons IDs (6 = Retour fournisseur, 7 = Retour client)
-                    // Déterminer le type de mouvement
-                    if ($validated['id_partenaire_client']) {
-                        // Retour client = ID 7
-                        $typeMouvementId = 7;
-                    } else {
-                        // Retour fournisseur ou interne = ID 6
-                        $typeMouvementId = 6;
-                    }
-
-                    // Créer le mouvement de stock (sortie)
+                    // Créer le mouvement de stock
                     MouvementStock::create([
                         'id_lot' => $lot->id,
                         'id_type_mouvement' => $typeMouvementId,
@@ -308,13 +286,6 @@ class RetourController extends Controller
             DB::beginTransaction();
 
             try {
-                // Restaurer les lots
-                foreach ($retour->lignes as $ligne) {
-                    $lot = $ligne->lot;
-                    $lot->quantite_disponible += $ligne->quantite_retournee;
-                    $lot->save();
-                }
-
                 $retour->lignes()->delete();
                 $retour->delete();
 
@@ -354,17 +325,43 @@ class RetourController extends Controller
                 ], 403);
             }
 
-            $retour->update([
-                'statut_validation' => 'VALIDÉ',
-                'valide_par' => Auth::id(),
-                'date_validation' => now(),
-            ]);
+            DB::beginTransaction();
 
-            return response()->json([
-                'success' => true,
-                'data' => $retour,
-                'message' => 'Retour validé avec succès'
-            ]);
+            try {
+                $estRetourClient = !is_null($retour->id_partenaire_client);
+
+                foreach ($retour->lignes as $ligne) {
+                    $lot = $ligne->lot;
+
+                    if ($estRetourClient) {
+                        $lot->quantite_disponible += $ligne->quantite_retournee;
+                    } else {
+                        if ($lot->quantite_disponible < $ligne->quantite_retournee) {
+                            throw new \Exception("Stock insuffisant pour le lot {$lot->numero_lot}. Disponible: {$lot->quantite_disponible}, Demandé: {$ligne->quantite_retournee}");
+                        }
+                        $lot->quantite_disponible -= $ligne->quantite_retournee;
+                    }
+                    $lot->save();
+                }
+
+                $retour->update([
+                    'statut_validation' => 'VALIDÉ',
+                    'valide_par' => Auth::id(),
+                    'date_validation' => now(),
+                ]);
+
+                DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'data' => $retour,
+                    'message' => 'Retour validé avec succès'
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
 
         } catch (\Exception $e) {
             return response()->json([
@@ -390,34 +387,17 @@ class RetourController extends Controller
                 ], 403);
             }
 
-            DB::beginTransaction();
+            $retour->update([
+                'statut_validation' => 'REJETÉ',
+                'valide_par' => Auth::id(),
+                'date_validation' => now(),
+            ]);
 
-            try {
-                // Restaurer les lots
-                foreach ($retour->lignes as $ligne) {
-                    $lot = $ligne->lot;
-                    $lot->quantite_disponible += $ligne->quantite_retournee;
-                    $lot->save();
-                }
-
-                $retour->update([
-                    'statut_validation' => 'REJETÉ',
-                    'valide_par' => Auth::id(),
-                    'date_validation' => now(),
-                ]);
-
-                DB::commit();
-
-                return response()->json([
-                    'success' => true,
-                    'data' => $retour,
-                    'message' => 'Retour rejeté avec succès'
-                ]);
-
-            } catch (\Exception $e) {
-                DB::rollBack();
-                throw $e;
-            }
+            return response()->json([
+                'success' => true,
+                'data' => $retour,
+                'message' => 'Retour rejeté avec succès'
+            ]);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -480,11 +460,15 @@ class RetourController extends Controller
             DB::beginTransaction();
 
             try {
-                // Restaurer les lots si le retour n'est pas encore traité
-                if ($retour->statut_validation !== 'REJETÉ') {
+                if ($retour->statut_validation === 'VALIDÉ' || $retour->statut_validation === 'TRAITÉ') {
+                    $estRetourClient = !is_null($retour->id_partenaire_client);
                     foreach ($retour->lignes as $ligne) {
                         $lot = $ligne->lot;
-                        $lot->quantite_disponible += $ligne->quantite_retournee;
+                        if ($estRetourClient) {
+                            $lot->quantite_disponible -= $ligne->quantite_retournee;
+                        } else {
+                            $lot->quantite_disponible += $ligne->quantite_retournee;
+                        }
                         $lot->save();
                     }
                 }

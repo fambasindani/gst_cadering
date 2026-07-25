@@ -6,9 +6,7 @@ import { Textarea } from '../components/ui/textarea';
 import { Label } from '../components/ui/label';
 import { Checkbox } from '../components/ui/checkbox';
 import { Card, CardContent } from '../components/ui/card';
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '../components/ui/select';
+import { SearchableSelect } from '../components/ui/SearchableSelect';
 import { useToast } from '../hooks/useToast';
 import { produitService } from '../services/produit';
 import { BarcodeScanner } from '../components/ui/barcode-scanner';
@@ -153,7 +151,7 @@ export function ProduitForm() {
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-6">
-            <Card className="border-0 shadow-sm overflow-hidden">
+            <Card className="border-0 shadow-sm">
               <div className="h-1.5 bg-gradient-to-r from-royal-500 to-royal-700" />
               <CardContent className="p-6 space-y-6">
                 <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
@@ -208,27 +206,27 @@ export function ProduitForm() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <LabelIcon icon={Tag} error={fieldErrors.id_categorie}>Catégorie</LabelIcon>
-                    <Select value={values.id_categorie} onValueChange={(v) => set('id_categorie', v)}>
-                      <SelectTrigger className={cn('w-full h-11 border-gray-200 shadow-sm', errorClass(fieldErrors.id_categorie))}>
-                        <SelectValue placeholder="Sélectionner une catégorie" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categories.map((c) => (<SelectItem key={c.id} value={String(c.id)}>{c.nom}</SelectItem>))}
-                      </SelectContent>
-                    </Select>
-                    {fieldErrors.id_categorie && <p className="text-xs text-red-500 mt-1">{fieldErrors.id_categorie}</p>}
+                    <SearchableSelect
+                      options={categories.map(c => ({ id: c.id, nom: c.nom }))}
+                      value={values.id_categorie}
+                      onValueChange={(v) => set('id_categorie', v)}
+                      placeholder="Sélectionner une catégorie"
+                      searchPlaceholder="Rechercher une catégorie..."
+                      error={fieldErrors.id_categorie}
+                      className="w-full"
+                    />
                   </div>
                   <div>
                     <LabelIcon icon={Ruler} required error={fieldErrors.id_unite}>Unité</LabelIcon>
-                    <Select value={values.id_unite} onValueChange={(v) => set('id_unite', v)}>
-                      <SelectTrigger className={cn('w-full h-11 border-gray-200 shadow-sm', errorClass(fieldErrors.id_unite))}>
-                        <SelectValue placeholder="Sélectionner une unité" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {unites.map((u) => (<SelectItem key={u.id} value={String(u.id)}>{u.nom} {u.symbole ? `(${u.symbole})` : ''}</SelectItem>))}
-                      </SelectContent>
-                    </Select>
-                    {fieldErrors.id_unite && <p className="text-xs text-red-500 mt-1">{fieldErrors.id_unite}</p>}
+                    <SearchableSelect
+                      options={unites.map(u => ({ id: u.id, nom: u.nom, sousTitre: u.symbole }))}
+                      value={values.id_unite}
+                      onValueChange={(v) => set('id_unite', v)}
+                      placeholder="Sélectionner une unité"
+                      searchPlaceholder="Rechercher une unité..."
+                      error={fieldErrors.id_unite}
+                      className="w-full"
+                    />
                   </div>
                 </div>
               </CardContent>
@@ -236,7 +234,7 @@ export function ProduitForm() {
           </div>
 
           <div className="space-y-6">
-            <Card className="border-0 shadow-sm overflow-hidden">
+            <Card className="border-0 shadow-sm">
               <div className="h-1.5 bg-gradient-to-r from-amber-500 to-amber-700" />
               <CardContent className="p-6 space-y-5">
                 <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
@@ -246,15 +244,15 @@ export function ProduitForm() {
 
                 <div>
                   <LabelIcon icon={Building2} error={fieldErrors.id_partenaire_principal}>Fournisseur principal</LabelIcon>
-                  <Select value={values.id_partenaire_principal} onValueChange={(v) => set('id_partenaire_principal', v)}>
-                    <SelectTrigger className={cn('w-full h-11 border-gray-200 shadow-sm', errorClass(fieldErrors.id_partenaire_principal))}>
-                      <SelectValue placeholder="Sélectionner" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {fournisseurs.map((f) => (<SelectItem key={f.id} value={String(f.id)}>{f.nom}</SelectItem>))}
-                    </SelectContent>
-                  </Select>
-                  {fieldErrors.id_partenaire_principal && <p className="text-xs text-red-500 mt-1">{fieldErrors.id_partenaire_principal}</p>}
+                  <SearchableSelect
+                    options={fournisseurs.map(f => ({ id: f.id, nom: f.nom }))}
+                    value={values.id_partenaire_principal}
+                    onValueChange={(v) => set('id_partenaire_principal', v)}
+                    placeholder="Sélectionner"
+                    searchPlaceholder="Rechercher un fournisseur..."
+                    error={fieldErrors.id_partenaire_principal}
+                    className="w-full"
+                  />
                 </div>
 
                 <div>
@@ -272,7 +270,7 @@ export function ProduitForm() {
             </Card>
 
             {!isEdit && (
-              <Card className="border-0 shadow-sm overflow-hidden">
+              <Card className="border-0 shadow-sm">
                 <div className="h-1.5 bg-gradient-to-r from-emerald-500 to-emerald-700" />
                 <CardContent className="p-6 space-y-5">
                   <div className="flex items-center gap-2 pb-2 border-b border-gray-100">
@@ -304,15 +302,15 @@ export function ProduitForm() {
 
                   <div>
                     <LabelIcon icon={DollarSign} required error={fieldErrors.id_devise}>Devise</LabelIcon>
-                    <Select value={values.id_devise} onValueChange={(v) => set('id_devise', v)}>
-                      <SelectTrigger className={cn('w-full h-11 border-gray-200 shadow-sm', errorClass(fieldErrors.id_devise))}>
-                        <SelectValue placeholder="Sélectionner" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {devises.map((d) => (<SelectItem key={d.id} value={String(d.id)}>{d.nom} {d.symbole ? `(${d.symbole})` : ''}</SelectItem>))}
-                      </SelectContent>
-                    </Select>
-                    {fieldErrors.id_devise && <p className="text-xs text-red-500 mt-1">{fieldErrors.id_devise}</p>}
+                    <SearchableSelect
+                      options={devises.map(d => ({ id: d.id, nom: d.nom, sousTitre: d.symbole }))}
+                      value={values.id_devise}
+                      onValueChange={(v) => set('id_devise', v)}
+                      placeholder="Sélectionner"
+                      searchPlaceholder="Rechercher une devise..."
+                      error={fieldErrors.id_devise}
+                      className="w-full"
+                    />
                   </div>
 
                   <div>

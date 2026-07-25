@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
+import { SearchableSelect } from '../../components/ui/SearchableSelect';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '../../components/ui/select';
@@ -82,17 +83,9 @@ export function PaiementList() {
     setForm({ id_facture: '', montant: '', date_paiement: new Date().toISOString().split('T')[0], mode_paiement: '', reference: '', commentaire: '' });
     setFieldErrors({});
     try {
-      const res = await paiementService.list({ per_page: '200' });
-      if (res.success) {
-        const allFactures = res.data.data.map(p => p.facture).filter(Boolean) as { id: number; numero_facture: string; client?: { nom: string } | null }[];
-        setFactures(allFactures);
-      }
-    } catch {
-      try {
-        const r = await factureService.list({ per_page: '200' });
-        if (r.success) setFactures(r.data.data.map(f => ({ id: f.id, numero_facture: f.numero_facture, client: f.client })));
-      } catch {}
-    }
+      const r = await factureService.list({ per_page: '500' });
+      if (r.success) setFactures(r.data.data.map(f => ({ id: f.id, numero_facture: f.numero_facture, client: f.client })));
+    } catch { /* ignore */ }
     setPanelOpen(true);
   };
 
@@ -261,14 +254,14 @@ export function PaiementList() {
         <form onSubmit={handleCreate} className="space-y-5">
           <div>
             <LabelIcon required error={fieldErrors.id_facture}>Facture</LabelIcon>
-            <Select value={form.id_facture} onValueChange={(v) => set('id_facture', v)}>
-              <SelectTrigger className={cn('w-full h-11 border-royal-700 bg-white/10 text-white', fieldErrors.id_facture && 'border-red-400')}>
-                <SelectValue placeholder="Sélectionner" />
-              </SelectTrigger>
-              <SelectContent>
-                {factures.map((f) => (<SelectItem key={f.id} value={String(f.id)}>{f.numero_facture} - {f.client?.nom || ''}</SelectItem>))}
-              </SelectContent>
-            </Select>
+            <SearchableSelect
+              options={factures.map((f) => ({ id: f.id, nom: `${f.numero_facture} - ${f.client?.nom || ''}` }))}
+              value={form.id_facture}
+              onValueChange={(v) => set('id_facture', v)}
+              placeholder="Sélectionner une facture"
+              searchPlaceholder="Rechercher une facture..."
+              error={fieldErrors.id_facture}
+            />
             {fieldErrors.id_facture && <p className="text-xs text-red-400 mt-1">{fieldErrors.id_facture}</p>}
           </div>
 

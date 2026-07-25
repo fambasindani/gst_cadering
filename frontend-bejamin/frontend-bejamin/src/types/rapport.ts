@@ -162,3 +162,34 @@ export interface ConsommationsClientsData {
     total_produits: number;
   };
 }
+
+export interface RuptureProduit {
+  produit: Produit;
+  quantite_totale: number;
+  seuil_alerte: number;
+  lots: Lot[];
+}
+
+export interface RuptureStockData {
+  ruptures: RuptureProduit[];
+  statistiques: {
+    total_ruptures: number;
+    total_produits_epuises: number;
+    quantite_manquante: number;
+  };
+}
+
+export interface StockBasProduit {
+  produit: Produit;
+  quantite_totale: number;
+  seuil_alerte: number;
+  lots: Lot[];
+}
+
+export interface StockBasData {
+  stocks_bas: StockBasProduit[];
+  statistiques: {
+    total_stocks_bas: number;
+    quantite_manquante: number;
+  };
+}

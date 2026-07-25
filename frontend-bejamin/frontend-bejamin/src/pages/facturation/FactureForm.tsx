@@ -5,9 +5,7 @@ import { Input } from '../../components/ui/input';
 import { Textarea } from '../../components/ui/textarea';
 import { Label } from '../../components/ui/label';
 import { Card, CardContent } from '../../components/ui/card';
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '../../components/ui/select';
+import { SearchableSelect } from '../../components/ui/SearchableSelect';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '../../components/ui/table';
@@ -204,7 +202,7 @@ export function FactureForm() {
       </div>
 
       <form onSubmit={handleSubmit}>
-        <Card className="border-0 shadow-sm overflow-hidden">
+        <Card className="border-0 shadow-sm">
           <div className="h-1.5 bg-gradient-to-r from-royal-500 to-royal-700" />
           <CardContent className="p-6 space-y-5">
             <div className="flex items-center gap-2 pb-3 border-b border-gray-100">
@@ -236,54 +234,49 @@ export function FactureForm() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <LabelIcon icon={Package} required error={fieldErrors.id_partenaire_client}>Client</LabelIcon>
-                <Select value={values.id_partenaire_client} onValueChange={(v) => set('id_partenaire_client', v)}>
-                  <SelectTrigger className={cn('w-full h-11 border-gray-200 shadow-sm', errorClass(fieldErrors.id_partenaire_client))}>
-                    <SelectValue placeholder="Sélectionner" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {clients.map((c) => (<SelectItem key={c.id} value={String(c.id)}>{c.nom}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-                {fieldErrors.id_partenaire_client && <p className="text-xs text-red-500 mt-1">{fieldErrors.id_partenaire_client}</p>}
+                <SearchableSelect
+                  options={clients.map(c => ({ id: c.id, nom: c.nom }))}
+                  value={values.id_partenaire_client}
+                  onValueChange={(v) => set('id_partenaire_client', v)}
+                  placeholder="Sélectionner"
+                  searchPlaceholder="Rechercher un client..."
+                  error={fieldErrors.id_partenaire_client}
+                />
               </div>
               <div>
                 <LabelIcon error={fieldErrors.id_bon_commande}>Bon de commande</LabelIcon>
-                <Select value={values.id_bon_commande} onValueChange={(v) => set('id_bon_commande', v)}>
-                  <SelectTrigger className={cn('w-full h-11 border-gray-200 shadow-sm', errorClass(fieldErrors.id_bon_commande))}>
-                    <SelectValue placeholder="Optionnel" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value=" ">Aucun</SelectItem>
-                    {bons.map((b) => (<SelectItem key={b.id} value={String(b.id)}>{b.numero_commande}</SelectItem>))}
-                  </SelectContent>
-                </Select>
+                <SearchableSelect
+                  options={[{ id: 0, nom: 'Aucun' }, ...bons.map(b => ({ id: b.id, nom: b.numero_commande }))]}
+                  value={values.id_bon_commande}
+                  onValueChange={(v) => set('id_bon_commande', v)}
+                  placeholder="Optionnel"
+                  searchPlaceholder="Rechercher un bon..."
+                />
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <LabelIcon icon={MapPin} required error={fieldErrors.id_ville}>Ville</LabelIcon>
-                <Select value={values.id_ville} onValueChange={(v) => set('id_ville', v)}>
-                  <SelectTrigger className={cn('w-full h-11 border-gray-200 shadow-sm', errorClass(fieldErrors.id_ville))}>
-                    <SelectValue placeholder="Sélectionner" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {villes.map((v) => (<SelectItem key={v.id} value={String(v.id)}>{v.nom}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-                {fieldErrors.id_ville && <p className="text-xs text-red-500 mt-1">{fieldErrors.id_ville}</p>}
+                <SearchableSelect
+                  options={villes.map(v => ({ id: v.id, nom: v.nom }))}
+                  value={values.id_ville}
+                  onValueChange={(v) => set('id_ville', v)}
+                  placeholder="Sélectionner"
+                  searchPlaceholder="Rechercher une ville..."
+                  error={fieldErrors.id_ville}
+                />
               </div>
               <div>
                 <LabelIcon icon={DollarSign} required error={fieldErrors.id_devise}>Devise</LabelIcon>
-                <Select value={values.id_devise} onValueChange={(v) => set('id_devise', v)}>
-                  <SelectTrigger className={cn('w-full h-11 border-gray-200 shadow-sm', errorClass(fieldErrors.id_devise))}>
-                    <SelectValue placeholder="Sélectionner" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {devises.map((d) => (<SelectItem key={d.id} value={String(d.id)}>{d.code} - {d.nom}</SelectItem>))}
-                  </SelectContent>
-                </Select>
-                {fieldErrors.id_devise && <p className="text-xs text-red-500 mt-1">{fieldErrors.id_devise}</p>}
+                <SearchableSelect
+                  options={devises.map(d => ({ id: d.id, nom: `${d.code} - ${d.nom}` }))}
+                  value={values.id_devise}
+                  onValueChange={(v) => set('id_devise', v)}
+                  placeholder="Sélectionner"
+                  searchPlaceholder="Rechercher une devise..."
+                  error={fieldErrors.id_devise}
+                />
               </div>
             </div>
 
@@ -295,7 +288,7 @@ export function FactureForm() {
           </CardContent>
         </Card>
 
-        <Card className="border-0 shadow-sm overflow-hidden mt-6">
+        <Card className="border-0 shadow-sm mt-6">
           <div className="h-1.5 bg-gradient-to-r from-emerald-500 to-emerald-700" />
           <CardContent className="p-6">
             <div className="flex items-center justify-between pb-4 border-b border-gray-100 mb-4">
@@ -309,7 +302,7 @@ export function FactureForm() {
               </Button>
             </div>
 
-            <div className="overflow-x-auto rounded-lg border border-gray-200">
+            <div className="rounded-lg border border-gray-200">
               <Table>
                 <TableHeader className="bg-gray-50">
                   <TableRow>
@@ -327,14 +320,13 @@ export function FactureForm() {
                     return (
                       <TableRow key={r.key} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
                         <TableCell className="min-w-[200px]">
-                          <Select value={r.id_produit} onValueChange={(v) => onProduitChange(r.key, v)}>
-                            <SelectTrigger className="w-full border-gray-200 shadow-sm">
-                              <SelectValue placeholder="Produit" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {produits.map((p) => (<SelectItem key={p.id} value={String(p.id)}>{p.code_article ? `[${p.code_article}] ${p.nom}` : p.nom}</SelectItem>))}
-                            </SelectContent>
-                          </Select>
+<SearchableSelect
+                              options={produits.map(p => ({ id: p.id, nom: p.code_article ? `[${p.code_article}] ${p.nom}` : p.nom }))}
+                              value={r.id_produit}
+                              onValueChange={(v) => onProduitChange(r.key, v)}
+                              placeholder="Produit"
+                              searchPlaceholder="Rechercher un produit..."
+                            />
                         </TableCell>
                         <TableCell className="w-24">
                           <Input type="number" min="1" step="1" value={r.quantite}

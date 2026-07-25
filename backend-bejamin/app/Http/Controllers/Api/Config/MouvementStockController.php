@@ -135,15 +135,7 @@ class MouvementStockController extends Controller
                     'statut_validation' => 'EN ATTENTE',
                 ]);
 
-                // Mettre à jour la quantité disponible du lot
-                if ($typeMouvement->sens === 1) {
-                    // Entrée : augmenter le stock
-                    $lot->quantite_disponible += $validated['quantite'];
-                } else {
-                    // Sortie : diminuer le stock
-                    $lot->quantite_disponible -= $validated['quantite'];
-                }
-                $lot->save();
+                // Le stock du lot n'est mis à jour qu'à la validation
 
                 DB::commit();
 
@@ -261,33 +253,12 @@ public function show($id)
                 ], 403);
             }
 
-            // Restaurer la quantité du lot
-            $lot = $mouvement->lot;
-            $typeMouvement = $mouvement->typeMouvement;
+            $mouvement->delete();
 
-            DB::beginTransaction();
-
-            try {
-                if ($typeMouvement->sens === 1) {
-                    $lot->quantite_disponible -= $mouvement->quantite;
-                } else {
-                    $lot->quantite_disponible += $mouvement->quantite;
-                }
-                $lot->save();
-
-                $mouvement->delete();
-
-                DB::commit();
-
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Mouvement supprimé avec succès'
-                ]);
-
-            } catch (\Exception $e) {
-                DB::rollBack();
-                throw $e;
-            }
+            return response()->json([
+                'success' => true,
+                'message' => 'Mouvement supprimé avec succès'
+            ]);
 
         } catch (\Exception $e) {
             return response()->json([
@@ -313,17 +284,40 @@ public function show($id)
                 ], 403);
             }
 
-            $mouvement->update([
-                'statut_validation' => 'VALIDÉ',
-                'valide_par' => Auth::id(),
-                'date_validation' => now(),
-            ]);
+            DB::beginTransaction();
 
-            return response()->json([
-                'success' => true,
-                'data' => $mouvement,
-                'message' => 'Mouvement validé avec succès'
-            ]);
+            try {
+                $lot = $mouvement->lot;
+                $typeMouvement = $mouvement->typeMouvement;
+
+                if ($typeMouvement->sens === 1) {
+                    $lot->quantite_disponible += $mouvement->quantite;
+                } else {
+                    if ($lot->quantite_disponible < $mouvement->quantite) {
+                        throw new \Exception("Stock insuffisant. Disponible: {$lot->quantite_disponible}, Demandé: {$mouvement->quantite}");
+                    }
+                    $lot->quantite_disponible -= $mouvement->quantite;
+                }
+                $lot->save();
+
+                $mouvement->update([
+                    'statut_validation' => 'VALIDÉ',
+                    'valide_par' => Auth::id(),
+                    'date_validation' => now(),
+                ]);
+
+                DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'data' => $mouvement,
+                    'message' => 'Mouvement validé avec succès'
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
 
         } catch (\Exception $e) {
             return response()->json([
