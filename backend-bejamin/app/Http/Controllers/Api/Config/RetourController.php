@@ -8,6 +8,8 @@ use App\Models\LigneRetour;
 use App\Models\Lot;
 use App\Models\MouvementStock;
 use App\Models\TypeMouvement;
+use App\Models\Notification;
+use App\Models\Utilisateur;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
@@ -164,6 +166,28 @@ class RetourController extends Controller
                 }
 
                 DB::commit();
+
+                // Créer/mettre à jour une notification pour tous les utilisateurs actifs ayant la permission
+                $count = Retour::where('statut_validation', 'EN ATTENTE')->count();
+                $users = Utilisateur::actif()->get();
+                foreach ($users as $user) {
+                    if (!$user->hasPermission('config:retours:view')) continue;
+                    $existing = Notification::where('type', 'retour_en_attente')
+                        ->where('id_utilisateur', $user->id)
+                        ->whereNull('read_at')
+                        ->first();
+                    if ($existing) {
+                        $existing->update(['message' => "{$count} retour(s) stock en attente de validation"]);
+                    } else {
+                        Notification::create([
+                            'type' => 'retour_en_attente',
+                            'message' => "{$count} retour(s) stock en attente de validation",
+                            'id_utilisateur' => $user->id,
+                            'reference_type' => Retour::class,
+                            'reference_id' => null,
+                        ]);
+                    }
+                }
 
                 return response()->json([
                     'success' => true,
@@ -352,6 +376,18 @@ class RetourController extends Controller
 
                 DB::commit();
 
+                // Mettre à jour les notifications existantes
+                $remaining = Retour::where('statut_validation', 'EN ATTENTE')->count();
+                if ($remaining > 0) {
+                    Notification::where('type', 'retour_en_attente')
+                        ->whereNull('read_at')
+                        ->update(['message' => "{$remaining} retour(s) stock en attente de validation"]);
+                } else {
+                    Notification::where('type', 'retour_en_attente')
+                        ->whereNull('read_at')
+                        ->update(['read_at' => now()]);
+                }
+
                 return response()->json([
                     'success' => true,
                     'data' => $retour,
@@ -392,6 +428,18 @@ class RetourController extends Controller
                 'valide_par' => Auth::id(),
                 'date_validation' => now(),
             ]);
+
+            // Mettre à jour les notifications existantes
+            $remaining = Retour::where('statut_validation', 'EN ATTENTE')->count();
+            if ($remaining > 0) {
+                Notification::where('type', 'retour_en_attente')
+                    ->whereNull('read_at')
+                    ->update(['message' => "{$remaining} retour(s) stock en attente de validation"]);
+            } else {
+                Notification::where('type', 'retour_en_attente')
+                    ->whereNull('read_at')
+                    ->update(['read_at' => now()]);
+            }
 
             return response()->json([
                 'success' => true,

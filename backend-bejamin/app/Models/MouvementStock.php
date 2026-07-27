@@ -14,6 +14,7 @@ class MouvementStock extends Model
     protected $fillable = [
         'id_lot',
         'id_type_mouvement',
+        'id_facture',
         'quantite',
         'date_mouvement',
         'id_utilisateur',
@@ -56,6 +57,11 @@ class MouvementStock extends Model
     public function periodeInventaire()
     {
         return $this->belongsTo(PeriodeInventaire::class, 'id_periode_inventaire');
+    }
+
+    public function facture()
+    {
+        return $this->belongsTo(Facture::class, 'id_facture');
     }
 
     // Scopes

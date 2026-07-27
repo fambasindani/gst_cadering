@@ -233,6 +233,10 @@ class PermissionSeeder extends Seeder
             // Recettes (Production)
             ['nom' => 'Produire à partir d\'une recette', 'code' => 'config:recette:create'],
 
+            // Notifications
+            ['nom' => 'Voir les notifications', 'code' => 'config:notifications:view'],
+            ['nom' => 'Gérer les notifications', 'code' => 'config:notifications:update'],
+
         ];
 
         foreach ($permissions as $permission) {

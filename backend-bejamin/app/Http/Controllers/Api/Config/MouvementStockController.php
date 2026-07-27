@@ -29,13 +29,15 @@ class MouvementStockController extends Controller
             $dateFin = $request->input('date_fin');
             $sortBy = $request->input('sort_by', 'date_mouvement');
             $sortOrder = $request->input('sort_order', 'desc');
+            $sens = $request->input('sens');
 
             $query = MouvementStock::with([
                 'lot.produit',
                 'lot.ville',
                 'typeMouvement',
                 'utilisateur',
-                'validePar'
+                'validePar',
+                'facture'
             ]);
 
             if ($search) {
@@ -71,6 +73,12 @@ class MouvementStockController extends Controller
                 $query->whereDate('date_mouvement', '<=', $dateFin);
             }
 
+            if ($sens) {
+                $query->whereHas('typeMouvement', function($q) use ($sens) {
+                    $q->where('sens', $sens);
+                });
+            }
+
             $data = $query->orderBy($sortBy, $sortOrder)->paginate($perPage);
 
             return response()->json([
@@ -97,6 +105,7 @@ class MouvementStockController extends Controller
             $validated = $request->validate([
                 'id_lot' => 'required|exists:lots,id',
                 'id_type_mouvement' => 'required|exists:type_mouvement,id',
+                'id_facture' => 'nullable|exists:facture,id',
                 'quantite' => 'required|integer|min:1',
                 'date_mouvement' => 'nullable|date',
                 'reference_document' => 'nullable|string|max:100',
@@ -127,6 +136,7 @@ class MouvementStockController extends Controller
                 $mouvement = MouvementStock::create([
                     'id_lot' => $validated['id_lot'],
                     'id_type_mouvement' => $validated['id_type_mouvement'],
+                    'id_facture' => $validated['id_facture'] ?? null,
                     'quantite' => $validated['quantite'],
                     'date_mouvement' => $validated['date_mouvement'] ?? now(),
                     'id_utilisateur' => Auth::id(),
@@ -141,7 +151,7 @@ class MouvementStockController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'data' => $mouvement->load(['lot.produit', 'typeMouvement', 'utilisateur']),
+                    'data' => $mouvement->load(['lot.produit', 'typeMouvement', 'utilisateur', 'facture']),
                     'message' => 'Mouvement de stock créé avec succès'
                 ], 201);
 
@@ -175,7 +185,8 @@ public function show($id)
             'lot.zone',
             'typeMouvement',
             'utilisateur',
-            'validePar'
+            'validePar',
+            'facture'
             // 'periodeInventaire' // <- Commenter ou supprimer cette ligne
         ])->findOrFail($id);
 
@@ -210,6 +221,11 @@ public function show($id)
             }
 
             $validated = $request->validate([
+                'id_lot' => 'sometimes|required|exists:lots,id',
+                'id_type_mouvement' => 'sometimes|required|exists:type_mouvement,id',
+                'id_facture' => 'nullable|exists:facture,id',
+                'quantite' => 'sometimes|required|integer|min:1',
+                'date_mouvement' => 'nullable|date',
                 'reference_document' => 'nullable|string|max:100',
                 'commentaire' => 'nullable|string',
             ]);
@@ -218,7 +234,7 @@ public function show($id)
 
             return response()->json([
                 'success' => true,
-                'data' => $mouvement->load(['lot.produit', 'typeMouvement']),
+                'data' => $mouvement->load(['lot.produit', 'typeMouvement', 'facture']),
                 'message' => 'Mouvement mis à jour avec succès'
             ]);
 
@@ -316,13 +332,22 @@ public function show($id)
 
             } catch (\Exception $e) {
                 DB::rollBack();
+
+                // Si c'est une erreur métier (stock insuffisant), retourner le message directement
+                if (str_contains($e->getMessage(), 'Stock insuffisant')) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $e->getMessage()
+                    ], 422);
+                }
+
                 throw $e;
             }
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors de la validation',
+                'message' => $e->getMessage() ?: 'Erreur lors de la validation',
                 'error' => $e->getMessage()
             ], 500);
         }

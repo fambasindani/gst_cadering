@@ -336,7 +336,8 @@ class AuthController extends Controller
             ]);
 
             if ($request->filled('mot_de_passe')) {
-                $validated['mot_de_passe'] = Hash::make($validated['mot_de_passe']);
+                $validated['mot_de_passe_hash'] = Hash::make($validated['mot_de_passe']);
+                unset($validated['mot_de_passe']);
             }
 
             $user->update($validated);

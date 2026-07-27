@@ -181,19 +181,67 @@ class FicheTechniqueController extends Controller
             $fiche = FicheTechnique::findOrFail($id);
 
             $validated = $request->validate([
+                'code' => 'sometimes|required|string|max:50|unique:fiche_technique,code,' . $id,
                 'nom' => 'sometimes|required|string|max:200',
                 'description' => 'nullable|string',
+                'id_produit_fini' => 'sometimes|required|exists:produits,id',
                 'rendement' => 'sometimes|required|integer|min:1',
+                'id_ville' => 'sometimes|required|exists:villes,id',
                 'actif' => 'nullable|boolean',
+                'lignes' => 'nullable|array|min:1',
+                'lignes.*.id_produit_ingredient' => 'required_with:lignes|exists:produits,id',
+                'lignes.*.quantite_ingredient' => 'required_with:lignes|numeric|min:0.01',
+                'lignes.*.id_unite' => 'required_with:lignes|exists:unites,id',
+                'lignes.*.commentaire' => 'nullable|string',
             ]);
 
-            $fiche->update($validated);
+            DB::beginTransaction();
 
-            return response()->json([
-                'success' => true,
-                'data' => $fiche->load(['produitFini', 'ville']),
-                'message' => 'Fiche technique mise à jour avec succès'
-            ]);
+            try {
+                $fiche->update([
+                    'code' => $validated['code'] ?? $fiche->code,
+                    'nom' => $validated['nom'] ?? $fiche->nom,
+                    'description' => $validated['description'] ?? $fiche->description,
+                    'id_produit_fini' => $validated['id_produit_fini'] ?? $fiche->id_produit_fini,
+                    'rendement' => $validated['rendement'] ?? $fiche->rendement,
+                    'id_ville' => $validated['id_ville'] ?? $fiche->id_ville,
+                    'actif' => $validated['actif'] ?? $fiche->actif,
+                ]);
+
+                if ($request->has('lignes')) {
+                    $fiche->lignes()->delete();
+
+                    foreach ($validated['lignes'] as $ligne) {
+                        $ingredient = Produit::find($ligne['id_produit_ingredient']);
+                        $prixUnitaire = $ingredient->getDernierPrixAchat()->prix_achat_ht ?? 0;
+                        $coutTotal = $ligne['quantite_ingredient'] * $prixUnitaire;
+
+                        LigneFicheTechnique::create([
+                            'id_fiche_technique' => $fiche->id,
+                            'id_produit_ingredient' => $ligne['id_produit_ingredient'],
+                            'quantite_ingredient' => $ligne['quantite_ingredient'],
+                            'id_unite' => $ligne['id_unite'],
+                            'prix_unitaire' => $prixUnitaire,
+                            'cout_total' => $coutTotal,
+                            'commentaire' => $ligne['commentaire'] ?? null,
+                        ]);
+                    }
+                }
+
+                $fiche->updateCouts();
+
+                DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'data' => $fiche->load(['produitFini', 'ville', 'lignes.ingredient', 'lignes.unite']),
+                    'message' => 'Fiche technique mise à jour avec succès'
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
 
         } catch (ValidationException $e) {
             return response()->json([

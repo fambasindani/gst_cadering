@@ -4,11 +4,9 @@ namespace App\Http\Controllers\Api\Facturation;
 
 use App\Http\Controllers\Controller;
 use App\Models\Avoir;
-use App\Models\Facture;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 
 class AvoirController extends Controller
 {

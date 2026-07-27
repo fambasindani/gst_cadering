@@ -7,6 +7,8 @@ use App\Models\BonCommande;
 use App\Models\LigneCommande;
 use App\Models\Lot;
 use App\Models\MouvementStock;
+use App\Models\Notification;
+use App\Models\Utilisateur;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
@@ -141,6 +143,28 @@ class BonCommandeController extends Controller
                 $bonCommande->update(['montant_total_ht' => $total]);
 
                 DB::commit();
+
+                // Créer/mettre à jour une notification pour tous les utilisateurs actifs ayant la permission
+                $count = BonCommande::where('statut_validation', 'EN ATTENTE')->count();
+                $users = Utilisateur::actif()->get();
+                foreach ($users as $user) {
+                    if (!$user->hasPermission('config:bon_commande:view')) continue;
+                    $existing = Notification::where('type', 'bon_commande_en_attente')
+                        ->where('id_utilisateur', $user->id)
+                        ->whereNull('read_at')
+                        ->first();
+                    if ($existing) {
+                        $existing->update(['message' => "{$count} bon(s) de commande en attente de validation"]);
+                    } else {
+                        Notification::create([
+                            'type' => 'bon_commande_en_attente',
+                            'message' => "{$count} bon(s) de commande en attente de validation",
+                            'id_utilisateur' => $user->id,
+                            'reference_type' => BonCommande::class,
+                            'reference_id' => null,
+                        ]);
+                    }
+                }
 
                 return response()->json([
                     'success' => true,
@@ -301,6 +325,18 @@ class BonCommandeController extends Controller
                 'statut' => 'ENVOYÉ',
             ]);
 
+            // Mettre à jour les notifications existantes
+            $remaining = BonCommande::where('statut_validation', 'EN ATTENTE')->count();
+            if ($remaining > 0) {
+                Notification::where('type', 'bon_commande_en_attente')
+                    ->whereNull('read_at')
+                    ->update(['message' => "{$remaining} bon(s) de commande en attente de validation"]);
+            } else {
+                Notification::where('type', 'bon_commande_en_attente')
+                    ->whereNull('read_at')
+                    ->update(['read_at' => now()]);
+            }
+
             return response()->json([
                 'success' => true,
                 'data' => $bonCommande,
@@ -337,6 +373,18 @@ class BonCommandeController extends Controller
                 'date_validation' => now(),
                 'statut' => 'ANNULE',
             ]);
+
+            // Mettre à jour les notifications existantes
+            $remaining = BonCommande::where('statut_validation', 'EN ATTENTE')->count();
+            if ($remaining > 0) {
+                Notification::where('type', 'bon_commande_en_attente')
+                    ->whereNull('read_at')
+                    ->update(['message' => "{$remaining} bon(s) de commande en attente de validation"]);
+            } else {
+                Notification::where('type', 'bon_commande_en_attente')
+                    ->whereNull('read_at')
+                    ->update(['read_at' => now()]);
+            }
 
             return response()->json([
                 'success' => true,

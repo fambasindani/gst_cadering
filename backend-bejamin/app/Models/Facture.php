@@ -74,14 +74,25 @@ class Facture extends Model
         return $this->hasMany(Avoir::class, 'id_facture_origine');
     }
 
+    public function mouvements()
+    {
+        return $this->hasMany(MouvementStock::class, 'id_facture');
+    }
+
     public function getTotalPaye()
     {
         return $this->paiements->sum('montant');
     }
 
+    public function getTotalAvoirsTtc()
+    {
+        $ratio = $this->montant_ht > 0 ? $this->montant_ttc / $this->montant_ht : 1;
+        return $this->avoirs->sum('montant_ht') * $ratio;
+    }
+
     public function getSolde()
     {
-        return $this->montant_ttc - $this->getTotalPaye();
+        return $this->montant_ttc - $this->getTotalPaye() - $this->getTotalAvoirsTtc();
     }
 
     public function isPayee()

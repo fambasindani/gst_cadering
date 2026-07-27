@@ -313,6 +313,7 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
         Route::patch('factures/{id}/emettre', [FactureController::class, 'emettre'])->middleware('permission:facturation:facture:update');
         Route::patch('factures/{id}/annuler', [FactureController::class, 'annuler'])->middleware('permission:facturation:facture:update');
         Route::patch('factures/{id}/payee', [FactureController::class, 'marquerPayee'])->middleware('permission:facturation:facture:update');
+        Route::post('factures/{id}/generer-sortie-stock', [FactureController::class, 'genererSortieStock'])->middleware('permission:facturation:facture:update');
 
         // ---------- Paiements ----------
         Route::get('paiements', [PaiementController::class, 'index'])->middleware('permission:facturation:paiement:view');
