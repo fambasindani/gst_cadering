@@ -9,6 +9,7 @@ use App\Models\MouvementStock;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
+use App\Helpers\CodeGenerator;
 
 class LotController extends Controller
 {
@@ -94,7 +95,7 @@ class LotController extends Controller
                 'id_ville' => 'required|exists:villes,id',
                 'id_zone' => 'required|exists:zones,id',
                 'id_emplacement' => 'nullable|exists:emplacements,id',
-                'numero_lot' => 'required|string|max:50',
+                'numero_lot' => 'nullable|string|max:50',
                 'quantite_recue' => 'required|integer|min:1',
                 'date_peremption' => 'required|date|after:today',
                 'date_fabrication' => 'nullable|date',
@@ -103,6 +104,11 @@ class LotController extends Controller
                 'id_devise' => 'nullable|exists:devises,id',
                 'commentaire' => 'nullable|string',
             ]);
+
+            // Auto-générer le numéro de lot si non fourni
+            if (empty($validated['numero_lot'])) {
+                $validated['numero_lot'] = CodeGenerator::lot();
+            }
 
             // Générer le code QR
             $codeQr = Lot::generateQrCode($validated['numero_lot']);

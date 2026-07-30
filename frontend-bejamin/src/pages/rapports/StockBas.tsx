@@ -9,7 +9,7 @@ import { RapportTablePDF } from '../../components/pdf/RapportTablePDF';
 import type { Column } from '../../components/pdf/RapportTablePDF';
 import { rapportService } from '../../services/rapport';
 import type { StockBasData } from '../../types/rapport';
-import { RefreshCw, AlertTriangle, Package, Loader2, Download } from 'lucide-react';
+import { RefreshCw, AlertTriangle, Package, Download } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { DataTablePagination } from '../../components/ui/DataTablePagination';
 

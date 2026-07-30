@@ -55,6 +55,14 @@ export function ReceptionForm() {
 
   useEffect(() => { fetchBon(); }, [fetchBon]);
 
+  const generateNumeroLot = () => {
+    const now = new Date();
+    const yy = String(now.getFullYear()).slice(2);
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const rand = String(Math.floor(Math.random() * 9999)).padStart(4, '0');
+    return `LOT-${yy}${mm}-${rand}`;
+  };
+
   const initReceptionData = (b: BonCommande) => {
     const initial: Record<number, typeof receptionData[number]> = {};
     for (const l of b.lignes || []) {
@@ -62,7 +70,7 @@ export function ReceptionForm() {
       if (reste > 0) {
         initial[l.id] = {
           quantite_recue: String(reste),
-          numero_lot: '',
+          numero_lot: generateNumeroLot(),
           date_peremption: '',
           id_zone: '',
           id_emplacement: '',

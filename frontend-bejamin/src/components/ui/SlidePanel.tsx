@@ -6,6 +6,7 @@ interface SlidePanelProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
+  subtitle?: string;
   children: React.ReactNode;
   className?: string;
   width?: 'sm' | 'md' | 'lg' | 'xl' | 'full' | '3xl' | '4xl';
@@ -25,6 +26,7 @@ export function SlidePanel({
   isOpen,
   onClose,
   title,
+  subtitle,
   children,
   className,
   width = '4xl',
@@ -51,6 +53,7 @@ export function SlidePanel({
         <div className="sticky top-0 bg-royal-800 z-10 p-6 border-b border-royal-700">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold text-white">{title}</h2>
+            {subtitle && <p className="text-sm text-white/60 mt-0.5">{subtitle}</p>}
             <button
               onClick={onClose}
               className="p-2 hover:bg-royal-700 rounded-lg transition-colors text-white/60 hover:text-white"

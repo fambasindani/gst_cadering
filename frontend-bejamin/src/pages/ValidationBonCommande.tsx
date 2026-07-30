@@ -12,7 +12,7 @@ import { useToast } from '../hooks/useToast';
 import { bonCommandeService } from '../services/bon-commande';
 import type { BonCommande } from '../types/bon-commande';
 import {
-  Search, CheckCircle, XCircle, RefreshCw, FileText, Eye, Building2, DollarSign, Loader2,
+  Search, CheckCircle, XCircle, RefreshCw, FileText, Eye, Building2, DollarSign,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { formatCurrency } from '../lib/format';

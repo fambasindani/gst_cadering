@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Helpers\CodeGenerator;
 
 class RetourController extends Controller
 {
@@ -87,7 +88,7 @@ class RetourController extends Controller
     {
         try {
             $validated = $request->validate([
-                'numero_retour' => 'required|string|max:50|unique:retour,numero_retour',
+                'numero_retour' => 'nullable|string|max:50|unique:retour,numero_retour',
                 'date_retour' => 'required|date',
                 'id_partenaire_client' => 'nullable|exists:partenaires,id',
                 'id_zone_provenance' => 'nullable|exists:zones,id',
@@ -114,6 +115,11 @@ class RetourController extends Controller
             DB::beginTransaction();
 
             try {
+                // Auto-générer le numéro de retour si non fourni
+                if (empty($validated['numero_retour'])) {
+                    $validated['numero_retour'] = CodeGenerator::retour();
+                }
+
                 // Créer le retour
                 $retour = Retour::create([
                     'numero_retour' => $validated['numero_retour'],

@@ -7,6 +7,7 @@ use App\Models\Avoir;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
+use App\Helpers\CodeGenerator;
 
 class AvoirController extends Controller
 {
@@ -56,7 +57,7 @@ class AvoirController extends Controller
     {
         try {
             $validated = $request->validate([
-                'numero_avoir' => 'required|string|max:50|unique:avoir,numero_avoir',
+                'numero_avoir' => 'nullable|string|max:50|unique:avoir,numero_avoir',
                 'date_avoir' => 'required|date',
                 'id_partenaire_client' => 'required|exists:partenaires,id',
                 'id_facture_origine' => 'nullable|exists:facture,id',
@@ -72,6 +73,11 @@ class AvoirController extends Controller
                     'success' => false,
                     'message' => 'La facture d\'origine ou le retour est obligatoire'
                 ], 422);
+            }
+
+            // Auto-générer le numéro d'avoir si non fourni
+            if (empty($validated['numero_avoir'])) {
+                $validated['numero_avoir'] = CodeGenerator::avoir();
             }
 
             $avoir = Avoir::create([

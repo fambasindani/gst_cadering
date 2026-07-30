@@ -10,7 +10,7 @@ import { PDFDownloadLink } from '@react-pdf/renderer';
 import { RapportRecettePDF } from '../components/pdf/RapportRecettePDF';
 import { ficheTechniqueService } from '../services/fiche-technique';
 import type { FicheTechnique } from '../types/fiche-technique';
-import { Search, RefreshCw, FileText, DollarSign, Loader2, Download } from 'lucide-react';
+import { Search, RefreshCw, FileText, DollarSign, Download } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { formatCurrency } from '../lib/format';
 

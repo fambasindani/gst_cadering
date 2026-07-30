@@ -13,7 +13,7 @@ import { avoirService } from '../../services/avoir';
 import type { Avoir } from '../../types/facturation';
 import { formatCurrency } from '../../lib/format';
 import {
-  Search, RefreshCw, Plus, Loader2, Eye, Trash2, FileText,
+  Search, RefreshCw, Plus, Eye, Trash2, FileText,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 

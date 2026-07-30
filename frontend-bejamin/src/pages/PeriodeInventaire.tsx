@@ -9,10 +9,9 @@ import {
 } from '../components/ui/table';
 import { Badge } from '../components/ui/badge';
 import { DataTablePagination } from '../components/ui/DataTablePagination';
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '../components/ui/select';
+
 import { SlidePanel } from '../components/ui/SlidePanel';
+import { SearchableSelect } from '../components/ui/SearchableSelect';
 import { ConfirmModal } from '../components/ui/confirm-modal';
 import { useToast } from '../hooks/useToast';
 import { periodeInventaireService } from '../services/periode-inventaire';
@@ -409,20 +408,16 @@ export function PeriodeInventaire() {
 
           <div>
             <Label className="text-sm font-medium text-white/80">Ville *</Label>
-            <Select
-              value={form.id_ville}
-              onValueChange={(value) => { setForm((f) => ({ ...f, id_ville: value })); setFieldErrors((f) => ({ ...f, id_ville: '' })); }}
-            >
-              <SelectTrigger className={cn("mt-1.5 bg-royal-700 text-white border-royal-600 focus:border-royal-500 focus:ring-royal-500 h-11",
-                fieldErrors.id_ville ? 'border-red-400' : 'border-royal-600')}>
-                <SelectValue placeholder="Sélectionner une ville" />
-              </SelectTrigger>
-              <SelectContent>
-                {villes.map((v) => (
-                  <SelectItem key={v.id} value={String(v.id)}>{v.nom}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="mt-1.5">
+              <SearchableSelect
+                options={villes.map(v => ({ id: v.id, nom: v.nom }))}
+                value={form.id_ville}
+                onValueChange={(value) => { setForm((f) => ({ ...f, id_ville: value })); setFieldErrors((f) => ({ ...f, id_ville: '' })); }}
+                placeholder="Sélectionner une ville"
+                searchPlaceholder="Rechercher une ville..."
+                className={cn(fieldErrors.id_ville ? 'border-red-400' : '')}
+              />
+            </div>
             {fieldErrors.id_ville && <p className="text-red-400 text-xs mt-1">{fieldErrors.id_ville}</p>}
           </div>
 

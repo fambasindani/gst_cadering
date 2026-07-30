@@ -14,7 +14,7 @@ import { formatCurrency } from '../../lib/format';
 import { DevisPDF } from '../../components/pdf/DevisPDF';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import {
-  ArrowLeft, Loader2, Download, FileText, MapPin, Hash, DollarSign, Package, Building,
+  ArrowLeft, Loader2, Download, FileText, DollarSign, Package, Building,
   Send, CheckCircle, XCircle, RefreshCw,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';

@@ -29,7 +29,7 @@ export function ConfigurationRoleForm() {
 
   useEffect(() => {
     permissionService.all({ per_page: '500', sort_by: 'nom', sort_order: 'asc' })
-      .then((res) => { if (res.success) setAllPermissions(Array.isArray(res.data) ? res.data : res.data.data); })
+      .then((res) => { if (res.success) setAllPermissions(res.data); })
       .catch(() => {});
   }, []);
 

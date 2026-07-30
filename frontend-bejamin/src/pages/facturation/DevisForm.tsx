@@ -120,7 +120,7 @@ export function DevisForm() {
       if (hp && hp.length > 0) {
         const sorted = [...hp].sort((a, b) => new Date(b.date_application).getTime() - new Date(a.date_application).getTime());
         const dernier = sorted[0];
-        if (dernier.prix_vente_ht) updateLigne(key, 'prix_unitaire_ht', String(dernier.prix_vente_ht));
+        if (dernier.prix_achat_ht) updateLigne(key, 'prix_unitaire_ht', String(dernier.prix_achat_ht));
       }
     }).catch(() => {});
   };
@@ -130,12 +130,7 @@ export function DevisForm() {
     setSaving(true); setFieldErrors({});
     const payload = {
       ...values,
-      lignes: lignes.map(({ key, ...r }) => ({
-        ...r,
-        quantite: Number(r.quantite),
-        prix_unitaire_ht: Number(r.prix_unitaire_ht),
-        remise: Number(r.remise),
-      })),
+      lignes: lignes.map(({ key, ...r }) => r),
     };
     try {
       if (isEdit && id) {

@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Helpers\CodeGenerator;
 
 class BonCommandeController extends Controller
 {
@@ -94,7 +95,7 @@ class BonCommandeController extends Controller
     {
         try {
             $validated = $request->validate([
-                'numero_commande' => 'required|string|max:50|unique:bon_commande,numero_commande',
+                'numero_commande' => 'nullable|string|max:50|unique:bon_commande,numero_commande',
                 'id_partenaire' => 'required|exists:partenaires,id',
                 'id_ville_destination' => 'required|exists:villes,id',
                 'date_commande' => 'required|date',
@@ -111,6 +112,11 @@ class BonCommandeController extends Controller
             DB::beginTransaction();
 
             try {
+                // Auto-générer le numéro de commande si non fourni
+                if (empty($validated['numero_commande'])) {
+                    $validated['numero_commande'] = CodeGenerator::bonCommande();
+                }
+
                 // Créer le bon de commande
                 $bonCommande = BonCommande::create([
                     'numero_commande' => $validated['numero_commande'],
@@ -420,7 +426,7 @@ class BonCommandeController extends Controller
                 'receptions' => 'required|array|min:1',
                 'receptions.*.id_ligne_commande' => 'required|exists:ligne_commande,id',
                 'receptions.*.quantite_recue' => 'required|integer|min:1',
-                'receptions.*.numero_lot' => 'required|string|max:50',
+                'receptions.*.numero_lot' => 'nullable|string|max:50',
                 'receptions.*.date_peremption' => 'required|date|after_or_equal:today',
                 'receptions.*.id_zone' => 'required|exists:zones,id',
                 'receptions.*.id_emplacement' => 'nullable|exists:emplacements,id',
@@ -444,6 +450,11 @@ class BonCommandeController extends Controller
                         throw new \Exception("Quantité reçue (${reception['quantite_recue']}) dépasse la quantité restante (${quantiteRestante})");
                     }
 
+                    // Auto-générer le numéro de lot si non fourni
+                    if (empty($reception['numero_lot'])) {
+                        $reception['numero_lot'] = CodeGenerator::lot();
+                    }
+
                     // Créer le lot
                     $lot = Lot::create([
                         'id_produit' => $ligne->id_produit,
@@ -462,7 +473,7 @@ class BonCommandeController extends Controller
                         'statut_validation' => 'EN ATTENTE',
                     ]);
 
-                    // Créer le mouvement d'entrée
+                    // Créer le mouvement d'entrée (stock déjà appliqué sur le lot)
                     MouvementStock::create([
                         'id_lot' => $lot->id,
                         'id_type_mouvement' => 1, // Entrée réception

@@ -14,7 +14,7 @@ import { useToast } from '../hooks/useToast';
 import { lotService } from '../services/lot';
 import type { Lot } from '../types/lot';
 import {
-  Search, RefreshCw, Package, CheckCircle, XCircle, Edit3, Trash2, Plus, Eye, Barcode, Calendar, Building2, MapPin,
+  Search, RefreshCw, Package, CheckCircle, XCircle, Edit3, Trash2, Plus, Eye, Barcode, Calendar,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -369,10 +369,10 @@ function LotViewSlide({ isOpen, onClose, lot }: { isOpen: boolean; onClose: () =
             </span>
           </div>
         </div>
-        {lot.fournisseur && (
+        {lot.partenaire && (
           <div className="text-sm">
             <span className="text-white/60">Fournisseur :</span>
-            <p className="font-medium mt-0.5">{lot.fournisseur?.nom || lot.partenaire?.nom || '-'}</p>
+            <p className="font-medium mt-0.5">{lot.partenaire?.nom || '-'}</p>
           </div>
         )}
         {lot.commentaire && (

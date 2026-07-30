@@ -43,9 +43,9 @@ CREATE TABLE IF NOT EXISTS `audits` (
   KEY `idx_audits_table_enregistrement` (`table_cible`,`id_enregistrement`),
   KEY `idx_audits_date_action_action` (`date_action`,`action`),
   CONSTRAINT `fk_audits_utilisateur` FOREIGN KEY (`id_utilisateur`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=470 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Table d''audit pour le traçage des actions';
+) ENGINE=InnoDB AUTO_INCREMENT=579 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Table d''audit pour le traçage des actions';
 
--- Listage des données de la table bd_gst_bejamin.audits : ~469 rows (environ)
+-- Listage des données de la table bd_gst_bejamin.audits : ~575 rows (environ)
 INSERT INTO `audits` (`id`, `id_utilisateur`, `action`, `table_cible`, `id_enregistrement`, `anciennes_valeurs`, `nouvelles_valeurs`, `date_action`, `adresse_ip`, `user_agent`, `route`, `created_at`, `updated_at`) VALUES
 	(1, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"PostmanRuntime\\\\/7.51.1\\"}"', '2026-07-19 15:11:03', '127.0.0.1', 'PostmanRuntime/7.51.1', 'api/auth/login', '2026-07-19 13:11:03', '2026-07-19 13:11:03'),
 	(2, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"PostmanRuntime\\\\/7.51.1\\"}"', '2026-07-19 21:24:12', '127.0.0.1', 'PostmanRuntime/7.51.1', 'api/auth/login', '2026-07-19 19:24:12', '2026-07-19 19:24:12'),
@@ -515,7 +515,107 @@ INSERT INTO `audits` (`id`, `id_utilisateur`, `action`, `table_cible`, `id_enreg
 	(466, 2, 'INSERT', 'avoir', 0, NULL, '"{\\"numero_avoir\\":\\"AV-52145\\",\\"date_avoir\\":\\"2026-07-27\\",\\"id_partenaire_client\\":\\"3\\",\\"id_facture_origine\\":\\"5\\",\\"id_devise\\":\\"1\\",\\"montant_ht\\":\\"400\\",\\"commentaire\\":null}"', '2026-07-27 20:39:34', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-27 18:39:34', '2026-07-27 18:39:34'),
 	(467, 2, 'DELETE', 'avoir', 9, NULL, NULL, '2026-07-27 20:41:09', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-27 18:41:09', '2026-07-27 18:41:09'),
 	(468, 2, 'INSERT', 'avoir', 0, NULL, '"{\\"numero_avoir\\":\\"AV-854714\\",\\"date_avoir\\":\\"2026-07-27\\",\\"id_partenaire_client\\":\\"3\\",\\"id_facture_origine\\":\\"5\\",\\"id_devise\\":\\"1\\",\\"montant_ht\\":\\"400\\",\\"commentaire\\":null}"', '2026-07-27 20:52:03', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-27 18:52:03', '2026-07-27 18:52:03'),
-	(469, 2, 'DELETE', 'avoir', 10, NULL, NULL, '2026-07-27 20:53:36', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-27 18:53:36', '2026-07-27 18:53:36');
+	(469, 2, 'DELETE', 'avoir', 10, NULL, NULL, '2026-07-27 20:53:36', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-27 18:53:36', '2026-07-27 18:53:36'),
+	(470, 2, 'LOGOUT', 'auth', 2, NULL, '"{\\"email\\":\\"ngoma@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-27 21:16:25', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', 'api/auth/logout', '2026-07-27 19:16:25', '2026-07-27 19:16:25'),
+	(471, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko\\\\/20100101 Firefox\\\\/154.0\\"}"', '2026-07-27 21:16:31', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', 'api/auth/login', '2026-07-27 19:16:31', '2026-07-27 19:16:31'),
+	(472, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-27 21:26:01', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', 'api/auth/logout', '2026-07-27 19:26:01', '2026-07-27 19:26:01'),
+	(473, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\\\\/537.36 (KHTML, like Gecko) Chrome\\\\/150.0.0.0 Safari\\\\/537.36\\"}"', '2026-07-27 21:26:25', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', 'api/auth/login', '2026-07-27 19:26:25', '2026-07-27 19:26:25'),
+	(474, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-27 21:31:41', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', 'api/auth/logout', '2026-07-27 19:31:41', '2026-07-27 19:31:41'),
+	(475, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-27 22:04:10', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', 'api/auth/logout', '2026-07-27 20:04:10', '2026-07-27 20:04:10'),
+	(476, 2, 'LOGIN_SUCCESS', 'auth', 2, NULL, '"{\\"email\\":\\"ngoma@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\\\\/537.36 (KHTML, like Gecko) Chrome\\\\/150.0.0.0 Safari\\\\/537.36\\"}"', '2026-07-27 22:04:31', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', 'api/auth/login', '2026-07-27 20:04:31', '2026-07-27 20:04:31'),
+	(477, 2, 'INSERT', 'mouvement', 0, NULL, '"{\\"id_lot\\":18,\\"id_type_mouvement\\":2,\\"quantite\\":6,\\"date_mouvement\\":\\"2026-07-27\\",\\"reference_document\\":\\"ref-5241\\"}"', '2026-07-27 22:06:25', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', NULL, '2026-07-27 20:06:25', '2026-07-27 20:06:25'),
+	(478, 2, 'UPDATE', 'mouvement', 53, '"{\\"id\\":53,\\"id_lot\\":18,\\"id_type_mouvement\\":2,\\"id_facture\\":null,\\"quantite\\":6,\\"date_mouvement\\":\\"2026-07-27T00:00:00.000000Z\\",\\"id_utilisateur\\":2,\\"reference_document\\":\\"ref-5241\\",\\"commentaire\\":null,\\"id_periode_inventaire\\":null,\\"valide_par\\":2,\\"date_validation\\":\\"2026-07-27T22:07:06.000000Z\\",\\"statut_validation\\":\\"VALID\\\\u00c9\\",\\"deleted_at\\":null,\\"created_at\\":\\"2026-07-27T22:06:25.000000Z\\",\\"updated_at\\":\\"2026-07-27T22:07:06.000000Z\\"}"', NULL, '2026-07-27 22:07:06', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', NULL, '2026-07-27 20:07:06', '2026-07-27 20:07:06'),
+	(479, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko\\\\/20100101 Firefox\\\\/154.0\\"}"', '2026-07-27 22:18:36', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', 'api/auth/login', '2026-07-27 20:18:36', '2026-07-27 20:18:36'),
+	(480, 2, 'INSERT', 'fiches', 0, NULL, '"{\\"code\\":null,\\"nom\\":null,\\"description\\":null,\\"id_produit_fini\\":null,\\"rendement\\":1,\\"id_ville\\":null,\\"lignes\\":[{\\"id_produit_ingredient\\":null,\\"quantite_ingredient\\":0,\\"id_unite\\":null,\\"commentaire\\":null}]}"', '2026-07-27 22:21:27', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', NULL, '2026-07-27 20:21:27', '2026-07-27 20:21:27'),
+	(481, 2, 'LOGOUT', 'auth', 2, NULL, '"{\\"email\\":\\"ngoma@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-28 09:56:19', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36', 'api/auth/logout', '2026-07-28 07:56:19', '2026-07-28 07:56:19'),
+	(482, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-28 09:56:22', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', 'api/auth/logout', '2026-07-28 07:56:22', '2026-07-28 07:56:22'),
+	(483, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko\\\\/20100101 Firefox\\\\/154.0\\"}"', '2026-07-28 12:37:49', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', 'api/auth/login', '2026-07-28 10:37:49', '2026-07-28 10:37:49'),
+	(484, 1, 'UPDATE', 'bons', 18, NULL, NULL, '2026-07-28 12:38:24', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-28 10:38:24', '2026-07-28 10:38:24'),
+	(485, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\\\\/537.36 (KHTML, like Gecko) Chrome\\\\/150.0.0.0 Safari\\\\/537.36 Edg\\\\/150.0.0.0\\"}"', '2026-07-28 12:43:10', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36 Edg/150.0.0.0', 'api/auth/login', '2026-07-28 10:43:10', '2026-07-28 10:43:10'),
+	(486, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko\\\\/20100101 Firefox\\\\/154.0\\"}"', '2026-07-29 11:48:00', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', 'api/auth/login', '2026-07-29 09:48:00', '2026-07-29 09:48:00'),
+	(487, 1, 'INSERT', 'mouvement', 0, NULL, '"{\\"id_lot\\":18,\\"id_type_mouvement\\":4,\\"quantite\\":2,\\"date_mouvement\\":\\"2026-07-29\\"}"', '2026-07-29 12:28:21', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 10:28:21', '2026-07-29 10:28:21'),
+	(488, 1, 'UPDATE', 'mouvement', 54, '"{\\"id\\":54,\\"id_lot\\":18,\\"id_type_mouvement\\":4,\\"id_facture\\":null,\\"quantite\\":2,\\"date_mouvement\\":\\"2026-07-29T00:00:00.000000Z\\",\\"id_utilisateur\\":1,\\"reference_document\\":null,\\"commentaire\\":null,\\"id_periode_inventaire\\":null,\\"valide_par\\":1,\\"date_validation\\":\\"2026-07-29T12:28:26.000000Z\\",\\"statut_validation\\":\\"VALID\\\\u00c9\\",\\"deleted_at\\":null,\\"created_at\\":\\"2026-07-29T12:28:21.000000Z\\",\\"updated_at\\":\\"2026-07-29T12:28:26.000000Z\\"}"', NULL, '2026-07-29 12:28:26', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 10:28:26', '2026-07-29 10:28:26'),
+	(489, 1, 'INSERT', 'inventaire', 0, NULL, NULL, '2026-07-29 12:41:08', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 10:41:08', '2026-07-29 10:41:08'),
+	(490, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-07-29 12:55:56', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', 'api/auth/logout', '2026-07-29 10:55:56', '2026-07-29 10:55:56'),
+	(491, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko\\\\/20100101 Firefox\\\\/154.0\\"}"', '2026-07-29 12:56:02', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', 'api/auth/login', '2026-07-29 10:56:02', '2026-07-29 10:56:02'),
+	(492, 1, 'INSERT', 'produit', 0, NULL, '"{\\"code_barre\\":null,\\"nom\\":\\"Sardine\\",\\"description\\":null,\\"id_categorie\\":\\"2\\",\\"id_partenaire_principal\\":\\"1\\",\\"id_unite\\":\\"12\\",\\"seuil_alerte\\":\\"100\\",\\"prix_achat_ht\\":\\"2000\\",\\"prix_vente_ht\\":\\"2500\\",\\"id_devise\\":\\"1\\",\\"date_application\\":\\"2026-07-29\\",\\"commentaire_prix\\":null,\\"actif\\":\\"1\\"}"', '2026-07-29 13:02:28', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:02:28', '2026-07-29 11:02:28'),
+	(493, 1, 'INSERT', 'bons', 0, NULL, '"{\\"numero_commande\\":null,\\"id_partenaire\\":\\"1\\",\\"id_ville_destination\\":\\"1\\",\\"date_commande\\":\\"2026-07-29\\",\\"date_livraison_prevue\\":\\"2026-08-09\\",\\"id_devise\\":\\"1\\",\\"commentaire\\":null,\\"lignes\\":[{\\"id_produit\\":\\"13\\",\\"quantite_commandee\\":\\"5\\",\\"prix_unitaire_ht\\":\\"2000.00\\",\\"id_devise\\":\\"1\\"}]}"', '2026-07-29 13:03:51', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:03:51', '2026-07-29 11:03:51'),
+	(494, 1, 'UPDATE', 'bons', 19, NULL, NULL, '2026-07-29 13:04:04', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:04:04', '2026-07-29 11:04:04'),
+	(495, 1, 'UPDATE', 'bons', 19, NULL, '"{\\"receptions\\":[{\\"id_ligne_commande\\":30,\\"quantite_recue\\":5,\\"numero_lot\\":null,\\"date_peremption\\":\\"2027-03-21\\",\\"id_zone\\":2,\\"id_emplacement\\":2,\\"prix_achat_ht_unitaire\\":2000}]}"', '2026-07-29 13:05:27', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:05:27', '2026-07-29 11:05:27'),
+	(496, 1, 'UPDATE', 'bons', 19, NULL, '"{\\"receptions\\":[{\\"id_ligne_commande\\":30,\\"quantite_recue\\":5,\\"numero_lot\\":\\"LOT-2607-2520\\",\\"date_peremption\\":\\"2027-01-31\\",\\"id_zone\\":2,\\"id_emplacement\\":2,\\"prix_achat_ht_unitaire\\":2000}]}"', '2026-07-29 13:07:41', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:07:41', '2026-07-29 11:07:41'),
+	(497, 1, 'UPDATE', 'mouvement', 55, '"{\\"id\\":55,\\"id_lot\\":19,\\"id_type_mouvement\\":1,\\"id_facture\\":null,\\"quantite\\":5,\\"date_mouvement\\":\\"2026-07-29T13:07:41.000000Z\\",\\"id_utilisateur\\":1,\\"reference_document\\":\\"BC-2607-0001\\",\\"commentaire\\":\\"R\\\\u00e9ception du bon de commande #BC-2607-0001\\",\\"id_periode_inventaire\\":null,\\"valide_par\\":1,\\"date_validation\\":\\"2026-07-29T13:10:52.000000Z\\",\\"statut_validation\\":\\"VALID\\\\u00c9\\",\\"deleted_at\\":null,\\"created_at\\":\\"2026-07-29T13:07:41.000000Z\\",\\"updated_at\\":\\"2026-07-29T13:10:52.000000Z\\"}"', NULL, '2026-07-29 13:10:52', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:10:52', '2026-07-29 11:10:52'),
+	(498, 1, 'INSERT', 'produit', 0, NULL, '"{\\"code_barre\\":null,\\"nom\\":\\"Pain au lait\\",\\"description\\":null,\\"id_categorie\\":\\"2\\",\\"id_partenaire_principal\\":\\"1\\",\\"id_unite\\":\\"7\\",\\"seuil_alerte\\":\\"50\\",\\"prix_achat_ht\\":\\"10000\\",\\"prix_vente_ht\\":\\"15000\\",\\"id_devise\\":\\"1\\",\\"date_application\\":\\"2026-07-29\\",\\"commentaire_prix\\":null,\\"actif\\":\\"1\\"}"', '2026-07-29 13:21:04', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:21:04', '2026-07-29 11:21:04'),
+	(499, 1, 'INSERT', 'bons', 0, NULL, '"{\\"numero_commande\\":\\"BC-P5865\\",\\"id_partenaire\\":\\"1\\",\\"id_ville_destination\\":\\"1\\",\\"date_commande\\":\\"2026-07-29\\",\\"date_livraison_prevue\\":\\"2026-08-09\\",\\"id_devise\\":\\"1\\",\\"commentaire\\":null,\\"lignes\\":[{\\"id_produit\\":\\"14\\",\\"quantite_commandee\\":\\"5\\",\\"prix_unitaire_ht\\":\\"10000.00\\",\\"id_devise\\":\\"1\\"}]}"', '2026-07-29 13:22:04', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:22:04', '2026-07-29 11:22:04'),
+	(500, 1, 'UPDATE', 'bons', 20, NULL, NULL, '2026-07-29 13:22:12', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:22:12', '2026-07-29 11:22:12'),
+	(501, 1, 'UPDATE', 'bons', 20, NULL, '"{\\"receptions\\":[{\\"id_ligne_commande\\":31,\\"quantite_recue\\":5,\\"numero_lot\\":\\"LOT-2607-3821\\",\\"date_peremption\\":\\"2026-07-30\\",\\"id_zone\\":2,\\"id_emplacement\\":2,\\"prix_achat_ht_unitaire\\":10000}]}"', '2026-07-29 13:22:49', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:22:49', '2026-07-29 11:22:49'),
+	(502, 1, 'INSERT', 'bons', 0, NULL, '"{\\"numero_commande\\":null,\\"id_partenaire\\":\\"1\\",\\"id_ville_destination\\":\\"1\\",\\"date_commande\\":\\"2026-07-29\\",\\"date_livraison_prevue\\":null,\\"id_devise\\":\\"1\\",\\"commentaire\\":null,\\"lignes\\":[{\\"id_produit\\":\\"14\\",\\"quantite_commandee\\":\\"50\\",\\"prix_unitaire_ht\\":\\"10000.00\\",\\"id_devise\\":\\"1\\"}]}"', '2026-07-29 13:25:09', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:25:09', '2026-07-29 11:25:09'),
+	(503, 1, 'UPDATE', 'bons', 21, NULL, NULL, '2026-07-29 13:25:55', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:25:55', '2026-07-29 11:25:55'),
+	(504, 1, 'UPDATE', 'bons', 21, NULL, '"{\\"receptions\\":[{\\"id_ligne_commande\\":32,\\"quantite_recue\\":50,\\"numero_lot\\":\\"LOT-2607-1036\\",\\"date_peremption\\":\\"2026-07-26\\",\\"id_zone\\":2,\\"id_emplacement\\":2,\\"prix_achat_ht_unitaire\\":10000}]}"', '2026-07-29 13:26:22', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:26:22', '2026-07-29 11:26:22'),
+	(505, 1, 'UPDATE', 'bons', 21, NULL, '"{\\"receptions\\":[{\\"id_ligne_commande\\":32,\\"quantite_recue\\":50,\\"numero_lot\\":\\"LOT-2607-1036\\",\\"date_peremption\\":\\"2028-03-03\\",\\"id_zone\\":2,\\"id_emplacement\\":2,\\"prix_achat_ht_unitaire\\":10000}]}"', '2026-07-29 13:26:37', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:26:37', '2026-07-29 11:26:37'),
+	(506, 1, 'UPDATE', 'mouvement', 56, '"{\\"id\\":56,\\"id_lot\\":20,\\"id_type_mouvement\\":1,\\"id_facture\\":null,\\"quantite\\":5,\\"date_mouvement\\":\\"2026-07-29T13:22:49.000000Z\\",\\"id_utilisateur\\":1,\\"reference_document\\":\\"BC-P5865\\",\\"commentaire\\":\\"R\\\\u00e9ception du bon de commande #BC-P5865\\",\\"id_periode_inventaire\\":null,\\"valide_par\\":1,\\"date_validation\\":\\"2026-07-29T13:27:48.000000Z\\",\\"statut_validation\\":\\"VALID\\\\u00c9\\",\\"deleted_at\\":null,\\"created_at\\":\\"2026-07-29T13:22:49.000000Z\\",\\"updated_at\\":\\"2026-07-29T13:27:48.000000Z\\"}"', NULL, '2026-07-29 13:27:48', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:27:48', '2026-07-29 11:27:48'),
+	(507, 1, 'UPDATE', 'lot', 21, '"{\\"id\\":21,\\"id_produit\\":14,\\"id_ville\\":1,\\"id_zone\\":2,\\"id_emplacement\\":2,\\"numero_lot\\":\\"LOT-2607-1036\\",\\"code_qr\\":\\"QR-LOT-2607-1036-6a69ff8d42890\\",\\"quantite_recue\\":50,\\"quantite_disponible\\":50,\\"date_fabrication\\":null,\\"date_peremption\\":\\"2028-03-03T00:00:00.000000Z\\",\\"date_reception\\":\\"2026-07-29T13:26:37.000000Z\\",\\"id_partenaire\\":1,\\"prix_achat_ht_unitaire\\":\\"10000.00\\",\\"id_devise\\":1,\\"valide_par\\":1,\\"date_validation\\":\\"2026-07-29T13:28:25.000000Z\\",\\"statut_validation\\":\\"VALID\\\\u00c9\\",\\"commentaire\\":null,\\"deleted_at\\":null,\\"created_at\\":\\"2026-07-29T13:26:37.000000Z\\",\\"updated_at\\":\\"2026-07-29T13:28:25.000000Z\\"}"', NULL, '2026-07-29 13:28:25', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:28:25', '2026-07-29 11:28:25'),
+	(508, 1, 'UPDATE', 'mouvement', 57, '"{\\"id\\":57,\\"id_lot\\":21,\\"id_type_mouvement\\":1,\\"id_facture\\":null,\\"quantite\\":50,\\"date_mouvement\\":\\"2026-07-29T13:26:37.000000Z\\",\\"id_utilisateur\\":1,\\"reference_document\\":\\"BC-2607-0002\\",\\"commentaire\\":\\"R\\\\u00e9ception du bon de commande #BC-2607-0002\\",\\"id_periode_inventaire\\":null,\\"valide_par\\":1,\\"date_validation\\":\\"2026-07-29T13:29:46.000000Z\\",\\"statut_validation\\":\\"VALID\\\\u00c9\\",\\"deleted_at\\":null,\\"created_at\\":\\"2026-07-29T13:26:37.000000Z\\",\\"updated_at\\":\\"2026-07-29T13:29:46.000000Z\\"}"', NULL, '2026-07-29 13:29:46', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:29:46', '2026-07-29 11:29:46'),
+	(509, 1, 'INSERT', 'periodes', 0, NULL, '"{\\"libelle\\":\\"Kin-du 1 juillet au 31 juillet\\",\\"date_debut\\":\\"2026-07-01\\",\\"date_fin\\":\\"2026-07-31\\",\\"id_ville\\":\\"1\\",\\"description\\":null}"', '2026-07-29 13:30:47', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:30:47', '2026-07-29 11:30:47'),
+	(510, 1, 'UPDATE', 'periodes', 4, NULL, NULL, '2026-07-29 13:30:54', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:30:54', '2026-07-29 11:30:54'),
+	(511, 1, 'UPDATE', 'periodes', 4, NULL, NULL, '2026-07-29 13:31:26', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:31:26', '2026-07-29 11:31:26'),
+	(512, 1, 'INSERT', 'periodes', 0, NULL, '"{\\"libelle\\":\\"inventaire du mois de juillet 2027\\",\\"date_debut\\":\\"2026-07-01\\",\\"date_fin\\":\\"2026-07-31\\",\\"id_ville\\":\\"1\\",\\"description\\":null}"', '2026-07-29 13:32:36', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:32:36', '2026-07-29 11:32:36'),
+	(513, 1, 'UPDATE', 'periodes', 5, NULL, NULL, '2026-07-29 13:32:41', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:32:41', '2026-07-29 11:32:41'),
+	(514, 1, 'INSERT', 'inventaire', 0, NULL, '"{\\"id_periode_inventaire\\":5,\\"id_produit\\":14,\\"id_ville\\":1,\\"stock_physique_compte\\":50,\\"commentaire\\":null}"', '2026-07-29 13:33:14', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:33:14', '2026-07-29 11:33:14'),
+	(515, 1, 'UPDATE', 'periodes', 5, NULL, NULL, '2026-07-29 13:33:50', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:33:50', '2026-07-29 11:33:50'),
+	(516, 1, 'INSERT', 'inventaire', 0, NULL, NULL, '2026-07-29 13:34:00', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:34:00', '2026-07-29 11:34:00'),
+	(517, 1, 'INSERT', 'inventaire', 0, NULL, NULL, '2026-07-29 13:34:10', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:34:10', '2026-07-29 11:34:10'),
+	(518, 1, 'UPDATE', 'lot', 20, '"{\\"id\\":20,\\"id_produit\\":14,\\"id_ville\\":1,\\"id_zone\\":2,\\"id_emplacement\\":2,\\"numero_lot\\":\\"LOT-2607-3821\\",\\"code_qr\\":\\"QR-LOT-2607-3821-6a69fea93f5d1\\",\\"quantite_recue\\":5,\\"quantite_disponible\\":5,\\"date_fabrication\\":null,\\"date_peremption\\":\\"2026-07-30T00:00:00.000000Z\\",\\"date_reception\\":\\"2026-07-29T13:22:49.000000Z\\",\\"id_partenaire\\":1,\\"prix_achat_ht_unitaire\\":\\"10000.00\\",\\"id_devise\\":1,\\"valide_par\\":1,\\"date_validation\\":\\"2026-07-29T13:35:14.000000Z\\",\\"statut_validation\\":\\"VALID\\\\u00c9\\",\\"commentaire\\":null,\\"deleted_at\\":null,\\"created_at\\":\\"2026-07-29T13:22:49.000000Z\\",\\"updated_at\\":\\"2026-07-29T13:35:14.000000Z\\"}"', NULL, '2026-07-29 13:35:14', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:35:14', '2026-07-29 11:35:14'),
+	(519, 1, 'INSERT', 'inventaire', 0, NULL, NULL, '2026-07-29 13:35:24', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:35:24', '2026-07-29 11:35:24'),
+	(520, 1, 'INSERT', 'periodes', 0, NULL, '"{\\"libelle\\":\\"inventaire Juillet 2026\\",\\"date_debut\\":\\"2026-07-01\\",\\"date_fin\\":\\"2026-07-31\\",\\"id_ville\\":\\"1\\",\\"description\\":null}"', '2026-07-29 13:36:07', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:36:07', '2026-07-29 11:36:07'),
+	(521, 1, 'UPDATE', 'periodes', 6, NULL, NULL, '2026-07-29 13:38:19', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:38:19', '2026-07-29 11:38:19'),
+	(522, 1, 'INSERT', 'inventaire', 0, NULL, '"{\\"id_periode_inventaire\\":6,\\"id_produit\\":14,\\"id_ville\\":1,\\"stock_physique_compte\\":40,\\"commentaire\\":null}"', '2026-07-29 13:40:14', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:40:14', '2026-07-29 11:40:14'),
+	(523, 1, 'UPDATE', 'periodes', 6, NULL, NULL, '2026-07-29 13:40:50', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:40:50', '2026-07-29 11:40:50'),
+	(524, 1, 'INSERT', 'inventaire', 0, NULL, NULL, '2026-07-29 13:41:25', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:41:25', '2026-07-29 11:41:25'),
+	(525, 1, 'INSERT', 'lot', 0, NULL, '"{\\"id_produit\\":14,\\"id_ville\\":1,\\"id_zone\\":2,\\"quantite_recue\\":11,\\"date_peremption\\":\\"2027-10-30\\",\\"numero_lot\\":\\"LOT-P5874\\",\\"id_emplacement\\":2,\\"date_fabrication\\":\\"2026-07-16\\",\\"id_partenaire\\":4}"', '2026-07-29 13:47:08', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:47:08', '2026-07-29 11:47:08'),
+	(526, 1, 'UPDATE', 'lot', 22, '"{\\"id\\":22,\\"id_produit\\":14,\\"id_ville\\":1,\\"id_zone\\":2,\\"id_emplacement\\":2,\\"numero_lot\\":\\"LOT-P5874\\",\\"code_qr\\":\\"QR-LOT-P5874-6a6a045c33526\\",\\"quantite_recue\\":11,\\"quantite_disponible\\":11,\\"date_fabrication\\":\\"2026-07-16T00:00:00.000000Z\\",\\"date_peremption\\":\\"2027-10-30T00:00:00.000000Z\\",\\"date_reception\\":\\"2026-07-29T13:47:08.000000Z\\",\\"id_partenaire\\":4,\\"prix_achat_ht_unitaire\\":null,\\"id_devise\\":null,\\"valide_par\\":1,\\"date_validation\\":\\"2026-07-29T13:47:15.000000Z\\",\\"statut_validation\\":\\"VALID\\\\u00c9\\",\\"commentaire\\":null,\\"deleted_at\\":null,\\"created_at\\":\\"2026-07-29T13:47:08.000000Z\\",\\"updated_at\\":\\"2026-07-29T13:47:15.000000Z\\"}"', NULL, '2026-07-29 13:47:15', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:47:15', '2026-07-29 11:47:15'),
+	(527, 1, 'INSERT', 'mouvement', 0, NULL, '"{\\"id_lot\\":22,\\"id_type_mouvement\\":2,\\"quantite\\":3,\\"date_mouvement\\":\\"2026-07-29\\",\\"reference_document\\":\\"Ref-6524\\"}"', '2026-07-29 13:48:17', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:48:17', '2026-07-29 11:48:17'),
+	(528, 1, 'UPDATE', 'mouvement', 59, '"{\\"id\\":59,\\"id_lot\\":22,\\"id_type_mouvement\\":2,\\"id_facture\\":null,\\"quantite\\":3,\\"date_mouvement\\":\\"2026-07-29T00:00:00.000000Z\\",\\"id_utilisateur\\":1,\\"reference_document\\":\\"Ref-6524\\",\\"commentaire\\":null,\\"id_periode_inventaire\\":null,\\"valide_par\\":1,\\"date_validation\\":\\"2026-07-29T13:48:33.000000Z\\",\\"statut_validation\\":\\"VALID\\\\u00c9\\",\\"deleted_at\\":null,\\"created_at\\":\\"2026-07-29T13:48:17.000000Z\\",\\"updated_at\\":\\"2026-07-29T13:48:33.000000Z\\"}"', NULL, '2026-07-29 13:48:33', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:48:33', '2026-07-29 11:48:33'),
+	(529, 1, 'INSERT', 'mouvement', 0, NULL, '"{\\"id_lot\\":22,\\"id_type_mouvement\\":1,\\"quantite\\":8,\\"date_mouvement\\":\\"2026-07-29\\"}"', '2026-07-29 13:49:37', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:49:37', '2026-07-29 11:49:37'),
+	(530, 1, 'UPDATE', 'mouvement', 60, '"{\\"id\\":60,\\"id_lot\\":22,\\"id_type_mouvement\\":1,\\"id_facture\\":null,\\"quantite\\":8,\\"date_mouvement\\":\\"2026-07-29T00:00:00.000000Z\\",\\"id_utilisateur\\":1,\\"reference_document\\":null,\\"commentaire\\":null,\\"id_periode_inventaire\\":null,\\"valide_par\\":1,\\"date_validation\\":\\"2026-07-29T13:49:54.000000Z\\",\\"statut_validation\\":\\"VALID\\\\u00c9\\",\\"deleted_at\\":null,\\"created_at\\":\\"2026-07-29T13:49:37.000000Z\\",\\"updated_at\\":\\"2026-07-29T13:49:54.000000Z\\"}"', NULL, '2026-07-29 13:49:54', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:49:54', '2026-07-29 11:49:54'),
+	(531, 1, 'INSERT', 'mouvement', 0, NULL, '"{\\"id_lot\\":22,\\"id_type_mouvement\\":1,\\"quantite\\":4,\\"date_mouvement\\":\\"2026-07-29\\"}"', '2026-07-29 13:50:32', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:50:32', '2026-07-29 11:50:32'),
+	(532, 1, 'UPDATE', 'mouvement', 61, '"{\\"id\\":61,\\"id_lot\\":22,\\"id_type_mouvement\\":1,\\"id_facture\\":null,\\"quantite\\":4,\\"date_mouvement\\":\\"2026-07-29T00:00:00.000000Z\\",\\"id_utilisateur\\":1,\\"reference_document\\":null,\\"commentaire\\":null,\\"id_periode_inventaire\\":null,\\"valide_par\\":1,\\"date_validation\\":\\"2026-07-29T13:50:37.000000Z\\",\\"statut_validation\\":\\"VALID\\\\u00c9\\",\\"deleted_at\\":null,\\"created_at\\":\\"2026-07-29T13:50:32.000000Z\\",\\"updated_at\\":\\"2026-07-29T13:50:37.000000Z\\"}"', NULL, '2026-07-29 13:50:37', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:50:37', '2026-07-29 11:50:37'),
+	(533, 1, 'INSERT', 'retour', 0, NULL, '"{\\"date_retour\\":\\"2026-07-29\\",\\"id_ville\\":1,\\"lignes\\":[{\\"id_lot\\":22,\\"quantite_retournee\\":2}],\\"id_partenaire_dest\\":2}"', '2026-07-29 13:52:02', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:52:02', '2026-07-29 11:52:02'),
+	(534, 1, 'UPDATE', 'retour', 12, '"{\\"id\\":12,\\"numero_retour\\":\\"RET-2607-0001\\",\\"date_retour\\":\\"2026-07-29T00:00:00.000000Z\\",\\"id_partenaire_client\\":null,\\"id_zone_provenance\\":null,\\"id_emplacement_provenance\\":null,\\"id_partenaire_dest\\":2,\\"id_zone_dest\\":null,\\"id_emplacement_dest\\":null,\\"id_ville\\":1,\\"id_utilisateur\\":1,\\"commentaire\\":null,\\"valide_par\\":1,\\"date_validation\\":\\"2026-07-29T13:52:11.000000Z\\",\\"statut_validation\\":\\"VALID\\\\u00c9\\",\\"deleted_at\\":null,\\"created_at\\":\\"2026-07-29T13:52:02.000000Z\\",\\"updated_at\\":\\"2026-07-29T13:52:11.000000Z\\"}"', NULL, '2026-07-29 13:52:11', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:52:11', '2026-07-29 11:52:11'),
+	(535, 1, 'UPDATE', 'retour', 12, '"{\\"id\\":12,\\"numero_retour\\":\\"RET-2607-0001\\",\\"date_retour\\":\\"2026-07-29T00:00:00.000000Z\\",\\"id_partenaire_client\\":null,\\"id_zone_provenance\\":null,\\"id_emplacement_provenance\\":null,\\"id_partenaire_dest\\":2,\\"id_zone_dest\\":null,\\"id_emplacement_dest\\":null,\\"id_ville\\":1,\\"id_utilisateur\\":1,\\"commentaire\\":null,\\"valide_par\\":1,\\"date_validation\\":\\"2026-07-29T13:52:11.000000Z\\",\\"statut_validation\\":\\"TRAIT\\\\u00c9\\",\\"deleted_at\\":null,\\"created_at\\":\\"2026-07-29T13:52:02.000000Z\\",\\"updated_at\\":\\"2026-07-29T13:52:28.000000Z\\"}"', NULL, '2026-07-29 13:52:28', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:52:28', '2026-07-29 11:52:28'),
+	(536, 1, 'INSERT', 'fiches', 0, NULL, '"{\\"code\\":null,\\"nom\\":\\"kkk\\",\\"description\\":null,\\"id_produit_fini\\":\\"14\\",\\"rendement\\":7,\\"id_ville\\":\\"1\\",\\"lignes\\":[{\\"id_produit_ingredient\\":\\"14\\",\\"quantite_ingredient\\":5,\\"id_unite\\":\\"12\\",\\"commentaire\\":null}]}"', '2026-07-29 13:56:41', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:56:41', '2026-07-29 11:56:41'),
+	(537, 1, 'DELETE', 'fiches', 8, NULL, NULL, '2026-07-29 13:57:37', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:57:37', '2026-07-29 11:57:37'),
+	(538, 1, 'INSERT', 'fiches', 0, NULL, '"{\\"code\\":\\"rrr\\",\\"nom\\":\\"rr\\",\\"description\\":null,\\"id_produit_fini\\":\\"14\\",\\"rendement\\":1,\\"id_ville\\":\\"1\\",\\"lignes\\":[{\\"id_produit_ingredient\\":\\"14\\",\\"quantite_ingredient\\":5,\\"id_unite\\":\\"10\\",\\"commentaire\\":null}]}"', '2026-07-29 13:58:09', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:58:09', '2026-07-29 11:58:09'),
+	(539, 1, 'DELETE', 'fiches', 9, NULL, NULL, '2026-07-29 13:58:15', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:58:15', '2026-07-29 11:58:15'),
+	(540, 1, 'INSERT', 'entree', 0, NULL, '"{\\"id_fiche_technique\\":7,\\"quantite_produite\\":1,\\"id_ville\\":1,\\"id_zone\\":1,\\"id_emplacement\\":1,\\"date_production\\":\\"2026-07-29\\"}"', '2026-07-29 13:59:52', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 11:59:52', '2026-07-29 11:59:52'),
+	(541, 1, 'INSERT', 'facture', 0, NULL, '"{\\"numero_facture\\":null,\\"date_facture\\":\\"2026-07-29\\",\\"date_echeance\\":null,\\"id_partenaire_client\\":null,\\"id_ville\\":null,\\"id_devise\\":null,\\"commentaire\\":null,\\"lignes\\":[{\\"id_produit\\":null,\\"quantite\\":1,\\"prix_unitaire_ht\\":0,\\"remise\\":0}]}"', '2026-07-29 14:00:44', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:00:44', '2026-07-29 12:00:44'),
+	(542, 1, 'INSERT', 'facture', 0, NULL, '"{\\"numero_facture\\":null,\\"date_facture\\":\\"2026-07-29\\",\\"date_echeance\\":\\"2026-07-25\\",\\"id_partenaire_client\\":\\"3\\",\\"id_bon_commande\\":\\"0\\",\\"id_ville\\":\\"1\\",\\"id_devise\\":\\"1\\",\\"commentaire\\":null,\\"lignes\\":[{\\"id_produit\\":\\"14\\",\\"quantite\\":5,\\"prix_unitaire_ht\\":15000,\\"remise\\":0,\\"id_lot\\":\\"22\\"}]}"', '2026-07-29 14:02:05', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:02:05', '2026-07-29 12:02:05'),
+	(543, 1, 'INSERT', 'facture', 0, NULL, '"{\\"numero_facture\\":null,\\"date_facture\\":\\"2026-07-29\\",\\"date_echeance\\":\\"2027-08-12\\",\\"id_partenaire_client\\":\\"3\\",\\"id_bon_commande\\":\\"0\\",\\"id_ville\\":\\"1\\",\\"id_devise\\":\\"1\\",\\"commentaire\\":null,\\"lignes\\":[{\\"id_produit\\":\\"14\\",\\"quantite\\":5,\\"prix_unitaire_ht\\":15000,\\"remise\\":0,\\"id_lot\\":\\"22\\"}]}"', '2026-07-29 14:02:26', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:02:26', '2026-07-29 12:02:26'),
+	(544, 1, 'INSERT', 'facture', 0, NULL, '"{\\"numero_facture\\":null,\\"date_facture\\":\\"2026-07-29\\",\\"date_echeance\\":\\"2027-08-12\\",\\"id_partenaire_client\\":\\"3\\",\\"id_ville\\":\\"1\\",\\"id_devise\\":\\"1\\",\\"commentaire\\":null,\\"lignes\\":[{\\"id_produit\\":\\"14\\",\\"quantite\\":5,\\"prix_unitaire_ht\\":15000,\\"remise\\":0,\\"id_lot\\":\\"22\\"}]}"', '2026-07-29 14:02:43', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:02:43', '2026-07-29 12:02:43'),
+	(545, 1, 'UPDATE', 'facture', 7, '"{\\"id\\":7,\\"numero_facture\\":\\"FAC-2607-0001\\",\\"date_facture\\":\\"2026-07-29T00:00:00.000000Z\\",\\"date_echeance\\":\\"2027-08-12T00:00:00.000000Z\\",\\"id_partenaire_client\\":3,\\"id_bon_commande\\":null,\\"id_ville\\":1,\\"id_devise\\":1,\\"montant_ht\\":\\"75000.00\\",\\"montant_ttc\\":\\"75000.00\\",\\"id_utilisateur\\":1,\\"statut\\":\\"EMISE\\",\\"commentaire\\":null,\\"deleted_at\\":null,\\"created_at\\":\\"2026-07-29T14:02:43.000000Z\\",\\"updated_at\\":\\"2026-07-29T14:02:57.000000Z\\"}"', NULL, '2026-07-29 14:02:57', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:02:57', '2026-07-29 12:02:57'),
+	(546, 1, 'INSERT', 'paiement', 0, NULL, '"{\\"id_facture\\":\\"7\\",\\"montant\\":\\"4000\\",\\"date_paiement\\":\\"2026-07-29\\",\\"mode_paiement\\":\\"CHEQUE\\",\\"reference\\":null,\\"commentaire\\":null}"', '2026-07-29 14:03:42', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:03:42', '2026-07-29 12:03:42'),
+	(547, 1, 'INSERT', 'fiches', 0, NULL, '"{\\"code\\":null,\\"nom\\":\\"poulet-carotte\\",\\"description\\":null,\\"id_produit_fini\\":\\"13\\",\\"rendement\\":7,\\"id_ville\\":\\"1\\",\\"lignes\\":[{\\"id_produit_ingredient\\":\\"14\\",\\"quantite_ingredient\\":2,\\"id_unite\\":\\"11\\",\\"commentaire\\":null},{\\"id_produit_ingredient\\":\\"13\\",\\"quantite_ingredient\\":3,\\"id_unite\\":\\"11\\",\\"commentaire\\":null}]}"', '2026-07-29 14:10:30', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:10:30', '2026-07-29 12:10:30'),
+	(550, 1, 'INSERT', 'mouvement', 0, NULL, '"{\\"id_lot\\":15,\\"id_type_mouvement\\":1,\\"quantite\\":100,\\"date_mouvement\\":\\"2026-07-29\\"}"', '2026-07-29 14:13:31', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:13:31', '2026-07-29 12:13:31'),
+	(551, 1, 'UPDATE', 'mouvement', 66, '"{\\"id\\":66,\\"id_lot\\":15,\\"id_type_mouvement\\":1,\\"id_facture\\":null,\\"quantite\\":100,\\"date_mouvement\\":\\"2026-07-29T00:00:00.000000Z\\",\\"id_utilisateur\\":1,\\"reference_document\\":null,\\"commentaire\\":null,\\"id_periode_inventaire\\":null,\\"valide_par\\":1,\\"date_validation\\":\\"2026-07-29T14:13:39.000000Z\\",\\"statut_validation\\":\\"VALID\\\\u00c9\\",\\"deleted_at\\":null,\\"created_at\\":\\"2026-07-29T14:13:31.000000Z\\",\\"updated_at\\":\\"2026-07-29T14:13:39.000000Z\\"}"', NULL, '2026-07-29 14:13:39', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:13:39', '2026-07-29 12:13:39'),
+	(552, 1, 'UPDATE', 'lot', 19, '"{\\"id\\":19,\\"id_produit\\":13,\\"id_ville\\":1,\\"id_zone\\":2,\\"id_emplacement\\":2,\\"numero_lot\\":\\"LOT-2607-2520\\",\\"code_qr\\":\\"QR-LOT-2607-2520-6a69fb1dc2829\\",\\"quantite_recue\\":5,\\"quantite_disponible\\":10,\\"date_fabrication\\":null,\\"date_peremption\\":\\"2027-01-31T00:00:00.000000Z\\",\\"date_reception\\":\\"2026-07-29T13:07:41.000000Z\\",\\"id_partenaire\\":1,\\"prix_achat_ht_unitaire\\":\\"2000.00\\",\\"id_devise\\":1,\\"valide_par\\":1,\\"date_validation\\":\\"2026-07-29T14:14:49.000000Z\\",\\"statut_validation\\":\\"VALID\\\\u00c9\\",\\"commentaire\\":null,\\"deleted_at\\":null,\\"created_at\\":\\"2026-07-29T13:07:41.000000Z\\",\\"updated_at\\":\\"2026-07-29T14:14:49.000000Z\\"}"', NULL, '2026-07-29 14:14:49', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:14:49', '2026-07-29 12:14:49'),
+	(556, 1, 'INSERT', 'mouvement', 0, NULL, '"{\\"id_lot\\":19,\\"id_type_mouvement\\":1,\\"quantite\\":1000,\\"date_mouvement\\":\\"2026-07-29\\"}"', '2026-07-29 14:17:10', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:17:10', '2026-07-29 12:17:10'),
+	(557, 1, 'UPDATE', 'mouvement', 67, '"{\\"id\\":67,\\"id_lot\\":19,\\"id_type_mouvement\\":1,\\"id_facture\\":null,\\"quantite\\":1000,\\"date_mouvement\\":\\"2026-07-29T00:00:00.000000Z\\",\\"id_utilisateur\\":1,\\"reference_document\\":null,\\"commentaire\\":null,\\"id_periode_inventaire\\":null,\\"valide_par\\":1,\\"date_validation\\":\\"2026-07-29T14:17:18.000000Z\\",\\"statut_validation\\":\\"VALID\\\\u00c9\\",\\"deleted_at\\":null,\\"created_at\\":\\"2026-07-29T14:17:10.000000Z\\",\\"updated_at\\":\\"2026-07-29T14:17:18.000000Z\\"}"', NULL, '2026-07-29 14:17:18', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:17:18', '2026-07-29 12:17:18'),
+	(558, 1, 'INSERT', 'entree', 0, NULL, '"{\\"id_fiche_technique\\":10,\\"quantite_produite\\":7,\\"id_ville\\":1,\\"id_zone\\":1,\\"id_emplacement\\":1,\\"date_production\\":\\"2026-07-29\\"}"', '2026-07-29 14:18:34', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:18:34', '2026-07-29 12:18:34'),
+	(559, 1, 'UPDATE', 'lot', 24, '"{\\"id\\":24,\\"id_produit\\":13,\\"id_ville\\":1,\\"id_zone\\":1,\\"id_emplacement\\":1,\\"numero_lot\\":\\"PROD-FT-2607-0002-20260729141834\\",\\"code_qr\\":\\"QR-PROD-6a6a0bba5b2fa\\",\\"quantite_recue\\":49,\\"quantite_disponible\\":49,\\"date_fabrication\\":\\"2026-07-29T00:00:00.000000Z\\",\\"date_peremption\\":\\"2026-08-05T00:00:00.000000Z\\",\\"date_reception\\":\\"2026-07-29T14:18:34.000000Z\\",\\"id_partenaire\\":null,\\"prix_achat_ht_unitaire\\":\\"3714.29\\",\\"id_devise\\":null,\\"valide_par\\":1,\\"date_validation\\":\\"2026-07-29T14:21:14.000000Z\\",\\"statut_validation\\":\\"VALID\\\\u00c9\\",\\"commentaire\\":null,\\"deleted_at\\":null,\\"created_at\\":\\"2026-07-29T14:18:34.000000Z\\",\\"updated_at\\":\\"2026-07-29T14:21:14.000000Z\\"}"', NULL, '2026-07-29 14:21:14', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:21:14', '2026-07-29 12:21:14'),
+	(560, 1, 'INSERT', 'avoir', 0, NULL, '"{\\"date_avoir\\":\\"2026-07-29\\",\\"id_partenaire_client\\":\\"3\\",\\"id_facture_origine\\":\\"7\\",\\"id_devise\\":null,\\"montant_ht\\":\\"10000\\",\\"commentaire\\":null}"', '2026-07-29 14:24:30', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:24:30', '2026-07-29 12:24:30'),
+	(561, 1, 'INSERT', 'avoir', 0, NULL, '"{\\"date_avoir\\":\\"2026-07-29\\",\\"id_partenaire_client\\":\\"3\\",\\"id_facture_origine\\":\\"7\\",\\"id_devise\\":\\"1\\",\\"montant_ht\\":\\"10000\\",\\"commentaire\\":null}"', '2026-07-29 14:24:35', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:24:35', '2026-07-29 12:24:35'),
+	(562, 1, 'DELETE', 'avoir', 11, NULL, NULL, '2026-07-29 14:25:06', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:25:06', '2026-07-29 12:25:06'),
+	(563, 1, 'INSERT', 'avoir', 0, NULL, '"{\\"date_avoir\\":\\"2026-07-29\\",\\"id_partenaire_client\\":\\"3\\",\\"id_facture_origine\\":\\"7\\",\\"id_devise\\":\\"1\\",\\"montant_ht\\":\\"71000\\",\\"commentaire\\":\\"ce client ne dois plus rien\\"}"', '2026-07-29 14:25:56', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:25:56', '2026-07-29 12:25:56'),
+	(564, 1, 'INSERT', 'devis', 0, NULL, '"{\\"numero_devis\\":null,\\"date_devis\\":\\"2026-07-29\\",\\"date_validite\\":null,\\"id_partenaire_client\\":null,\\"id_ville\\":null,\\"id_devise\\":null,\\"commentaire\\":null,\\"lignes\\":[{\\"id_produit\\":null,\\"quantite\\":\\"1\\",\\"prix_unitaire_ht\\":null,\\"remise\\":\\"0\\"}]}"', '2026-07-29 14:26:24', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:26:24', '2026-07-29 12:26:24'),
+	(565, 1, 'INSERT', 'produit', 0, NULL, '"{\\"code_article\\":null,\\"code_barre\\":null,\\"nom\\":\\"Poulet-Mayo\\",\\"description\\":\\"poulet combin\\\\u00e9 avec la mayonnaise\\",\\"id_categorie\\":\\"2\\",\\"id_partenaire_principal\\":\\"1\\",\\"id_unite\\":\\"12\\",\\"seuil_alerte\\":\\"10\\",\\"prix_achat_ht\\":\\"40000\\",\\"prix_vente_ht\\":\\"50000\\",\\"id_devise\\":\\"1\\",\\"date_application\\":\\"2026-07-29\\",\\"commentaire_prix\\":null,\\"actif\\":\\"1\\"}"', '2026-07-29 14:28:17', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:28:17', '2026-07-29 12:28:17'),
+	(566, 1, 'INSERT', 'bons', 0, NULL, '"{\\"numero_commande\\":null,\\"id_partenaire\\":\\"1\\",\\"id_ville_destination\\":\\"1\\",\\"date_commande\\":\\"2026-07-29\\",\\"date_livraison_prevue\\":\\"2026-08-08\\",\\"id_devise\\":\\"1\\",\\"commentaire\\":null,\\"lignes\\":[{\\"id_produit\\":\\"15\\",\\"quantite_commandee\\":\\"100\\",\\"prix_unitaire_ht\\":\\"40000.00\\",\\"id_devise\\":\\"1\\"}]}"', '2026-07-29 14:29:11', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:29:11', '2026-07-29 12:29:11'),
+	(567, 1, 'UPDATE', 'bons', 22, NULL, NULL, '2026-07-29 14:29:17', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:29:17', '2026-07-29 12:29:17'),
+	(568, 1, 'UPDATE', 'bons', 22, NULL, '"{\\"receptions\\":[{\\"id_ligne_commande\\":33,\\"quantite_recue\\":100,\\"numero_lot\\":\\"LOT-2607-5691\\",\\"date_peremption\\":\\"2026-10-31\\",\\"id_zone\\":1,\\"id_emplacement\\":1,\\"prix_achat_ht_unitaire\\":40000}]}"', '2026-07-29 14:29:46', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:29:46', '2026-07-29 12:29:46'),
+	(569, 1, 'INSERT', 'fiches', 0, NULL, '"{\\"code\\":null,\\"nom\\":\\"Poulet-mayo\\",\\"description\\":null,\\"id_produit_fini\\":\\"15\\",\\"rendement\\":5,\\"id_ville\\":\\"1\\",\\"lignes\\":[{\\"id_produit_ingredient\\":\\"12\\",\\"quantite_ingredient\\":4,\\"id_unite\\":\\"7\\",\\"commentaire\\":null},{\\"id_produit_ingredient\\":\\"11\\",\\"quantite_ingredient\\":10,\\"id_unite\\":\\"12\\",\\"commentaire\\":null},{\\"id_produit_ingredient\\":\\"2\\",\\"quantite_ingredient\\":3,\\"id_unite\\":\\"6\\",\\"commentaire\\":null}]}"', '2026-07-29 14:32:46', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:32:46', '2026-07-29 12:32:46'),
+	(573, 1, 'DELETE', 'fiches', 11, NULL, NULL, '2026-07-29 14:34:59', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:34:59', '2026-07-29 12:34:59'),
+	(574, 1, 'INSERT', 'fiches', 0, NULL, '"{\\"code\\":null,\\"nom\\":\\"Poulet mayo\\",\\"description\\":null,\\"id_produit_fini\\":\\"15\\",\\"rendement\\":5,\\"id_ville\\":\\"1\\",\\"lignes\\":[{\\"id_produit_ingredient\\":\\"13\\",\\"quantite_ingredient\\":3,\\"id_unite\\":\\"6\\",\\"commentaire\\":null},{\\"id_produit_ingredient\\":\\"2\\",\\"quantite_ingredient\\":2,\\"id_unite\\":\\"6\\",\\"commentaire\\":null}]}"', '2026-07-29 14:37:10', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:37:10', '2026-07-29 12:37:10'),
+	(576, 1, 'UPDATE', 'lot', 6, '"{\\"id\\":6,\\"id_produit\\":2,\\"id_ville\\":1,\\"id_zone\\":1,\\"id_emplacement\\":1,\\"numero_lot\\":\\"LOT-2026-002\\",\\"code_qr\\":\\"QR-LOT-2026-002-6a5bb3f68ae95\\",\\"quantite_recue\\":50,\\"quantite_disponible\\":50,\\"date_fabrication\\":null,\\"date_peremption\\":\\"2026-08-15T00:00:00.000000Z\\",\\"date_reception\\":\\"2026-07-18T17:12:22.000000Z\\",\\"id_partenaire\\":1,\\"prix_achat_ht_unitaire\\":\\"3.20\\",\\"id_devise\\":1,\\"valide_par\\":1,\\"date_validation\\":\\"2026-07-29T14:38:33.000000Z\\",\\"statut_validation\\":\\"VALID\\\\u00c9\\",\\"commentaire\\":null,\\"deleted_at\\":null,\\"created_at\\":\\"2026-07-18T17:12:22.000000Z\\",\\"updated_at\\":\\"2026-07-29T14:38:33.000000Z\\"}"', NULL, '2026-07-29 14:38:33', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:38:33', '2026-07-29 12:38:33'),
+	(577, 1, 'INSERT', 'entree', 0, NULL, '"{\\"id_fiche_technique\\":12,\\"quantite_produite\\":5,\\"id_ville\\":1,\\"id_zone\\":1,\\"id_emplacement\\":1,\\"date_production\\":\\"2026-07-29\\"}"', '2026-07-29 14:39:22', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:39:22', '2026-07-29 12:39:22'),
+	(578, 1, 'UPDATE', 'lot', 26, '"{\\"id\\":26,\\"id_produit\\":15,\\"id_ville\\":1,\\"id_zone\\":1,\\"id_emplacement\\":1,\\"numero_lot\\":\\"PROD-FT-2607-0004-20260729143922\\",\\"code_qr\\":\\"QR-PROD-6a6a109ac82e7\\",\\"quantite_recue\\":25,\\"quantite_disponible\\":25,\\"date_fabrication\\":\\"2026-07-29T00:00:00.000000Z\\",\\"date_peremption\\":\\"2026-08-05T00:00:00.000000Z\\",\\"date_reception\\":\\"2026-07-29T14:39:22.000000Z\\",\\"id_partenaire\\":null,\\"prix_achat_ht_unitaire\\":\\"1240.00\\",\\"id_devise\\":null,\\"valide_par\\":1,\\"date_validation\\":\\"2026-07-29T14:41:55.000000Z\\",\\"statut_validation\\":\\"VALID\\\\u00c9\\",\\"commentaire\\":null,\\"deleted_at\\":null,\\"created_at\\":\\"2026-07-29T14:39:22.000000Z\\",\\"updated_at\\":\\"2026-07-29T14:41:55.000000Z\\"}"', NULL, '2026-07-29 14:41:55', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:154.0) Gecko/20100101 Firefox/154.0', NULL, '2026-07-29 12:41:55', '2026-07-29 12:41:55');
 
 -- Listage de la structure de table bd_gst_bejamin. avoir
 CREATE TABLE IF NOT EXISTS `avoir` (
@@ -545,7 +645,7 @@ CREATE TABLE IF NOT EXISTS `avoir` (
   CONSTRAINT `avoir_id_partenaire_client_foreign` FOREIGN KEY (`id_partenaire_client`) REFERENCES `partenaires` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `avoir_id_retour_foreign` FOREIGN KEY (`id_retour`) REFERENCES `retour` (`id`) ON DELETE SET NULL,
   CONSTRAINT `avoir_id_utilisateur_foreign` FOREIGN KEY (`id_utilisateur`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Listage des données de la table bd_gst_bejamin.avoir : ~10 rows (environ)
 INSERT INTO `avoir` (`id`, `numero_avoir`, `date_avoir`, `id_partenaire_client`, `id_facture_origine`, `id_retour`, `id_devise`, `montant_ht`, `id_utilisateur`, `commentaire`, `deleted_at`, `created_at`, `updated_at`) VALUES
@@ -558,7 +658,9 @@ INSERT INTO `avoir` (`id`, `numero_avoir`, `date_avoir`, `id_partenaire_client`,
 	(7, 'AV-5241', '2026-07-27', 3, 5, NULL, 2, 20000000.00, 2, NULL, '2026-07-27 18:28:40', '2026-07-27 18:21:42', '2026-07-27 18:28:40'),
 	(8, 'AV-58745', '2026-07-27', 3, 6, NULL, 1, 400.00, 2, 'réduction de la facture', '2026-07-27 18:38:27', '2026-07-27 18:30:20', '2026-07-27 18:38:27'),
 	(9, 'AV-52145', '2026-07-27', 3, 5, NULL, 1, 400.00, 2, NULL, '2026-07-27 18:41:09', '2026-07-27 18:39:34', '2026-07-27 18:41:09'),
-	(10, 'AV-854714', '2026-07-27', 3, 5, NULL, 1, 400.00, 2, NULL, '2026-07-27 18:53:36', '2026-07-27 18:52:03', '2026-07-27 18:53:36');
+	(10, 'AV-854714', '2026-07-27', 3, 5, NULL, 1, 400.00, 2, NULL, '2026-07-27 18:53:36', '2026-07-27 18:52:03', '2026-07-27 18:53:36'),
+	(11, 'AV-2607-0001', '2026-07-29', 3, 7, NULL, 1, 10000.00, 1, NULL, '2026-07-29 12:25:06', '2026-07-29 12:24:35', '2026-07-29 12:25:06'),
+	(12, 'AV-2607-0002', '2026-07-29', 3, 7, NULL, 1, 71000.00, 1, 'ce client ne dois plus rien', NULL, '2026-07-29 12:25:56', '2026-07-29 12:25:56');
 
 -- Listage de la structure de table bd_gst_bejamin. bon_commande
 CREATE TABLE IF NOT EXISTS `bon_commande` (
@@ -597,9 +699,9 @@ CREATE TABLE IF NOT EXISTS `bon_commande` (
   CONSTRAINT `bon_commande_id_utilisateur_foreign` FOREIGN KEY (`id_utilisateur`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL,
   CONSTRAINT `bon_commande_id_ville_destination_foreign` FOREIGN KEY (`id_ville_destination`) REFERENCES `villes` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `bon_commande_valide_par_foreign` FOREIGN KEY (`valide_par`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table bd_gst_bejamin.bon_commande : ~18 rows (environ)
+-- Listage des données de la table bd_gst_bejamin.bon_commande : ~22 rows (environ)
 INSERT INTO `bon_commande` (`id`, `numero_commande`, `id_partenaire`, `id_ville_destination`, `date_commande`, `date_livraison_prevue`, `statut`, `montant_total_ht`, `id_devise`, `id_utilisateur`, `commentaire`, `valide_par`, `date_validation`, `statut_validation`, `deleted_at`, `created_at`, `updated_at`) VALUES
 	(1, 'BC-2026-001', 1, 1, '2026-07-19', '2026-07-25', 'REÇU', 1238.00, 1, 1, 'Commande complète pour vol AF-001 - Kinshasa', 1, '2026-07-18 17:04:03', 'VALIDÉ', NULL, '2026-07-18 14:57:41', '2026-07-18 15:12:22'),
 	(2, 'BC-2026-002', 1, 2, '2026-07-19', '2026-07-26', 'ENVOYÉ', 1102.00, 1, 1, 'Commande pour vol ET-002 - Lubumbashi', 1, '2026-07-21 13:20:54', 'VALIDÉ', NULL, '2026-07-18 15:01:33', '2026-07-21 11:20:54'),
@@ -618,7 +720,11 @@ INSERT INTO `bon_commande` (`id`, `numero_commande`, `id_partenaire`, `id_ville_
 	(15, 'BC-012547', 1, 1, '2026-07-27', '2026-08-09', 'BROUILLON', 2500.00, 1, 1, NULL, NULL, NULL, 'EN ATTENTE', '2026-07-27 18:07:10', '2026-07-27 18:06:49', '2026-07-27 18:07:10'),
 	(16, 'BC-215478', 1, 1, '2026-07-27', '2026-11-26', 'BROUILLON', 2500.00, 1, 3, NULL, NULL, NULL, 'EN ATTENTE', '2026-07-27 18:12:52', '2026-07-27 18:08:39', '2026-07-27 18:12:52'),
 	(17, 'BC-65402', 1, 1, '2026-07-27', '2026-08-01', 'BROUILLON', 32000.00, 1, 3, NULL, NULL, NULL, 'EN ATTENTE', '2026-07-27 18:12:47', '2026-07-27 18:12:05', '2026-07-27 18:12:47'),
-	(18, 'BC-521478', 1, 1, '2026-07-27', '2026-08-09', 'BROUILLON', 40000.00, NULL, 1, NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-27 18:13:45', '2026-07-27 18:13:45');
+	(18, 'BC-521478', 1, 1, '2026-07-27', '2026-08-09', 'ENVOYÉ', 40000.00, NULL, 1, NULL, 1, '2026-07-28 12:38:24', 'VALIDÉ', NULL, '2026-07-27 18:13:45', '2026-07-28 10:38:24'),
+	(19, 'BC-2607-0001', 1, 1, '2026-07-29', '2026-08-09', 'REÇU', 10000.00, 1, 1, NULL, 1, '2026-07-29 13:04:04', 'VALIDÉ', NULL, '2026-07-29 11:03:51', '2026-07-29 11:07:41'),
+	(20, 'BC-P5865', 1, 1, '2026-07-29', '2026-08-09', 'REÇU', 50000.00, 1, 1, NULL, 1, '2026-07-29 13:22:12', 'VALIDÉ', NULL, '2026-07-29 11:22:04', '2026-07-29 11:22:49'),
+	(21, 'BC-2607-0002', 1, 1, '2026-07-29', NULL, 'REÇU', 500000.00, 1, 1, NULL, 1, '2026-07-29 13:25:54', 'VALIDÉ', NULL, '2026-07-29 11:25:09', '2026-07-29 11:26:37'),
+	(22, 'BC-2607-0003', 1, 1, '2026-07-29', '2026-08-08', 'REÇU', 4000000.00, 1, 1, NULL, 1, '2026-07-29 14:29:17', 'VALIDÉ', NULL, '2026-07-29 12:29:11', '2026-07-29 12:29:46');
 
 -- Listage de la structure de table bd_gst_bejamin. categories
 CREATE TABLE IF NOT EXISTS `categories` (
@@ -787,16 +893,17 @@ CREATE TABLE IF NOT EXISTS `facture` (
   CONSTRAINT `facture_id_partenaire_client_foreign` FOREIGN KEY (`id_partenaire_client`) REFERENCES `partenaires` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `facture_id_utilisateur_foreign` FOREIGN KEY (`id_utilisateur`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL,
   CONSTRAINT `facture_id_ville_foreign` FOREIGN KEY (`id_ville`) REFERENCES `villes` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table bd_gst_bejamin.facture : ~6 rows (environ)
+-- Listage des données de la table bd_gst_bejamin.facture : ~7 rows (environ)
 INSERT INTO `facture` (`id`, `numero_facture`, `date_facture`, `date_echeance`, `id_partenaire_client`, `id_bon_commande`, `id_ville`, `id_devise`, `montant_ht`, `montant_ttc`, `id_utilisateur`, `statut`, `commentaire`, `deleted_at`, `created_at`, `updated_at`) VALUES
 	(1, 'FAC-2026-001', '2026-07-19', '2026-08-19', 2, 1, 1, 1, 87.00, 87.00, 1, 'PAYEE', 'Facture pour Ethiopian Airlines', NULL, '2026-07-19 12:12:36', '2026-07-24 19:53:59'),
 	(2, 'FAC-2026-02-02', '2026-07-21', '2026-07-24', 3, NULL, 1, 1, 304.00, 304.00, 1, 'PAYEE', NULL, NULL, '2026-07-21 09:22:32', '2026-07-21 09:23:01'),
 	(3, 'FAC-258745', '2026-07-24', '2026-07-25', 3, NULL, 1, 1, 157700.00, 157700.00, 1, 'PAYEE', NULL, NULL, '2026-07-24 18:43:01', '2026-07-24 19:54:55'),
 	(4, 'FAC-5874', '2026-07-25', '2026-07-26', 3, NULL, 1, 1, 78500.00, 78500.00, 1, 'PAYEE', NULL, NULL, '2026-07-25 14:29:42', '2026-07-25 14:30:01'),
 	(5, 'FAC-8741A', '2026-07-25', '2026-07-30', 4, NULL, 1, 1, 78500.00, 78500.00, 1, 'PAYEE', NULL, NULL, '2026-07-25 14:40:31', '2026-07-27 18:41:09'),
-	(6, 'FAC-254LM', '2026-07-25', '2026-09-08', 3, NULL, 1, 1, 31800.00, 31800.00, 1, 'PAYEE', NULL, NULL, '2026-07-25 14:46:09', '2026-07-27 18:38:27');
+	(6, 'FAC-254LM', '2026-07-25', '2026-09-08', 3, NULL, 1, 1, 31800.00, 31800.00, 1, 'PAYEE', NULL, NULL, '2026-07-25 14:46:09', '2026-07-27 18:38:27'),
+	(7, 'FAC-2607-0001', '2026-07-29', '2027-08-12', 3, NULL, 1, 1, 75000.00, 75000.00, 1, 'EMISE', NULL, NULL, '2026-07-29 12:02:43', '2026-07-29 12:02:57');
 
 -- Listage de la structure de table bd_gst_bejamin. failed_jobs
 CREATE TABLE IF NOT EXISTS `failed_jobs` (
@@ -836,9 +943,9 @@ CREATE TABLE IF NOT EXISTS `fiche_technique` (
   KEY `fiche_technique_actif_index` (`actif`),
   CONSTRAINT `fiche_technique_id_produit_fini_foreign` FOREIGN KEY (`id_produit_fini`) REFERENCES `produits` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `fiche_technique_id_ville_foreign` FOREIGN KEY (`id_ville`) REFERENCES `villes` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table bd_gst_bejamin.fiche_technique : ~5 rows (environ)
+-- Listage des données de la table bd_gst_bejamin.fiche_technique : ~12 rows (environ)
 INSERT INTO `fiche_technique` (`id`, `code`, `nom`, `description`, `id_produit_fini`, `rendement`, `id_ville`, `cout_total`, `cout_unitaire`, `actif`, `deleted_at`, `created_at`, `updated_at`) VALUES
 	(1, 'FT-001', 'Poulet rôti', 'Recette du poulet rôti aux herbes', 1, 10, 1, 9.85, 0.99, 1, NULL, '2026-07-19 13:38:45', '2026-07-19 13:38:45'),
 	(2, 'FT-0015', 'Poulet rôti aux herbes', 'Recette du poulet rôti aux herbes provençales', 2, 10, 1, 0.90, 0.09, 1, NULL, '2026-07-19 13:43:30', '2026-07-19 13:43:30'),
@@ -846,7 +953,12 @@ INSERT INTO `fiche_technique` (`id`, `code`, `nom`, `description`, `id_produit_f
 	(4, 'FT-0071', 'poulet au mwambe', NULL, 3, 2, 1, 8.60, 4.30, 1, NULL, '2026-07-21 08:13:48', '2026-07-21 08:13:48'),
 	(5, 'FT-0057', 'Poulet à la sauce tomaate', NULL, 2, 3, 1, 17.40, 5.80, 1, NULL, '2026-07-21 08:26:24', '2026-07-21 08:26:24'),
 	(6, 'FT-0057-COPY', 'Poulet à la sauce tomaate (Copie)', NULL, 2, 3, 1, 17.40, 5.80, 0, '2026-07-24 18:49:27', '2026-07-21 08:27:06', '2026-07-24 18:49:27'),
-	(7, 'FT-6521', 'Carotte au fromage', NULL, 12, 1, 1, 42500.00, 42500.00, 1, NULL, '2026-07-24 18:38:59', '2026-07-25 16:20:08');
+	(7, 'FT-6521', 'Carotte au fromage', NULL, 12, 1, 1, 42500.00, 42500.00, 1, NULL, '2026-07-24 18:38:59', '2026-07-25 16:20:08'),
+	(8, 'FT-2607-0001', 'kkk', NULL, 14, 7, 1, 50000.00, 7142.86, 1, '2026-07-29 11:57:37', '2026-07-29 11:56:41', '2026-07-29 11:57:37'),
+	(9, 'rrr', 'rr', NULL, 14, 1, 1, 50000.00, 50000.00, 1, '2026-07-29 11:58:15', '2026-07-29 11:58:09', '2026-07-29 11:58:15'),
+	(10, 'FT-2607-0002', 'poulet-carotte', NULL, 13, 7, 1, 26000.00, 3714.29, 1, NULL, '2026-07-29 12:10:30', '2026-07-29 12:10:30'),
+	(11, 'FT-2607-0003', 'Poulet-mayo', NULL, 15, 5, 1, 37300.00, 7460.00, 1, '2026-07-29 12:34:59', '2026-07-29 12:32:46', '2026-07-29 12:34:59'),
+	(12, 'FT-2607-0004', 'Poulet mayo', NULL, 15, 5, 1, 6200.00, 1240.00, 1, NULL, '2026-07-29 12:37:10', '2026-07-29 12:37:10');
 
 -- Listage de la structure de table bd_gst_bejamin. historique_prix
 CREATE TABLE IF NOT EXISTS `historique_prix` (
@@ -870,9 +982,9 @@ CREATE TABLE IF NOT EXISTS `historique_prix` (
   CONSTRAINT `historique_prix_id_devise_foreign` FOREIGN KEY (`id_devise`) REFERENCES `devises` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `historique_prix_id_produit_foreign` FOREIGN KEY (`id_produit`) REFERENCES `produits` (`id`) ON DELETE CASCADE,
   CONSTRAINT `historique_prix_id_utilisateur_foreign` FOREIGN KEY (`id_utilisateur`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table bd_gst_bejamin.historique_prix : ~12 rows (environ)
+-- Listage des données de la table bd_gst_bejamin.historique_prix : ~13 rows (environ)
 INSERT INTO `historique_prix` (`id`, `id_produit`, `prix_achat_ht`, `prix_vente_ht`, `id_devise`, `date_application`, `commentaire`, `id_utilisateur`, `deleted_at`, `created_at`, `updated_at`) VALUES
 	(1, 1, 2.50, 6.00, 1, '2026-07-18', 'Prix d\'introduction', 1, NULL, '2026-07-18 13:22:13', '2026-07-18 13:22:13'),
 	(2, 1, 6.00, 13.50, 1, '2026-07-18', 'Augmentation de prix', 1, NULL, '2026-07-18 13:26:18', '2026-07-18 13:26:18'),
@@ -888,7 +1000,10 @@ INSERT INTO `historique_prix` (`id`, `id_produit`, `prix_achat_ht`, `prix_vente_
 	(12, 10, 10.00, 20.00, 1, '2026-07-20', 'Prix initial', 1, NULL, '2026-07-19 22:02:02', '2026-07-19 22:02:02'),
 	(13, 10, 10.00, 30.00, 1, '2026-07-20', NULL, 1, '2026-07-19 22:08:04', '2026-07-19 22:07:51', '2026-07-19 22:08:04'),
 	(14, 11, 500.00, 700.00, 1, '2026-07-24', '600', 1, NULL, '2026-07-24 11:49:37', '2026-07-24 11:49:37'),
-	(15, 12, 8000.00, 15000.00, 1, '2026-07-24', 'Prix initial', 1, NULL, '2026-07-24 17:23:33', '2026-07-24 17:23:33');
+	(15, 12, 8000.00, 15000.00, 1, '2026-07-24', 'Prix initial', 1, NULL, '2026-07-24 17:23:33', '2026-07-24 17:23:33'),
+	(16, 13, 2000.00, 2500.00, 1, '2026-07-29', 'Prix initial', 1, NULL, '2026-07-29 11:02:28', '2026-07-29 11:02:28'),
+	(17, 14, 10000.00, 15000.00, 1, '2026-07-29', 'Prix initial', 1, NULL, '2026-07-29 11:21:04', '2026-07-29 11:21:04'),
+	(18, 15, 40000.00, 50000.00, 1, '2026-07-29', 'Prix initial', 1, NULL, '2026-07-29 12:28:16', '2026-07-29 12:28:16');
 
 -- Listage de la structure de table bd_gst_bejamin. inventaire
 CREATE TABLE IF NOT EXISTS `inventaire` (
@@ -915,13 +1030,15 @@ CREATE TABLE IF NOT EXISTS `inventaire` (
   CONSTRAINT `inventaire_id_produit_foreign` FOREIGN KEY (`id_produit`) REFERENCES `produits` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `inventaire_id_utilisateur_foreign` FOREIGN KEY (`id_utilisateur`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL,
   CONSTRAINT `inventaire_id_ville_foreign` FOREIGN KEY (`id_ville`) REFERENCES `villes` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table bd_gst_bejamin.inventaire : ~3 rows (environ)
+-- Listage des données de la table bd_gst_bejamin.inventaire : ~5 rows (environ)
 INSERT INTO `inventaire` (`id`, `id_periode_inventaire`, `id_produit`, `id_ville`, `stock_theorique`, `stock_physique_compte`, `date_saisie`, `id_utilisateur`, `commentaire`, `deleted_at`, `created_at`, `updated_at`) VALUES
 	(1, 2, 1, 1, 135, 95, '2026-07-19 13:27:25', 1, 'Comptage physique', NULL, '2026-07-19 11:27:25', '2026-07-19 11:27:25'),
 	(2, 1, 12, 1, 48, 50, '2026-07-24 21:14:03', 1, NULL, NULL, '2026-07-24 19:14:03', '2026-07-24 19:14:03'),
-	(3, 1, 11, 1, 65, 45, '2026-07-24 21:18:11', 1, NULL, NULL, '2026-07-24 19:18:11', '2026-07-24 19:18:11');
+	(3, 1, 11, 1, 65, 45, '2026-07-24 21:18:11', 1, NULL, NULL, '2026-07-24 19:18:11', '2026-07-24 19:18:11'),
+	(4, 5, 14, 1, 50, 50, '2026-07-29 13:33:14', 1, NULL, NULL, '2026-07-29 11:33:14', '2026-07-29 11:33:14'),
+	(5, 6, 14, 1, 55, 40, '2026-07-29 13:40:14', 1, NULL, NULL, '2026-07-29 11:40:14', '2026-07-29 11:40:14');
 
 -- Listage de la structure de table bd_gst_bejamin. ligne_commande
 CREATE TABLE IF NOT EXISTS `ligne_commande` (
@@ -943,9 +1060,9 @@ CREATE TABLE IF NOT EXISTS `ligne_commande` (
   CONSTRAINT `ligne_commande_id_bon_commande_foreign` FOREIGN KEY (`id_bon_commande`) REFERENCES `bon_commande` (`id`) ON DELETE CASCADE,
   CONSTRAINT `ligne_commande_id_devise_foreign` FOREIGN KEY (`id_devise`) REFERENCES `devises` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `ligne_commande_id_produit_foreign` FOREIGN KEY (`id_produit`) REFERENCES `produits` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=34 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table bd_gst_bejamin.ligne_commande : ~29 rows (environ)
+-- Listage des données de la table bd_gst_bejamin.ligne_commande : ~30 rows (environ)
 INSERT INTO `ligne_commande` (`id`, `id_bon_commande`, `id_produit`, `quantite_commandee`, `prix_unitaire_ht`, `id_devise`, `quantite_recue`, `deleted_at`, `created_at`, `updated_at`) VALUES
 	(1, 1, 1, 100, 5.50, 1, 100, NULL, '2026-07-18 14:57:41', '2026-07-18 15:12:22'),
 	(2, 1, 2, 50, 3.20, 1, 50, NULL, '2026-07-18 14:57:41', '2026-07-18 15:12:22'),
@@ -975,7 +1092,11 @@ INSERT INTO `ligne_commande` (`id`, `id_bon_commande`, `id_produit`, `quantite_c
 	(26, 15, 11, 5, 500.00, 1, 0, '2026-07-27 18:07:10', '2026-07-27 18:06:49', '2026-07-27 18:07:10'),
 	(27, 16, 11, 5, 500.00, 1, 0, '2026-07-27 18:12:52', '2026-07-27 18:08:39', '2026-07-27 18:12:52'),
 	(28, 17, 12, 4, 8000.00, 1, 0, '2026-07-27 18:12:47', '2026-07-27 18:12:05', '2026-07-27 18:12:47'),
-	(29, 18, 12, 5, 8000.00, 1, 0, NULL, '2026-07-27 18:13:45', '2026-07-27 18:13:45');
+	(29, 18, 12, 5, 8000.00, 1, 0, NULL, '2026-07-27 18:13:45', '2026-07-27 18:13:45'),
+	(30, 19, 13, 5, 2000.00, 1, 5, NULL, '2026-07-29 11:03:51', '2026-07-29 11:07:41'),
+	(31, 20, 14, 5, 10000.00, 1, 5, NULL, '2026-07-29 11:22:04', '2026-07-29 11:22:49'),
+	(32, 21, 14, 50, 10000.00, 1, 50, NULL, '2026-07-29 11:25:09', '2026-07-29 11:26:37'),
+	(33, 22, 15, 100, 40000.00, 1, 100, NULL, '2026-07-29 12:29:11', '2026-07-29 12:29:46');
 
 -- Listage de la structure de table bd_gst_bejamin. ligne_devis
 CREATE TABLE IF NOT EXISTS `ligne_devis` (
@@ -1023,7 +1144,7 @@ CREATE TABLE IF NOT EXISTS `ligne_facture` (
   CONSTRAINT `ligne_facture_id_facture_foreign` FOREIGN KEY (`id_facture`) REFERENCES `facture` (`id`) ON DELETE CASCADE,
   CONSTRAINT `ligne_facture_id_lot_foreign` FOREIGN KEY (`id_lot`) REFERENCES `lots` (`id`) ON DELETE SET NULL,
   CONSTRAINT `ligne_facture_id_produit_foreign` FOREIGN KEY (`id_produit`) REFERENCES `produits` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Listage des données de la table bd_gst_bejamin.ligne_facture : ~11 rows (environ)
 INSERT INTO `ligne_facture` (`id`, `id_facture`, `id_produit`, `id_lot`, `quantite`, `prix_unitaire_ht`, `remise`, `deleted_at`, `created_at`, `updated_at`) VALUES
@@ -1038,7 +1159,8 @@ INSERT INTO `ligne_facture` (`id`, `id_facture`, `id_produit`, `id_lot`, `quanti
 	(9, 5, 12, 18, 5, 15000.00, 0.00, NULL, '2026-07-25 14:40:31', '2026-07-25 14:40:31'),
 	(10, 5, 11, 16, 5, 700.00, 0.00, NULL, '2026-07-25 14:40:31', '2026-07-25 14:40:31'),
 	(11, 6, 12, 18, 2, 15000.00, 0.00, NULL, '2026-07-25 14:46:09', '2026-07-25 14:46:09'),
-	(12, 6, 11, 16, 2, 700.00, 0.00, NULL, '2026-07-25 14:46:09', '2026-07-25 14:46:09');
+	(12, 6, 11, 16, 2, 700.00, 0.00, NULL, '2026-07-25 14:46:09', '2026-07-25 14:46:09'),
+	(13, 7, 14, 22, 5, 15000.00, 0.00, NULL, '2026-07-29 12:02:43', '2026-07-29 12:02:43');
 
 -- Listage de la structure de table bd_gst_bejamin. ligne_fiche_technique
 CREATE TABLE IF NOT EXISTS `ligne_fiche_technique` (
@@ -1060,9 +1182,9 @@ CREATE TABLE IF NOT EXISTS `ligne_fiche_technique` (
   CONSTRAINT `ligne_fiche_technique_id_fiche_technique_foreign` FOREIGN KEY (`id_fiche_technique`) REFERENCES `fiche_technique` (`id`) ON DELETE CASCADE,
   CONSTRAINT `ligne_fiche_technique_id_produit_ingredient_foreign` FOREIGN KEY (`id_produit_ingredient`) REFERENCES `produits` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `ligne_fiche_technique_id_unite_foreign` FOREIGN KEY (`id_unite`) REFERENCES `unites` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=26 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table bd_gst_bejamin.ligne_fiche_technique : ~15 rows (environ)
+-- Listage des données de la table bd_gst_bejamin.ligne_fiche_technique : ~25 rows (environ)
 INSERT INTO `ligne_fiche_technique` (`id`, `id_fiche_technique`, `id_produit_ingredient`, `quantite_ingredient`, `id_unite`, `prix_unitaire`, `cout_total`, `commentaire`, `deleted_at`, `created_at`, `updated_at`) VALUES
 	(1, 1, 2, 1.50, 4, 5.50, 8.25, 'Poulet frais', NULL, '2026-07-19 13:38:45', '2026-07-19 13:38:45'),
 	(2, 1, 3, 0.50, 4, 3.20, 1.60, 'Herbes', NULL, '2026-07-19 13:38:45', '2026-07-19 13:38:45'),
@@ -1079,7 +1201,16 @@ INSERT INTO `ligne_fiche_technique` (`id`, `id_fiche_technique`, `id_produit_ing
 	(13, 7, 12, 10.00, 7, 8000.00, 80000.00, NULL, '2026-07-25 16:20:08', '2026-07-25 16:19:17', '2026-07-25 16:20:08'),
 	(14, 7, 11, 5.00, 4, 500.00, 2500.00, NULL, '2026-07-25 16:20:08', '2026-07-25 16:19:17', '2026-07-25 16:20:08'),
 	(15, 7, 12, 5.00, 7, 8000.00, 40000.00, NULL, NULL, '2026-07-25 16:20:08', '2026-07-25 16:20:08'),
-	(16, 7, 11, 5.00, 4, 500.00, 2500.00, NULL, NULL, '2026-07-25 16:20:08', '2026-07-25 16:20:08');
+	(16, 7, 11, 5.00, 4, 500.00, 2500.00, NULL, NULL, '2026-07-25 16:20:08', '2026-07-25 16:20:08'),
+	(17, 8, 14, 5.00, 12, 10000.00, 50000.00, NULL, '2026-07-29 11:57:37', '2026-07-29 11:56:41', '2026-07-29 11:57:37'),
+	(18, 9, 14, 5.00, 10, 10000.00, 50000.00, NULL, '2026-07-29 11:58:15', '2026-07-29 11:58:09', '2026-07-29 11:58:15'),
+	(19, 10, 14, 2.00, 11, 10000.00, 20000.00, NULL, NULL, '2026-07-29 12:10:30', '2026-07-29 12:10:30'),
+	(20, 10, 13, 3.00, 11, 2000.00, 6000.00, NULL, NULL, '2026-07-29 12:10:30', '2026-07-29 12:10:30'),
+	(21, 11, 12, 4.00, 7, 8000.00, 32000.00, NULL, '2026-07-29 12:34:59', '2026-07-29 12:32:46', '2026-07-29 12:34:59'),
+	(22, 11, 11, 10.00, 12, 500.00, 5000.00, NULL, '2026-07-29 12:34:59', '2026-07-29 12:32:46', '2026-07-29 12:34:59'),
+	(23, 11, 2, 3.00, 6, 100.00, 300.00, NULL, '2026-07-29 12:34:59', '2026-07-29 12:32:46', '2026-07-29 12:34:59'),
+	(24, 12, 13, 3.00, 6, 2000.00, 6000.00, NULL, NULL, '2026-07-29 12:37:10', '2026-07-29 12:37:10'),
+	(25, 12, 2, 2.00, 6, 100.00, 200.00, NULL, NULL, '2026-07-29 12:37:10', '2026-07-29 12:37:10');
 
 -- Listage de la structure de table bd_gst_bejamin. ligne_retour
 CREATE TABLE IF NOT EXISTS `ligne_retour` (
@@ -1096,7 +1227,7 @@ CREATE TABLE IF NOT EXISTS `ligne_retour` (
   KEY `ligne_retour_id_lot_index` (`id_lot`),
   CONSTRAINT `ligne_retour_id_lot_foreign` FOREIGN KEY (`id_lot`) REFERENCES `lots` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `ligne_retour_id_retour_foreign` FOREIGN KEY (`id_retour`) REFERENCES `retour` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Listage des données de la table bd_gst_bejamin.ligne_retour : ~10 rows (environ)
 INSERT INTO `ligne_retour` (`id`, `id_retour`, `id_lot`, `quantite_retournee`, `motif`, `deleted_at`, `created_at`, `updated_at`) VALUES
@@ -1110,7 +1241,8 @@ INSERT INTO `ligne_retour` (`id`, `id_retour`, `id_lot`, `quantite_retournee`, `
 	(9, 8, 17, 20, NULL, NULL, '2026-07-24 17:11:23', '2026-07-24 17:11:23'),
 	(10, 9, 18, 12, NULL, NULL, '2026-07-24 18:27:29', '2026-07-24 18:27:29'),
 	(11, 10, 18, 20, NULL, NULL, '2026-07-24 18:29:25', '2026-07-24 18:29:25'),
-	(12, 11, 18, 2, NULL, NULL, '2026-07-24 21:04:45', '2026-07-24 21:04:45');
+	(12, 11, 18, 2, NULL, NULL, '2026-07-24 21:04:45', '2026-07-24 21:04:45'),
+	(13, 12, 22, 2, NULL, NULL, '2026-07-29 11:52:02', '2026-07-29 11:52:02');
 
 -- Listage de la structure de table bd_gst_bejamin. lots
 CREATE TABLE IF NOT EXISTS `lots` (
@@ -1158,16 +1290,16 @@ CREATE TABLE IF NOT EXISTS `lots` (
   CONSTRAINT `lots_id_ville_foreign` FOREIGN KEY (`id_ville`) REFERENCES `villes` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `lots_id_zone_foreign` FOREIGN KEY (`id_zone`) REFERENCES `zones` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `lots_valide_par_foreign` FOREIGN KEY (`valide_par`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table bd_gst_bejamin.lots : ~18 rows (environ)
+-- Listage des données de la table bd_gst_bejamin.lots : ~26 rows (environ)
 INSERT INTO `lots` (`id`, `id_produit`, `id_ville`, `id_zone`, `id_emplacement`, `numero_lot`, `code_qr`, `quantite_recue`, `quantite_disponible`, `date_fabrication`, `date_peremption`, `date_reception`, `id_partenaire`, `prix_achat_ht_unitaire`, `id_devise`, `valide_par`, `date_validation`, `statut_validation`, `commentaire`, `deleted_at`, `created_at`, `updated_at`) VALUES
 	(1, 1, 1, 1, 1, 'LOT-2026-001', 'QR-LOT-2026-001-6a5ba0488fa14', 100, 135, '2026-07-18', '2026-08-20', '2026-07-18 15:48:24', 1, 5.50, 1, 1, '2026-07-18 16:10:46', 'VALIDÉ', 'Premier lot de poulet rôti', NULL, '2026-07-18 13:48:24', '2026-07-19 11:00:05'),
 	(2, 1, 1, 1, 1, 'LOT-2026-001', 'QR-LOT-2026-001-6a5ba21a636f2', 100, 90, '2026-07-18', '2026-08-20', '2026-07-18 15:56:10', 1, 5.50, 1, 1, '2026-07-24 23:23:16', 'VALIDÉ', 'Premier lot de poulet rôti', NULL, '2026-07-18 13:56:10', '2026-07-24 21:23:16'),
 	(3, 1, 1, 1, 1, 'LOT-2026-001', 'QR-LOT-2026-001-6a5ba291bb9ad', 100, 100, '2026-07-18', '2026-08-20', '2026-07-18 15:58:09', 1, 5.50, 1, NULL, NULL, 'EN ATTENTE', 'Premier lot de poulet rôti', NULL, '2026-07-18 13:58:09', '2026-07-18 13:58:09'),
 	(4, 1, 1, 1, 1, 'LOT-2026-001', 'QR-LOT-2026-001-6a5ba51c9dc1a', 100, 50, '2026-07-19', '2026-08-20', '2026-07-18 16:09:00', 1, 5.50, 1, NULL, NULL, 'EN ATTENTE', 'Premier lot', NULL, '2026-07-18 14:09:00', '2026-07-19 11:07:31'),
 	(5, 1, 1, 1, 1, 'LOT-2026-001', 'QR-LOT-2026-001-6a5bb3f687a6a', 100, 100, NULL, '2026-08-20', '2026-07-18 17:12:22', 1, 5.50, 1, NULL, NULL, 'EN ATTENTE', NULL, NULL, '2026-07-18 15:12:22', '2026-07-18 15:12:22'),
-	(6, 2, 1, 1, 1, 'LOT-2026-002', 'QR-LOT-2026-002-6a5bb3f68ae95', 50, 50, NULL, '2026-08-15', '2026-07-18 17:12:22', 1, 3.20, 1, NULL, NULL, 'EN ATTENTE', NULL, NULL, '2026-07-18 15:12:22', '2026-07-18 15:12:22'),
+	(6, 2, 1, 1, 1, 'LOT-2026-002', 'QR-LOT-2026-002-6a5bb3f68ae95', 50, 40, NULL, '2026-08-15', '2026-07-18 17:12:22', 1, 3.20, 1, 1, '2026-07-29 14:38:33', 'VALIDÉ', NULL, NULL, '2026-07-18 15:12:22', '2026-07-29 12:39:22'),
 	(7, 3, 1, 1, 1, 'LOT-2026-003', 'QR-LOT-2026-003-6a5bb3f68ce59', 60, 60, NULL, '2026-08-25', '2026-07-18 17:12:22', 1, 2.80, 1, 1, '2026-07-20 11:33:22', 'VALIDÉ', NULL, NULL, '2026-07-18 15:12:22', '2026-07-20 09:33:22'),
 	(8, 4, 1, 1, 1, 'LOT-2026-004', 'QR-LOT-2026-004-6a5bb3f68f1f4', 200, 196, NULL, '2026-09-01', '2026-07-18 17:12:22', 1, 1.50, 1, 1, '2026-07-20 11:33:18', 'VALIDÉ', NULL, NULL, '2026-07-18 15:12:22', '2026-07-21 08:15:46'),
 	(9, 5, 1, 1, 1, 'LOT-2026-005', 'QR-LOT-2026-005-6a5bb3f69147c', 30, 26, NULL, '2026-12-31', '2026-07-18 17:12:22', 1, 2.00, 1, 1, '2026-07-20 11:33:15', 'VALIDÉ', NULL, NULL, '2026-07-18 15:12:22', '2026-07-21 08:15:46'),
@@ -1176,10 +1308,18 @@ INSERT INTO `lots` (`id`, `id_produit`, `id_ville`, `id_zone`, `id_emplacement`,
 	(12, 3, 1, 1, 1, 'PROD-FT-0071-20260721101546', 'QR-PROD-6a5f46d257b9c', 4, 4, '2026-07-21', '2026-07-28', '2026-07-21 10:15:46', NULL, 4.30, NULL, NULL, NULL, 'EN ATTENTE', NULL, NULL, '2026-07-21 08:15:46', '2026-07-21 08:15:46'),
 	(13, 8, 1, 2, NULL, 'LOT-07100', 'QR-LOT-07100-6a5f5303ca5e5', 5, 5, NULL, '2028-03-17', '2026-07-21 11:07:47', 3, 10.00, 1, NULL, NULL, 'EN ATTENTE', NULL, NULL, '2026-07-21 09:07:47', '2026-07-21 09:07:47'),
 	(14, 4, 1, 1, NULL, 'LOT-07100', 'QR-LOT-07100-6a5f5303cdc21', 22, 22, '2028-09-01', '2028-09-02', '2026-07-21 11:07:47', 3, 2.80, 1, NULL, NULL, 'EN ATTENTE', NULL, NULL, '2026-07-21 09:07:47', '2026-07-24 21:45:09'),
-	(15, 3, 1, 1, NULL, 'LOT-07100', 'QR-LOT-07100-6a5f533645253', 3, 6, NULL, '2026-07-21', '2026-07-21 11:08:38', 1, 3.20, 1, 1, '2026-07-21 19:04:30', 'VALIDÉ', NULL, NULL, '2026-07-21 09:08:38', '2026-07-24 21:36:02'),
-	(16, 11, 1, 2, NULL, 'LOT-CAR-02568', 'QR-LOT-CAR-02568-6a636f16c9a5f', 100, 38, NULL, '2027-12-31', '2026-07-24 13:56:38', 3, 500.00, 1, 1, '2026-07-24 13:57:36', 'VALIDÉ', NULL, NULL, '2026-07-24 11:56:38', '2026-07-25 14:47:41'),
+	(15, 3, 1, 1, NULL, 'LOT-07100', 'QR-LOT-07100-6a5f533645253', 3, 106, NULL, '2026-07-21', '2026-07-21 11:08:38', 1, 3.20, 1, 1, '2026-07-21 19:04:30', 'VALIDÉ', NULL, NULL, '2026-07-21 09:08:38', '2026-07-29 12:13:31'),
+	(16, 11, 1, 2, NULL, 'LOT-CAR-02568', 'QR-LOT-CAR-02568-6a636f16c9a5f', 100, 33, NULL, '2027-12-31', '2026-07-24 13:56:38', 3, 500.00, 1, 1, '2026-07-24 13:57:36', 'VALIDÉ', NULL, NULL, '2026-07-24 11:56:38', '2026-07-29 11:59:52'),
 	(17, 11, 1, 2, NULL, 'LOT-CAR-02568', 'QR-LOT-CAR-02568-6a63707947975', 15, 70, '2025-07-16', '2027-12-31', '2026-07-24 14:02:33', 4, 500.00, 1, 1, '2026-07-24 14:03:05', 'VALIDÉ', NULL, NULL, '2026-07-24 12:02:33', '2026-07-25 15:01:25'),
-	(18, 12, 1, 2, NULL, 'LT-FR-0254', 'QR-LT-FR-0254-6a63c070be6a2', 40, 36, NULL, '2028-01-26', '2026-07-24 19:43:44', 1, 8000.00, 1, 1, '2026-07-24 19:44:23', 'VALIDÉ', NULL, NULL, '2026-07-24 17:43:44', '2026-07-25 14:48:43');
+	(18, 12, 1, 2, NULL, 'LT-FR-0254', 'QR-LT-FR-0254-6a63c070be6a2', 40, 23, NULL, '2028-01-26', '2026-07-24 19:43:44', 1, 8000.00, 1, 1, '2026-07-24 19:44:23', 'VALIDÉ', NULL, NULL, '2026-07-24 17:43:44', '2026-07-29 11:59:52'),
+	(19, 13, 1, 2, 2, 'LOT-2607-2520', 'QR-LOT-2607-2520-6a69fb1dc2829', 5, 974, NULL, '2027-01-31', '2026-07-29 13:07:41', 1, 2000.00, 1, 1, '2026-07-29 14:14:49', 'VALIDÉ', NULL, NULL, '2026-07-29 11:07:41', '2026-07-29 12:39:22'),
+	(20, 14, 1, 2, 2, 'LOT-2607-3821', 'QR-LOT-2607-3821-6a69fea93f5d1', 5, 0, NULL, '2026-07-30', '2026-07-29 13:22:49', 1, 10000.00, 1, 1, '2026-07-29 13:35:14', 'VALIDÉ', NULL, NULL, '2026-07-29 11:22:49', '2026-07-29 12:18:34'),
+	(21, 14, 1, 2, 2, 'LOT-2607-1036', 'QR-LOT-2607-1036-6a69ff8d42890', 50, 41, NULL, '2028-03-03', '2026-07-29 13:26:37', 1, 10000.00, 1, 1, '2026-07-29 13:28:25', 'VALIDÉ', NULL, NULL, '2026-07-29 11:26:37', '2026-07-29 12:18:34'),
+	(22, 14, 1, 2, 2, 'LOT-P5874', 'QR-LOT-P5874-6a6a045c33526', 11, 18, '2026-07-16', '2027-10-30', '2026-07-29 13:47:08', 4, NULL, NULL, 1, '2026-07-29 13:47:15', 'VALIDÉ', NULL, NULL, '2026-07-29 11:47:08', '2026-07-29 11:52:11'),
+	(23, 12, 1, 1, 1, 'PROD-FT-6521-20260729135952', 'QR-PROD-6a6a0758b2861', 1, 1, '2026-07-29', '2026-08-05', '2026-07-29 13:59:52', NULL, 42500.00, NULL, NULL, NULL, 'EN ATTENTE', NULL, NULL, '2026-07-29 11:59:52', '2026-07-29 11:59:52'),
+	(24, 13, 1, 1, 1, 'PROD-FT-2607-0002-20260729141834', 'QR-PROD-6a6a0bba5b2fa', 49, 49, '2026-07-29', '2026-08-05', '2026-07-29 14:18:34', NULL, 3714.29, NULL, 1, '2026-07-29 14:21:14', 'VALIDÉ', NULL, NULL, '2026-07-29 12:18:34', '2026-07-29 12:21:14'),
+	(25, 15, 1, 1, 1, 'LOT-2607-5691', 'QR-LOT-2607-5691-6a6a0e5aadece', 100, 100, NULL, '2026-10-31', '2026-07-29 14:29:46', 1, 40000.00, 1, NULL, NULL, 'EN ATTENTE', NULL, NULL, '2026-07-29 12:29:46', '2026-07-29 12:29:46'),
+	(26, 15, 1, 1, 1, 'PROD-FT-2607-0004-20260729143922', 'QR-PROD-6a6a109ac82e7', 25, 25, '2026-07-29', '2026-08-05', '2026-07-29 14:39:22', NULL, 1240.00, NULL, 1, '2026-07-29 14:41:55', 'VALIDÉ', NULL, NULL, '2026-07-29 12:39:22', '2026-07-29 12:41:55');
 
 -- Listage de la structure de table bd_gst_bejamin. migrations
 CREATE TABLE IF NOT EXISTS `migrations` (
@@ -1265,9 +1405,9 @@ CREATE TABLE IF NOT EXISTS `mouvement_stock` (
   CONSTRAINT `mouvement_stock_id_type_mouvement_foreign` FOREIGN KEY (`id_type_mouvement`) REFERENCES `type_mouvement` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `mouvement_stock_id_utilisateur_foreign` FOREIGN KEY (`id_utilisateur`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL,
   CONSTRAINT `mouvement_stock_valide_par_foreign` FOREIGN KEY (`valide_par`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=76 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table bd_gst_bejamin.mouvement_stock : ~48 rows (environ)
+-- Listage des données de la table bd_gst_bejamin.mouvement_stock : ~73 rows (environ)
 INSERT INTO `mouvement_stock` (`id`, `id_lot`, `id_type_mouvement`, `id_facture`, `quantite`, `date_mouvement`, `id_utilisateur`, `reference_document`, `commentaire`, `id_periode_inventaire`, `valide_par`, `date_validation`, `statut_validation`, `deleted_at`, `created_at`, `updated_at`) VALUES
 	(2, 4, 1, NULL, 100, NULL, 1, 'LOT-2026-001', 'Réception de lot', NULL, 1, '2026-07-18 16:17:46', 'VALIDÉ', NULL, '2026-07-18 14:09:00', '2026-07-18 14:17:46'),
 	(3, 1, 1, NULL, 50, '2026-07-18 16:12:05', 1, 'BL-2026-001', 'Réception supplémentaire de 50 unités', NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-18 14:12:05', '2026-07-18 14:12:05'),
@@ -1318,7 +1458,30 @@ INSERT INTO `mouvement_stock` (`id`, `id_lot`, `id_type_mouvement`, `id_facture`
 	(49, 18, 2, 6, 2, '2026-07-25 16:46:31', 1, 'FAC-254LM', 'Sortie générée depuis la facture FAC-254LM', NULL, 1, '2026-07-25 16:46:31', 'VALIDÉ', NULL, '2026-07-25 14:46:31', '2026-07-25 14:46:31'),
 	(50, 16, 2, 6, 2, '2026-07-25 16:46:31', 1, 'FAC-254LM', 'Sortie générée depuis la facture FAC-254LM', NULL, 1, '2026-07-25 16:46:31', 'VALIDÉ', NULL, '2026-07-25 14:46:31', '2026-07-25 14:46:31'),
 	(51, 18, 2, NULL, 5, '2026-07-25 00:00:00', 1, NULL, NULL, NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-25 14:50:43', '2026-07-25 14:50:43'),
-	(52, 17, 1, NULL, 75, '2026-07-25 00:00:00', 1, 'ref-9654', NULL, NULL, 1, '2026-07-25 17:01:03', 'VALIDÉ', NULL, '2026-07-25 15:00:52', '2026-07-25 15:01:03');
+	(52, 17, 1, NULL, 75, '2026-07-25 00:00:00', 1, 'ref-9654', NULL, NULL, 1, '2026-07-25 17:01:03', 'VALIDÉ', NULL, '2026-07-25 15:00:52', '2026-07-25 15:01:03'),
+	(53, 18, 2, NULL, 6, '2026-07-27 00:00:00', 2, 'ref-5241', NULL, NULL, 2, '2026-07-27 22:07:06', 'VALIDÉ', NULL, '2026-07-27 20:06:25', '2026-07-27 20:07:06'),
+	(54, 18, 4, NULL, 2, '2026-07-29 00:00:00', 1, NULL, NULL, NULL, 1, '2026-07-29 12:28:26', 'VALIDÉ', NULL, '2026-07-29 10:28:21', '2026-07-29 10:28:26'),
+	(55, 19, 1, NULL, 5, '2026-07-29 13:07:41', 1, 'BC-2607-0001', 'Réception du bon de commande #BC-2607-0001', NULL, 1, '2026-07-29 13:10:52', 'VALIDÉ', NULL, '2026-07-29 11:07:41', '2026-07-29 11:10:52'),
+	(56, 20, 1, NULL, 5, '2026-07-29 13:22:49', 1, 'BC-P5865', 'Réception du bon de commande #BC-P5865', NULL, 1, '2026-07-29 13:27:48', 'VALIDÉ', NULL, '2026-07-29 11:22:49', '2026-07-29 11:27:48'),
+	(57, 21, 1, NULL, 50, '2026-07-29 13:26:37', 1, 'BC-2607-0002', 'Réception du bon de commande #BC-2607-0002', NULL, 1, '2026-07-29 13:29:46', 'VALIDÉ', NULL, '2026-07-29 11:26:37', '2026-07-29 11:29:46'),
+	(58, 22, 1, NULL, 11, NULL, 1, 'LOT-P5874', 'Réception de lot', NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-29 11:47:08', '2026-07-29 11:47:08'),
+	(59, 22, 2, NULL, 3, '2026-07-29 00:00:00', 1, 'Ref-6524', NULL, NULL, 1, '2026-07-29 13:48:33', 'VALIDÉ', NULL, '2026-07-29 11:48:17', '2026-07-29 11:48:33'),
+	(60, 22, 1, NULL, 8, '2026-07-29 00:00:00', 1, NULL, NULL, NULL, 1, '2026-07-29 13:49:54', 'VALIDÉ', NULL, '2026-07-29 11:49:37', '2026-07-29 11:49:54'),
+	(61, 22, 1, NULL, 4, '2026-07-29 00:00:00', 1, NULL, NULL, NULL, 1, '2026-07-29 13:50:37', 'VALIDÉ', NULL, '2026-07-29 11:50:32', '2026-07-29 11:50:37'),
+	(62, 22, 6, NULL, 2, '2026-07-29 13:52:02', 1, 'RET-2607-0001', 'Retour: Retour de produit', NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-29 11:52:02', '2026-07-29 11:52:02'),
+	(63, 18, 2, NULL, 5, '2026-07-29 00:00:00', 1, 'FT-6521', 'Consommation pour production: Carotte au fromage (x1)', NULL, NULL, NULL, 'VALIDÉ', NULL, '2026-07-29 11:59:52', '2026-07-29 11:59:52'),
+	(64, 16, 2, NULL, 5, '2026-07-29 00:00:00', 1, 'FT-6521', 'Consommation pour production: Carotte au fromage (x1)', NULL, NULL, NULL, 'VALIDÉ', NULL, '2026-07-29 11:59:52', '2026-07-29 11:59:52'),
+	(65, 23, 1, NULL, 1, '2026-07-29 00:00:00', 1, 'FT-6521', 'Production: Carotte au fromage (x1)', NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-29 11:59:52', '2026-07-29 11:59:52'),
+	(66, 15, 1, NULL, 100, '2026-07-29 00:00:00', 1, NULL, NULL, NULL, 1, '2026-07-29 14:13:39', 'VALIDÉ', NULL, '2026-07-29 12:13:31', '2026-07-29 12:13:39'),
+	(67, 19, 1, NULL, 1000, '2026-07-29 00:00:00', 1, NULL, NULL, NULL, 1, '2026-07-29 14:17:18', 'VALIDÉ', NULL, '2026-07-29 12:17:10', '2026-07-29 12:17:18'),
+	(68, 20, 2, NULL, 5, '2026-07-29 00:00:00', 1, 'FT-2607-0002', 'Consommation pour production: poulet-carotte (x7)', NULL, NULL, NULL, 'VALIDÉ', NULL, '2026-07-29 12:18:34', '2026-07-29 12:18:34'),
+	(69, 21, 2, NULL, 9, '2026-07-29 00:00:00', 1, 'FT-2607-0002', 'Consommation pour production: poulet-carotte (x7)', NULL, NULL, NULL, 'VALIDÉ', NULL, '2026-07-29 12:18:34', '2026-07-29 12:18:34'),
+	(70, 19, 2, NULL, 21, '2026-07-29 00:00:00', 1, 'FT-2607-0002', 'Consommation pour production: poulet-carotte (x7)', NULL, NULL, NULL, 'VALIDÉ', NULL, '2026-07-29 12:18:34', '2026-07-29 12:18:34'),
+	(71, 24, 1, NULL, 49, '2026-07-29 00:00:00', 1, 'FT-2607-0002', 'Production: poulet-carotte (x7)', NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-29 12:18:34', '2026-07-29 12:18:34'),
+	(72, 25, 1, NULL, 100, '2026-07-29 14:29:46', 1, 'BC-2607-0003', 'Réception du bon de commande #BC-2607-0003', NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-29 12:29:46', '2026-07-29 12:29:46'),
+	(73, 19, 2, NULL, 15, '2026-07-29 00:00:00', 1, 'FT-2607-0004', 'Consommation pour production: Poulet mayo (x5)', NULL, NULL, NULL, 'VALIDÉ', NULL, '2026-07-29 12:39:22', '2026-07-29 12:39:22'),
+	(74, 6, 2, NULL, 10, '2026-07-29 00:00:00', 1, 'FT-2607-0004', 'Consommation pour production: Poulet mayo (x5)', NULL, NULL, NULL, 'VALIDÉ', NULL, '2026-07-29 12:39:22', '2026-07-29 12:39:22'),
+	(75, 26, 1, NULL, 25, '2026-07-29 00:00:00', 1, 'FT-2607-0004', 'Production: Poulet mayo (x5)', NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-29 12:39:22', '2026-07-29 12:39:22');
 
 -- Listage de la structure de table bd_gst_bejamin. notifications
 CREATE TABLE IF NOT EXISTS `notifications` (
@@ -1334,19 +1497,21 @@ CREATE TABLE IF NOT EXISTS `notifications` (
   PRIMARY KEY (`id`),
   KEY `notifications_id_utilisateur_read_at_index` (`id_utilisateur`,`read_at`),
   CONSTRAINT `notifications_id_utilisateur_foreign` FOREIGN KEY (`id_utilisateur`) REFERENCES `utilisateurs` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table bd_gst_bejamin.notifications : ~9 rows (environ)
+-- Listage des données de la table bd_gst_bejamin.notifications : ~11 rows (environ)
 INSERT INTO `notifications` (`id`, `type`, `message`, `id_utilisateur`, `reference_type`, `reference_id`, `read_at`, `created_at`, `updated_at`) VALUES
 	(1, 'bon_commande_en_attente', '1 bon(s) de commande en attente de validation', 1, 'App\\Models\\BonCommande', NULL, '2026-07-24 16:51:45', '2026-07-24 16:11:40', '2026-07-24 16:51:45'),
-	(2, 'bon_commande_en_attente', '4 bon(s) de commande en attente de validation', 2, 'App\\Models\\BonCommande', NULL, NULL, '2026-07-24 16:11:40', '2026-07-27 18:13:45'),
+	(2, 'bon_commande_en_attente', '3 bon(s) de commande en attente de validation', 2, 'App\\Models\\BonCommande', NULL, NULL, '2026-07-24 16:11:40', '2026-07-29 12:29:17'),
 	(3, 'bon_commande_en_attente', '2 bon(s) de commande en attente de validation', 3, 'App\\Models\\BonCommande', NULL, '2026-07-27 17:47:37', '2026-07-24 16:11:40', '2026-07-27 17:47:37'),
 	(4, 'lot_peremption_proche', '1 lot(s) arrivant à expiration dans les 30 jours', 1, 'App\\Models\\Lot', NULL, '2026-07-24 16:51:31', '2026-07-24 16:12:55', '2026-07-24 16:51:31'),
 	(5, 'lot_peremption_proche', '1 lot(s) arrivant à expiration dans les 30 jours', 2, 'App\\Models\\Lot', NULL, NULL, '2026-07-24 16:12:55', '2026-07-24 16:12:55'),
 	(6, 'lot_peremption_proche', '1 lot(s) arrivant à expiration dans les 30 jours', 3, 'App\\Models\\Lot', NULL, '2026-07-27 17:47:56', '2026-07-24 16:12:55', '2026-07-27 17:47:56'),
 	(7, 'bon_commande_en_attente', '3 bon(s) de commande en attente de validation', 3, 'App\\Models\\BonCommande', NULL, '2026-07-27 17:51:05', '2026-07-27 17:50:12', '2026-07-27 17:51:05'),
 	(8, 'bon_commande_en_attente', '4 bon(s) de commande en attente de validation', 3, 'App\\Models\\BonCommande', NULL, '2026-07-27 18:00:15', '2026-07-27 17:59:47', '2026-07-27 18:00:15'),
-	(9, 'bon_commande_en_attente', '4 bon(s) de commande en attente de validation', 3, 'App\\Models\\BonCommande', NULL, NULL, '2026-07-27 18:06:50', '2026-07-27 18:13:45');
+	(9, 'bon_commande_en_attente', '3 bon(s) de commande en attente de validation', 3, 'App\\Models\\BonCommande', NULL, NULL, '2026-07-27 18:06:50', '2026-07-29 12:29:17'),
+	(10, 'retour_en_attente', '1 retour(s) stock en attente de validation', 2, 'App\\Models\\Retour', NULL, NULL, '2026-07-29 11:52:02', '2026-07-29 11:52:11'),
+	(11, 'retour_en_attente', '1 retour(s) stock en attente de validation', 3, 'App\\Models\\Retour', NULL, NULL, '2026-07-29 11:52:02', '2026-07-29 11:52:11');
 
 -- Listage de la structure de table bd_gst_bejamin. paiement
 CREATE TABLE IF NOT EXISTS `paiement` (
@@ -1367,13 +1532,14 @@ CREATE TABLE IF NOT EXISTS `paiement` (
   KEY `paiement_date_paiement_index` (`date_paiement`),
   CONSTRAINT `paiement_id_facture_foreign` FOREIGN KEY (`id_facture`) REFERENCES `facture` (`id`) ON DELETE CASCADE,
   CONSTRAINT `paiement_id_utilisateur_foreign` FOREIGN KEY (`id_utilisateur`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Listage des données de la table bd_gst_bejamin.paiement : ~0 rows (environ)
 INSERT INTO `paiement` (`id`, `id_facture`, `montant`, `date_paiement`, `mode_paiement`, `reference`, `id_utilisateur`, `commentaire`, `deleted_at`, `created_at`, `updated_at`) VALUES
 	(1, 1, 87.00, '2026-07-19', 'VIREMENT', 'VIR-2026-001', 1, 'Paiement intégral', NULL, '2026-07-19 12:16:26', '2026-07-19 12:16:26'),
 	(2, 3, 157700.00, '2026-07-24', 'CHEQUE', 'ref-965', 1, NULL, NULL, '2026-07-24 20:47:58', '2026-07-24 20:47:58'),
-	(3, 5, 78500.00, '2026-07-25', 'CHEQUE', 'REF-9854', 1, NULL, NULL, '2026-07-25 14:42:34', '2026-07-25 14:42:34');
+	(3, 5, 78500.00, '2026-07-25', 'CHEQUE', 'REF-9854', 1, NULL, NULL, '2026-07-25 14:42:34', '2026-07-25 14:42:34'),
+	(4, 7, 4000.00, '2026-07-29', 'CHEQUE', NULL, 1, NULL, NULL, '2026-07-29 12:03:42', '2026-07-29 12:03:42');
 
 -- Listage de la structure de table bd_gst_bejamin. partenaires
 CREATE TABLE IF NOT EXISTS `partenaires` (
@@ -1435,13 +1601,16 @@ CREATE TABLE IF NOT EXISTS `periode_inventaire` (
   KEY `periode_inventaire_statut_index` (`statut`),
   KEY `periode_inventaire_date_debut_date_fin_index` (`date_debut`,`date_fin`),
   CONSTRAINT `periode_inventaire_id_ville_foreign` FOREIGN KEY (`id_ville`) REFERENCES `villes` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table bd_gst_bejamin.periode_inventaire : ~3 rows (environ)
+-- Listage des données de la table bd_gst_bejamin.periode_inventaire : ~6 rows (environ)
 INSERT INTO `periode_inventaire` (`id`, `libelle`, `date_debut`, `date_fin`, `statut`, `id_ville`, `description`, `deleted_at`, `created_at`, `updated_at`) VALUES
 	(1, 'Inventaire Juillet 2026', '2026-07-01', '2026-07-31', 'CLOTURE', 1, 'Inventaire mensuel de juillet', NULL, '2026-07-18 14:28:50', '2026-07-24 19:22:52'),
 	(2, 'Inventaire Juillet 2026', '2026-07-01', '2026-07-31', 'CLOTURE', 1, 'Inventaire mensuel de juillet', NULL, '2026-07-18 14:29:24', '2026-07-19 11:30:27'),
-	(3, 'Inventaire Juillet 2026 - Kinshasa', '2026-07-01', '2026-07-31', 'CLOTURE', 1, 'Inventaire mensuel de juillet 2026 pour Kinshasa', NULL, '2026-07-19 11:23:50', '2026-07-20 09:11:12');
+	(3, 'Inventaire Juillet 2026 - Kinshasa', '2026-07-01', '2026-07-31', 'CLOTURE', 1, 'Inventaire mensuel de juillet 2026 pour Kinshasa', NULL, '2026-07-19 11:23:50', '2026-07-20 09:11:12'),
+	(4, 'Kin-du 1 juillet au 31 juillet', '2026-07-01', '2026-07-31', 'CLOTURE', 1, NULL, NULL, '2026-07-29 11:30:47', '2026-07-29 11:31:26'),
+	(5, 'inventaire du mois de juillet 2027', '2026-07-01', '2026-07-31', 'CLOTURE', 1, NULL, NULL, '2026-07-29 11:32:36', '2026-07-29 11:33:50'),
+	(6, 'inventaire Juillet 2026', '2026-07-01', '2026-07-31', 'CLOTURE', 1, NULL, NULL, '2026-07-29 11:36:07', '2026-07-29 11:40:50');
 
 -- Listage de la structure de table bd_gst_bejamin. permissions
 CREATE TABLE IF NOT EXISTS `permissions` (
@@ -1460,7 +1629,7 @@ CREATE TABLE IF NOT EXISTS `permissions` (
   KEY `permissions_code_index` (`code`)
 ) ENGINE=InnoDB AUTO_INCREMENT=199 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table bd_gst_bejamin.permissions : ~115 rows (environ)
+-- Listage des données de la table bd_gst_bejamin.permissions : ~113 rows (environ)
 INSERT INTO `permissions` (`id`, `nom`, `code`, `description`, `actif`, `deleted_at`, `created_at`, `updated_at`) VALUES
 	(84, 'Voir les unités', 'config:unites:view', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
 	(85, 'Créer une unité', 'config:unites:create', NULL, 1, NULL, '2026-07-19 13:32:31', '2026-07-19 13:32:31'),
@@ -1593,9 +1762,9 @@ CREATE TABLE IF NOT EXISTS `personal_access_tokens` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `personal_access_tokens_token_unique` (`token`),
   KEY `personal_access_tokens_tokenable_type_tokenable_id_index` (`tokenable_type`,`tokenable_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=113 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=121 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table bd_gst_bejamin.personal_access_tokens : ~32 rows (environ)
+-- Listage des données de la table bd_gst_bejamin.personal_access_tokens : ~33 rows (environ)
 INSERT INTO `personal_access_tokens` (`id`, `tokenable_type`, `tokenable_id`, `name`, `token`, `abilities`, `last_used_at`, `expires_at`, `created_at`, `updated_at`) VALUES
 	(1, 'App\\Models\\Utilisateur', 1, 'auth_token', '3944e25fef301db7cbaad4f9f8640ee01c0381d467100502ba6d61bf6c786a7a', '["*"]', '2026-07-19 12:24:08', NULL, '2026-07-18 12:47:09', '2026-07-19 12:24:08'),
 	(2, 'App\\Models\\Utilisateur', 1, 'auth_token', '1c3e5655d82557e3d92667f017c19de7528c5006a0de86dc42166370ca784521', '["*"]', '2026-07-19 12:51:07', NULL, '2026-07-19 12:38:22', '2026-07-19 12:51:07'),
@@ -1608,7 +1777,6 @@ INSERT INTO `personal_access_tokens` (`id`, `tokenable_type`, `tokenable_id`, `n
 	(14, 'App\\Models\\Utilisateur', 1, 'auth_token', '9d89ae85ddb24de11e273da82ae8b25251821bdda33c334154e6179ce62ed97c', '["*"]', '2026-07-19 19:45:47', NULL, '2026-07-19 19:41:49', '2026-07-19 19:45:47'),
 	(17, 'App\\Models\\Utilisateur', 1, 'auth_token', '4529c1f28b52785ae908e21f84074f8d071393a0ed80b91c345fcc593ec921ce', '["*"]', '2026-07-20 11:41:37', NULL, '2026-07-19 19:51:20', '2026-07-20 11:41:37'),
 	(19, 'App\\Models\\Utilisateur', 1, 'auth_token', '6a4de38a92f4563ad62d9e26f0f3e80b749faa4d22150a9fc17ecda5bfd5339e', '["*"]', NULL, NULL, '2026-07-19 19:55:49', '2026-07-19 19:55:49'),
-	(20, 'App\\Models\\Utilisateur', 1, 'auth_token', '6850646aae2fb86badd91ab7202cc4b8bda3f6e0474c99ad240395615916fbca', '["*"]', '2026-07-20 07:55:51', NULL, '2026-07-19 19:56:00', '2026-07-20 07:55:51'),
 	(22, 'App\\Models\\Utilisateur', 1, 'auth_token', '741f2e9cf3495edbf6dde2bf891d37a42e8dc5f21a3c102c49d8c0e19f934dbd', '["*"]', '2026-07-19 20:11:59', NULL, '2026-07-19 20:01:42', '2026-07-19 20:11:59'),
 	(23, 'App\\Models\\Utilisateur', 1, 'auth_token', '20c79403899d60185a817363db691c57da0973e733a761192e14bb1991cacef9', '["*"]', '2026-07-19 20:37:10', NULL, '2026-07-19 20:12:04', '2026-07-19 20:37:10'),
 	(26, 'App\\Models\\Utilisateur', 1, 'auth_token', 'c7c138fe71276520a3e20b4801b5aa724d2fa1021014f8f150a4d028ffa35ed8', '["*"]', '2026-07-20 08:19:44', NULL, '2026-07-20 08:13:02', '2026-07-20 08:19:44'),
@@ -1625,10 +1793,12 @@ INSERT INTO `personal_access_tokens` (`id`, `tokenable_type`, `tokenable_id`, `n
 	(42, 'App\\Models\\Utilisateur', 1, 'auth_token', '4c7ca0d50022a92f9f253475e5821692fdff485f200d66169dc2a8445f9a10c0', '["*"]', '2026-07-21 09:56:26', NULL, '2026-07-21 09:54:32', '2026-07-21 09:56:26'),
 	(69, 'App\\Models\\Utilisateur', 1, 'auth_token', 'a39638170cd9db4c67e8ac42931c2c93b7ead049c296c4fca6df99e6f4eb613e', '["*"]', '2026-07-22 08:15:29', NULL, '2026-07-22 08:03:34', '2026-07-22 08:15:29'),
 	(71, 'App\\Models\\Utilisateur', 2, 'auth_token', '590f6d898d0025f25da619c7d651eb9c23969983cd4d9f721d536ed36e47ffbd', '["*"]', '2026-07-22 08:52:35', NULL, '2026-07-22 08:24:27', '2026-07-22 08:52:35'),
-	(72, 'App\\Models\\Utilisateur', 1, 'auth_token', 'de34e1518aed26b62257d63b9bba9b51bc293ec757514500d51bada88d21f1ae', '["*"]', '2026-07-27 17:00:40', NULL, '2026-07-24 08:06:35', '2026-07-27 17:00:40'),
+	(72, 'App\\Models\\Utilisateur', 1, 'auth_token', 'de34e1518aed26b62257d63b9bba9b51bc293ec757514500d51bada88d21f1ae', '["*"]', '2026-07-28 08:38:08', NULL, '2026-07-24 08:06:35', '2026-07-28 08:38:08'),
 	(79, 'App\\Models\\Utilisateur', 1, 'auth_token', '5c4d25cfbde9141d0c42cd39ba3397af0b8e3a6141d5cb80b9c82b1f75f703ab', '["*"]', '2026-07-26 19:15:09', NULL, '2026-07-24 20:00:21', '2026-07-26 19:15:09'),
 	(93, 'App\\Models\\Utilisateur', 1, 'auth_token', '08f4740318b56c57f33cfcbf0997b411938400795678267205f67da1833cd873', '["*"]', '2026-07-27 16:38:17', NULL, '2026-07-26 20:55:08', '2026-07-27 16:38:17'),
-	(112, 'App\\Models\\Utilisateur', 2, 'auth_token', 'c5f73edbf48e9fde99f6aec5329b64a9e78760bcc117d8e74cd75cc8b3f5e2b3', '["*"]', '2026-07-27 19:06:36', NULL, '2026-07-27 18:14:42', '2026-07-27 19:06:36');
+	(117, 'App\\Models\\Utilisateur', 1, 'auth_token', 'f23b76855d9b064d9f03657b4db66329f185252d787169387d138bc3da0334fa', '["*"]', '2026-07-28 11:21:54', NULL, '2026-07-28 10:37:49', '2026-07-28 11:21:54'),
+	(118, 'App\\Models\\Utilisateur', 1, 'auth_token', '1aedbe7de93b4f9d10de1805d644f26e1be6d82ca5ae6be8f8af1c6d5b9fd135', '["*"]', '2026-07-28 11:04:55', NULL, '2026-07-28 10:43:10', '2026-07-28 11:04:55'),
+	(120, 'App\\Models\\Utilisateur', 1, 'auth_token', '312e367db9bea30a705dd5a3756741e0279314b4db7e708d0ef16d4c3c21f6d3', '["*"]', '2026-07-29 12:45:48', NULL, '2026-07-29 10:56:02', '2026-07-29 12:45:48');
 
 -- Listage de la structure de table bd_gst_bejamin. produits
 CREATE TABLE IF NOT EXISTS `produits` (
@@ -1658,9 +1828,9 @@ CREATE TABLE IF NOT EXISTS `produits` (
   CONSTRAINT `produits_id_categorie_foreign` FOREIGN KEY (`id_categorie`) REFERENCES `categories` (`id`) ON DELETE SET NULL,
   CONSTRAINT `produits_id_partenaire_principal_foreign` FOREIGN KEY (`id_partenaire_principal`) REFERENCES `partenaires` (`id`) ON DELETE SET NULL,
   CONSTRAINT `produits_id_unite_foreign` FOREIGN KEY (`id_unite`) REFERENCES `unites` (`id`) ON DELETE RESTRICT
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table bd_gst_bejamin.produits : ~12 rows (environ)
+-- Listage des données de la table bd_gst_bejamin.produits : ~15 rows (environ)
 INSERT INTO `produits` (`id`, `code_article`, `code_barre`, `nom`, `description`, `id_categorie`, `id_partenaire_principal`, `id_unite`, `seuil_alerte`, `actif`, `deleted_at`, `created_at`, `updated_at`) VALUES
 	(1, 'P004', '1234567890126', 'Riz pilaf', 'Riz pilaf aux légumes', 2, NULL, 4, 40, 1, NULL, '2026-07-18 13:22:13', '2026-07-18 13:32:51'),
 	(2, 'P001', '1234567890123', 'Poulet rôti aux herbes', 'Poulet rôti avec un mélange d\'herbes provençales', 2, NULL, 4, 50, 1, NULL, '2026-07-18 14:52:16', '2026-07-18 14:52:16'),
@@ -1673,7 +1843,10 @@ INSERT INTO `produits` (`id`, `code_article`, `code_barre`, `nom`, `description`
 	(9, 'm', '455555555', 'k', NULL, 6, 1, 11, 20, 1, '2026-07-19 21:40:46', '2026-07-19 21:39:51', '2026-07-19 21:40:46'),
 	(10, 'kk', '4552222', 'kk', 'lll', 6, 1, 4, 20, 1, '2026-07-19 22:08:20', '2026-07-19 22:02:02', '2026-07-19 22:08:20'),
 	(11, 'CR-14587', NULL, 'Carotte', 'Carotte , il faut garder ca au frais', 2, 4, 6, 10, 1, NULL, '2026-07-24 11:49:37', '2026-07-24 11:49:37'),
-	(12, 'FR-02541', NULL, 'Fromage', 'Fromage de Goma', 2, 1, 6, 100, 1, NULL, '2026-07-24 17:23:33', '2026-07-24 17:23:57');
+	(12, 'FR-02541', NULL, 'Fromage', 'Fromage de Goma', 2, 1, 6, 100, 1, NULL, '2026-07-24 17:23:33', '2026-07-24 17:23:57'),
+	(13, 'PROD-2607-0001', NULL, 'Sardine', NULL, 2, 1, 12, 100, 1, NULL, '2026-07-29 11:02:28', '2026-07-29 11:02:28'),
+	(14, 'PROD-2607-0002', NULL, 'Pain au lait', NULL, 2, 1, 7, 50, 1, NULL, '2026-07-29 11:21:04', '2026-07-29 11:21:04'),
+	(15, 'PROD-2607-0003', NULL, 'Poulet-Mayo', 'poulet combiné avec la mayonnaise', 2, 1, 12, 10, 1, NULL, '2026-07-29 12:28:16', '2026-07-29 12:28:16');
 
 -- Listage de la structure de table bd_gst_bejamin. retour
 CREATE TABLE IF NOT EXISTS `retour` (
@@ -1718,9 +1891,9 @@ CREATE TABLE IF NOT EXISTS `retour` (
   CONSTRAINT `retour_id_zone_dest_foreign` FOREIGN KEY (`id_zone_dest`) REFERENCES `zones` (`id`) ON DELETE SET NULL,
   CONSTRAINT `retour_id_zone_provenance_foreign` FOREIGN KEY (`id_zone_provenance`) REFERENCES `zones` (`id`) ON DELETE SET NULL,
   CONSTRAINT `retour_valide_par_foreign` FOREIGN KEY (`valide_par`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table bd_gst_bejamin.retour : ~9 rows (environ)
+-- Listage des données de la table bd_gst_bejamin.retour : ~11 rows (environ)
 INSERT INTO `retour` (`id`, `numero_retour`, `date_retour`, `id_partenaire_client`, `id_zone_provenance`, `id_emplacement_provenance`, `id_partenaire_dest`, `id_zone_dest`, `id_emplacement_dest`, `id_ville`, `id_utilisateur`, `commentaire`, `valide_par`, `date_validation`, `statut_validation`, `deleted_at`, `created_at`, `updated_at`) VALUES
 	(2, 'RET-2026-001', '2026-07-20', 2, NULL, NULL, 1, NULL, NULL, 1, 1, 'Retour de produits non utilisés par Ethiopian Airlines - Modifié', 1, '2026-07-19 13:09:24', 'TRAITÉ', NULL, '2026-07-19 11:00:05', '2026-07-19 11:09:50'),
 	(3, 'RET-2026-003', '2026-07-19', 1, NULL, NULL, 1, NULL, NULL, 1, 1, 'Retour de produits périmés', 1, '2026-07-20 11:41:00', 'TRAITÉ', NULL, '2026-07-19 11:07:31', '2026-07-24 09:21:25'),
@@ -1731,7 +1904,8 @@ INSERT INTO `retour` (`id`, `numero_retour`, `date_retour`, `id_partenaire_clien
 	(8, 'RET-2154', '2026-07-24', 3, NULL, NULL, NULL, NULL, NULL, 1, 1, NULL, 1, '2026-07-24 19:11:48', 'VALIDÉ', NULL, '2026-07-24 17:11:23', '2026-07-24 17:11:48'),
 	(9, 'RT-23514', '2026-07-24', NULL, NULL, NULL, 1, NULL, NULL, 1, 1, NULL, 1, '2026-07-24 20:27:58', 'TRAITÉ', NULL, '2026-07-24 18:27:29', '2026-07-24 18:28:03'),
 	(10, 'RT-52145', '2026-07-24', 3, NULL, NULL, NULL, NULL, NULL, 1, 1, NULL, 1, '2026-07-24 20:29:40', 'TRAITÉ', NULL, '2026-07-24 18:29:25', '2026-07-24 19:42:01'),
-	(11, 'REt-25647', '2026-07-24', NULL, NULL, NULL, 1, NULL, NULL, 1, 1, NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-24 21:04:45', '2026-07-24 21:04:45');
+	(11, 'REt-25647', '2026-07-24', NULL, NULL, NULL, 1, NULL, NULL, 1, 1, NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-07-24 21:04:45', '2026-07-24 21:04:45'),
+	(12, 'RET-2607-0001', '2026-07-29', NULL, NULL, NULL, 2, NULL, NULL, 1, 1, NULL, 1, '2026-07-29 13:52:11', 'TRAITÉ', NULL, '2026-07-29 11:52:02', '2026-07-29 11:52:28');
 
 -- Listage de la structure de table bd_gst_bejamin. roles
 CREATE TABLE IF NOT EXISTS `roles` (
@@ -1770,7 +1944,7 @@ CREATE TABLE IF NOT EXISTS `role_permission` (
   CONSTRAINT `role_permission_id_role_foreign` FOREIGN KEY (`id_role`) REFERENCES `roles` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table bd_gst_bejamin.role_permission : ~139 rows (environ)
+-- Listage des données de la table bd_gst_bejamin.role_permission : ~137 rows (environ)
 INSERT INTO `role_permission` (`id_role`, `id_permission`, `created_at`, `updated_at`) VALUES
 	(3, 84, NULL, NULL),
 	(3, 87, NULL, NULL),
@@ -1934,8 +2108,8 @@ INSERT INTO `type_mouvement` (`id`, `libelle`, `sens`, `actif`, `created_at`, `u
 	(3, 'Ajustement positif', 1, 1, '2026-07-18 14:04:49', '2026-07-18 14:04:49'),
 	(4, 'Ajustement négatif', -1, 1, '2026-07-18 14:05:11', '2026-07-18 14:05:11'),
 	(5, 'Transfert entrant', 1, 1, '2026-07-18 14:05:38', '2026-07-18 14:05:38'),
-	(6, 'Retour fournisseur', -1, 1, '2026-07-18 14:06:04', '2026-07-18 14:06:04'),
-	(7, 'Retour client', -1, 1, '2026-07-18 14:06:21', '2026-07-18 14:06:21');
+	(6, 'Retour fournisseur', -1, 0, '2026-07-18 14:06:04', '2026-07-18 14:06:04'),
+	(7, 'Retour client', 1, 0, '2026-07-18 14:06:21', '2026-07-18 14:06:21');
 
 -- Listage de la structure de table bd_gst_bejamin. unites
 CREATE TABLE IF NOT EXISTS `unites` (
@@ -2020,8 +2194,8 @@ CREATE TABLE IF NOT EXISTS `utilisateurs` (
 
 -- Listage des données de la table bd_gst_bejamin.utilisateurs : ~3 rows (environ)
 INSERT INTO `utilisateurs` (`id`, `nom`, `prenom`, `email`, `mot_de_passe_hash`, `id_role`, `id_ville`, `id_departement`, `id_zone`, `id_emplacement`, `actif`, `derniere_connexion`, `remember_token`, `deleted_at`, `created_at`, `updated_at`) VALUES
-	(1, 'Famba', 'Pierre', 'pierre@gmail.com', '$2y$12$GUpicGH/T3PCol5EOquW4uI9XkXKaKkobxg3mhbNstXb7z.YtF6NW', 1, 1, 1, NULL, NULL, 1, '2026-07-27 20:13:58', NULL, NULL, '2026-07-18 12:26:29', '2026-07-27 18:13:58'),
-	(2, 'NGOMA', 'David', 'ngoma@gmail.com', '$2y$12$33R.KiRWCGEaEgT9XbIcXOy9pxnoqK2xmz7rZVxl9Dedwb/OgzTru', 7, 1, 2, 1, 1, 1, '2026-07-27 20:14:42', NULL, NULL, '2026-07-21 11:12:52', '2026-07-27 18:14:42'),
+	(1, 'Famba', 'Pierre', 'pierre@gmail.com', '$2y$12$GUpicGH/T3PCol5EOquW4uI9XkXKaKkobxg3mhbNstXb7z.YtF6NW', 1, 1, 1, NULL, NULL, 1, '2026-07-29 12:56:02', NULL, NULL, '2026-07-18 12:26:29', '2026-07-29 10:56:02'),
+	(2, 'NGOMA', 'David', 'ngoma@gmail.com', '$2y$12$33R.KiRWCGEaEgT9XbIcXOy9pxnoqK2xmz7rZVxl9Dedwb/OgzTru', 7, 1, 2, 1, 1, 1, '2026-07-27 22:04:31', NULL, NULL, '2026-07-21 11:12:52', '2026-07-27 20:04:31'),
 	(3, 'AMULI', 'Claude', 'amuli@gmail.com', '$2y$12$nQDS9Mu0XVBfgJGAwArvPeMULBFI1oW7CZitnwr8QGF2FRipgreWW', 3, 1, 4, 2, NULL, 1, '2026-07-27 20:10:57', NULL, NULL, '2026-07-21 12:05:39', '2026-07-27 18:10:57');
 
 -- Listage de la structure de table bd_gst_bejamin. villes

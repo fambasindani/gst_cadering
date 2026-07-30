@@ -120,7 +120,7 @@ export function FacturePDF({ facture }: { facture: Facture }) {
               {lignes.map((l, i) => {
                 const totalLigne = l.quantite * l.prix_unitaire_ht * (1 - (l.remise || 0) / 100);
                 return (
-                  <View key={l.id} style={[styles.tableRow, i % 2 === 1 ? styles.tableRowAlt : undefined]}>
+                  <View key={l.id} style={[styles.tableRow, i % 2 === 1 ? styles.tableRowAlt : {}]}>
                     <Text style={[styles.tableCell, styles.colProduit]}>{l.produit?.nom || 'Produit #' + l.id_produit}</Text>
                     <Text style={[styles.tableCell, styles.colLot]}>{l.lot?.numero_lot || '-'}</Text>
                     <Text style={[styles.tableCellRight, styles.colQte]}>{l.quantite}</Text>

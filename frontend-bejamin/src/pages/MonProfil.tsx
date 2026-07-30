@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { authService } from '../services/auth';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Card, CardContent, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -10,7 +10,7 @@ import { ArrowLeft, Save, User, Shield, MapPin, Eye, EyeOff, Loader2 } from 'luc
 import Skeleton from 'react-loading-skeleton';
 
 export function MonProfil() {
-  const { user, login: updateStoreUser } = useAuthStore();
+  const { user } = useAuthStore();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);

@@ -121,7 +121,7 @@ export function BonCommandePDF({ bon }: Props) {
               <Text style={[styles.tableHeaderCell, styles.colTotal]}>Total HT</Text>
             </View>
             {lignes.map((l, i) => (
-              <View key={l.id} style={[styles.tableRow, i % 2 === 1 ? styles.tableRowAlt : undefined]}>
+              <View key={l.id} style={[styles.tableRow, i % 2 === 1 ? styles.tableRowAlt : {}]}>
                 <Text style={[styles.tableCell, styles.colCode]}>{l.produit?.code_article || '-'}</Text>
                 <Text style={[styles.tableCell, styles.colProduit]}>{l.produit?.nom || '-'}</Text>
                 <Text style={[styles.tableCellRight, styles.colQte]}>{l.quantite_commandee}</Text>

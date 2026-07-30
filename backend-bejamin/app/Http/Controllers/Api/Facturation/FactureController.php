@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Helpers\CodeGenerator;
 
 class FactureController extends Controller
 {
@@ -83,7 +84,7 @@ class FactureController extends Controller
     {
         try {
             $validated = $request->validate([
-                'numero_facture' => 'required|string|max:50|unique:facture,numero_facture',
+                'numero_facture' => 'nullable|string|max:50|unique:facture,numero_facture',
                 'date_facture' => 'required|date',
                 'date_echeance' => 'required|date|after_or_equal:date_facture',
                 'id_partenaire_client' => 'required|exists:partenaires,id',
@@ -105,6 +106,11 @@ class FactureController extends Controller
                 $total = 0;
                 foreach ($validated['lignes'] as $ligne) {
                     $total += $ligne['quantite'] * $ligne['prix_unitaire_ht'] * (1 - ($ligne['remise'] ?? 0) / 100);
+                }
+
+                // Auto-générer le numéro de facture si non fourni
+                if (empty($validated['numero_facture'])) {
+                    $validated['numero_facture'] = CodeGenerator::facture();
                 }
 
                 $facture = Facture::create([

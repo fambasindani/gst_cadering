@@ -9,9 +9,8 @@ import { RapportTablePDF } from '../../components/pdf/RapportTablePDF';
 import type { Column } from '../../components/pdf/RapportTablePDF';
 import { rapportService } from '../../services/rapport';
 import type { RapportSortieData } from '../../types/rapport';
-import { RefreshCw, FileText, Download, Package, Loader2 } from 'lucide-react';
+import { RefreshCw, Download, Package } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { formatCurrency } from '../../lib/format';
 import { DataTablePagination } from '../../components/ui/DataTablePagination';
 
 export function RapportSortie() {

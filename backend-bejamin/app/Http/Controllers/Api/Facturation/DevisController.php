@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Helpers\CodeGenerator;
 
 class DevisController extends Controller
 {
@@ -68,7 +69,7 @@ class DevisController extends Controller
     {
         try {
             $validated = $request->validate([
-                'numero_devis' => 'required|string|max:50|unique:devis,numero_devis',
+                'numero_devis' => 'nullable|string|max:50|unique:devis,numero_devis',
                 'date_devis' => 'required|date',
                 'date_validite' => 'nullable|date|after_or_equal:date_devis',
                 'id_partenaire_client' => 'required|exists:partenaires,id',
@@ -85,6 +86,11 @@ class DevisController extends Controller
             DB::beginTransaction();
 
             try {
+                // Auto-générer le numéro de devis si non fourni
+                if (empty($validated['numero_devis'])) {
+                    $validated['numero_devis'] = CodeGenerator::devis();
+                }
+
                 $devis = Devis::create([
                     'numero_devis' => $validated['numero_devis'],
                     'date_devis' => $validated['date_devis'],

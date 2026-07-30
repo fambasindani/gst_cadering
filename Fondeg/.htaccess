@@ -1,0 +1,6 @@
+RewriteEngine On
+RewriteBase /Fondeg/
+RewriteRule ^index\.html$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /Fondeg/index.html [L]

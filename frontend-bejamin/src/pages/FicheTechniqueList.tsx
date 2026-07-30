@@ -13,7 +13,7 @@ import { useToast } from '../hooks/useToast';
 import { ficheTechniqueService } from '../services/fiche-technique';
 import type { FicheTechnique } from '../types/fiche-technique';
 import {
-  Search, RefreshCw, Plus, FileText, Loader2, Pencil, Trash2, Copy, Eye, DollarSign,
+  Search, RefreshCw, Plus, FileText, Pencil, Trash2, Copy, Eye,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { formatCurrency } from '../lib/format';

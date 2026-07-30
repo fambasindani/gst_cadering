@@ -76,7 +76,7 @@ export function RapportRecettePDF({ fiches }: { fiches: FicheTechnique[] }) {
             <Text style={[styles.tableHeaderCell, styles.colCoutTotal]}>Coût total</Text>
           </View>
           {fiches.map((f, i) => (
-            <View key={f.id} style={[styles.tableRow, i % 2 === 1 ? styles.tableRowAlt : undefined]}>
+            <View key={f.id} style={[styles.tableRow, i % 2 === 1 ? styles.tableRowAlt : {}]}>
               <Text style={[styles.tableCell, styles.colCode]}>{f.code}</Text>
               <Text style={[styles.tableCell, styles.colNom]}>{f.nom}</Text>
               <Text style={[styles.tableCell, styles.colProduit]}>{f.produitFini?.nom || '-'}</Text>

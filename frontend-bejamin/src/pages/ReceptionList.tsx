@@ -11,7 +11,7 @@ import { DataTablePagination } from '../components/ui/DataTablePagination';
 import { bonCommandeService } from '../services/bon-commande';
 import type { BonCommande } from '../types/bon-commande';
 import {
-  Search, RefreshCw, PackagePlus, Truck, Clock, CheckCircle, Ban, Loader2, ArrowRight,
+  Search, RefreshCw, PackagePlus, ArrowRight, Eye,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { formatCurrency } from '../lib/format';
@@ -42,7 +42,7 @@ export function ReceptionList() {
       const params: Record<string, string> = {
         per_page: String(pageSize),
         page: String(currentPage),
-        statut: 'ENVOYÉ,REÇU PARTIELLEMENT',
+        statut: 'ENVOYÉ',
       };
       if (searchTerm) params.search = searchTerm;
       const res = await bonCommandeService.list(params);
@@ -168,10 +168,16 @@ export function ReceptionList() {
                             {b.date_commande ? new Date(b.date_commande).toLocaleDateString('fr-FR') : '-'}
                           </TableCell>
                           <TableCell className="text-center">
-                            <Button size="sm" onClick={() => navigate(`/reception/${b.id}`)}
-                              className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs">
-                              <ArrowRight className="w-3.5 h-3.5 mr-1" /> Réceptionner
-                            </Button>
+                            <div className="flex items-center justify-center gap-1">
+                              <button onClick={() => navigate(`/bon-commande/${b.id}`)}
+                                className="p-1.5 rounded text-gray-500 hover:text-royal-700 hover:bg-royal-50 transition-colors" title="Détails">
+                                <Eye className="w-4 h-4" />
+                              </button>
+                              <Button size="sm" onClick={() => navigate(`/reception/${b.id}`)}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs">
+                                <ArrowRight className="w-3.5 h-3.5 mr-1" /> Réceptionner
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       );

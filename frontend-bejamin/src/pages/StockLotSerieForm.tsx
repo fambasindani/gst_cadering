@@ -8,7 +8,7 @@ import { useToast } from '../hooks/useToast';
 import { lotService } from '../services/lot';
 import { bonCommandeService } from '../services/bon-commande';
 import {
-  ArrowLeft, Save, Loader2, Package, Barcode, MapPin, Building2, CalendarDays, DollarSign, MessageSquare, Tag, Warehouse, AlertTriangle,
+  ArrowLeft, Save, Loader2, Package, Barcode, MapPin, Building2, CalendarDays, DollarSign, MessageSquare, Warehouse, AlertTriangle,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -33,7 +33,8 @@ export function StockLotSerieForm() {
   const [devises, setDevises] = useState<SelectOption[]>([]);
 
   const [form, setForm] = useState({
-    id_produit: '', numero_lot: '', id_ville: '', id_zone: '', id_emplacement: '',
+    id_produit: '', id_ville: '', id_zone: '', id_emplacement: '',
+    numero_lot: '',
     quantite_recue: '', date_peremption: '', date_fabrication: '',
     id_partenaire: '', prix_achat_ht_unitaire: '', id_devise: '', commentaire: '',
   });
@@ -60,9 +61,10 @@ export function StockLotSerieForm() {
         const l = res.data;
         setLotStatut(l.statut_validation);
         setForm({
-          id_produit: String(l.id_produit), numero_lot: l.numero_lot || '',
+          id_produit: String(l.id_produit),
           id_ville: String(l.id_ville), id_zone: String(l.id_zone),
           id_emplacement: l.id_emplacement ? String(l.id_emplacement) : '',
+          numero_lot: l.numero_lot || '',
           quantite_recue: String(l.quantite_recue),
           date_peremption: l.date_peremption?.split('T')[0] || '',
           date_fabrication: l.date_fabrication?.split('T')[0] || '',
@@ -105,10 +107,11 @@ export function StockLotSerieForm() {
     setFieldErrors({});
     try {
       const payload: Record<string, string | number> = {
-        id_produit: Number(form.id_produit), numero_lot: form.numero_lot,
+        id_produit: Number(form.id_produit),
         id_ville: Number(form.id_ville), id_zone: Number(form.id_zone),
         quantite_recue: Number(form.quantite_recue), date_peremption: form.date_peremption,
       };
+      if (form.numero_lot) payload.numero_lot = form.numero_lot;
       if (form.id_emplacement) payload.id_emplacement = Number(form.id_emplacement);
       if (form.date_fabrication) payload.date_fabrication = form.date_fabrication;
       if (form.id_partenaire) payload.id_partenaire = Number(form.id_partenaire);
@@ -144,18 +147,12 @@ export function StockLotSerieForm() {
     );
   }
 
-  const isValid = form.id_produit && form.numero_lot && form.id_ville && form.id_zone && form.quantite_recue && form.date_peremption;
+  const isValid = form.id_produit && form.id_ville && form.id_zone && form.quantite_recue && form.date_peremption;
 
   const errorClass = (field: string) => fieldErrors[field] ? 'border-red-400 focus-visible:border-red-400 focus-visible:ring-red-400/30' : 'border-gray-200';
 
   const FieldError = ({ field }: { field: string }) =>
     fieldErrors[field] ? <p className="text-xs text-red-500 mt-1">{fieldErrors[field]}</p> : null;
-
-  const FieldCard = ({ children, className }: { children: React.ReactNode; className?: string }) => (
-    <div className={cn("p-5 rounded-xl border border-gray-100 bg-white/50 space-y-4", className)}>
-      {children}
-    </div>
-  );
 
   const Label = ({ icon: Icon, children, required }: { icon?: React.ElementType; children: React.ReactNode; required?: boolean }) => (
     <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-1.5">
@@ -212,9 +209,10 @@ export function StockLotSerieForm() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <Label icon={Tag} required>Numéro de lot</Label>
-                    <Input value={form.numero_lot} onChange={e => { setFieldErrors(f => { const n = { ...f }; delete n.numero_lot; return n; }); setForm(f => ({ ...f, numero_lot: e.target.value })); }}
-                      className={cn('h-11 border-gray-200 shadow-sm', errorClass('numero_lot'))} placeholder="Ex: LOT-2024-001" />
+                    <Label icon={Barcode}>Numéro de lot</Label>
+                    <Input value={form.numero_lot}
+                      onChange={e => { setFieldErrors(f => { const n = { ...f }; delete n.numero_lot; return n; }); setForm(f => ({ ...f, numero_lot: e.target.value })); }}
+                      className={cn('h-11 border-gray-200 shadow-sm', errorClass('numero_lot'))} placeholder="Auto-généré si vide" />
                     <FieldError field="numero_lot" />
                   </div>
                   <div>

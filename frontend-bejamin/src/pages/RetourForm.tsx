@@ -11,7 +11,7 @@ import { bonCommandeService } from '../services/bon-commande';
 import { partenaireService } from '../services/partenaire';
 import { lotService } from '../services/lot';
 import {
-  ArrowLeft, Plus, Trash2, Loader2, Building2, Truck, MapPin, CalendarDays, Hash, Package, MessageSquare,
+  ArrowLeft, Plus, Trash2, Loader2, Building2, Truck, MapPin, CalendarDays, Package, MessageSquare,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -30,7 +30,7 @@ export function RetourForm() {
   const [fournisseurs, setFournisseurs] = useState<{ id: number; nom: string }[]>([]);
   const [lots, setLots] = useState<{ id: number; numero_lot: string; quantite_disponible: number; produit?: { id: number; nom: string } | null }[]>([]);
   const [form, setForm] = useState({
-    numero_retour: '', date_retour: '', id_partenaire_client: '',
+    date_retour: '', id_partenaire_client: '',
     id_partenaire_dest: '', id_ville: '', commentaire: '',
     lignes: [{ id_lot: '', quantite_retournee: '', motif: '' }],
   });
@@ -51,7 +51,6 @@ export function RetourForm() {
             const type = r.id_partenaire_client ? 'client' : 'fournisseur';
             setRetourType(type);
             setForm({
-              numero_retour: r.numero_retour,
               date_retour: r.date_retour.split('T')[0],
               id_partenaire_client: r.id_partenaire_client ? String(r.id_partenaire_client) : '',
               id_partenaire_dest: r.id_partenaire_dest ? String(r.id_partenaire_dest) : '',
@@ -103,7 +102,6 @@ export function RetourForm() {
     e.preventDefault();
     const errors: Record<string, string> = {};
 
-    if (!form.numero_retour.trim()) errors.numero_retour = 'Le numéro de retour est requis';
     if (!form.date_retour) errors.date_retour = 'La date est requise';
     if (!form.id_ville) errors.id_ville = 'La ville est requise';
     if (!retourType) {
@@ -125,7 +123,6 @@ export function RetourForm() {
 
     try {
       const payload: Record<string, unknown> = {
-        numero_retour: form.numero_retour,
         date_retour: form.date_retour,
         id_ville: Number(form.id_ville),
         lignes: form.lignes
@@ -174,7 +171,7 @@ export function RetourForm() {
         </button>
         <div>
           <h1 className="text-xl font-bold text-gray-900">{isEdit ? 'Modifier le retour' : 'Nouveau retour'}</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{isEdit ? `Édition du retour ${form.numero_retour}` : 'Créer un retour client ou fournisseur'}</p>
+          <p className="text-sm text-gray-500 mt-0.5">{isEdit ? 'Modifier le retour' : 'Créer un retour client ou fournisseur'}</p>
         </div>
       </div>
 
@@ -189,19 +186,11 @@ export function RetourForm() {
                   <h2 className="text-base font-semibold text-gray-900">Informations générales</h2>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <LabelIcon icon={Hash} required error={fieldErrors.numero_retour}>N° Retour</LabelIcon>
-                    <Input value={form.numero_retour} onChange={e => set('numero_retour', e.target.value)}
-                      className={errClass('numero_retour')} placeholder="Ex: RET-2024-001" />
-                    {fieldErrors.numero_retour && <p className="text-red-500 text-xs">{fieldErrors.numero_retour}</p>}
-                  </div>
-                  <div className="space-y-1.5">
-                    <LabelIcon icon={CalendarDays} required error={fieldErrors.date_retour}>Date</LabelIcon>
-                    <Input type="date" value={form.date_retour} onChange={e => set('date_retour', e.target.value)}
-                      className={errClass('date_retour')} />
-                    {fieldErrors.date_retour && <p className="text-red-500 text-xs">{fieldErrors.date_retour}</p>}
-                  </div>
+                <div className="space-y-1.5">
+                  <LabelIcon icon={CalendarDays} required error={fieldErrors.date_retour}>Date</LabelIcon>
+                  <Input type="date" value={form.date_retour} onChange={e => set('date_retour', e.target.value)}
+                    className={errClass('date_retour')} />
+                  {fieldErrors.date_retour && <p className="text-red-500 text-xs">{fieldErrors.date_retour}</p>}
                 </div>
 
                 <div className="space-y-1.5">

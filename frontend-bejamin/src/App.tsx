@@ -76,7 +76,7 @@ import { ToastProvider } from './hooks/useToast';
 function App() {
   return (
     <ToastProvider>
-    <BrowserRouter>
+    <BrowserRouter basename="/Fondeg">
       <Routes>
         <Route path="/login" element={<Login />} />
 

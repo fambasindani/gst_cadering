@@ -11,7 +11,7 @@ import { useToast } from '../hooks/useToast';
 import { produitService } from '../services/produit';
 import { BarcodeScanner } from '../components/ui/barcode-scanner';
 import {
-  ArrowLeft, Save, Loader2, Scan, X, Package, Tag, Building2, Ruler, AlertTriangle, DollarSign, CalendarDays, MessageSquare, Hash, FileText,
+  ArrowLeft, Save, Loader2, Scan, X, Package, Tag, Building2, Ruler, AlertTriangle, DollarSign, CalendarDays, MessageSquare, FileText,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -47,8 +47,6 @@ export function ProduitForm() {
   const formFields = isEdit
     ? (['code_article', 'code_barre', 'nom', 'description', 'id_categorie', 'id_partenaire_principal', 'id_unite', 'seuil_alerte'] as const)
     : (['code_article', 'code_barre', 'nom', 'description', 'id_categorie', 'id_partenaire_principal', 'id_unite', 'seuil_alerte', 'prix_achat_ht', 'prix_vente_ht', 'id_devise', 'date_application', 'commentaire_prix'] as const);
-
-  type FormField = typeof formFields[number];
 
   const [values, setValues] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {};
@@ -161,9 +159,9 @@ export function ProduitForm() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <LabelIcon icon={Hash} required error={fieldErrors.code_article}>Code article</LabelIcon>
+                    <LabelIcon icon={Tag} error={fieldErrors.code_article}>Code article</LabelIcon>
                     <Input value={values.code_article} onChange={(e) => set('code_article', e.target.value)}
-                      placeholder="Ex: ART-001" className={cn('h-11 border-gray-200 shadow-sm', errorClass(fieldErrors.code_article))} />
+                      placeholder="Auto-généré si vide" className={cn('h-11 border-gray-200 shadow-sm', errorClass(fieldErrors.code_article))} />
                     {fieldErrors.code_article && <p className="text-xs text-red-500 mt-1">{fieldErrors.code_article}</p>}
                   </div>
                   <div>

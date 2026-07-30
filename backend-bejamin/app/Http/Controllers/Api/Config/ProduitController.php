@@ -8,6 +8,7 @@ use App\Models\HistoriquePrix;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
+use App\Helpers\CodeGenerator;
 
 class ProduitController extends Controller
 {
@@ -57,7 +58,7 @@ class ProduitController extends Controller
     {
         try {
             $validated = $request->validate([
-                'code_article' => 'required|string|max:50|unique:produits,code_article',
+                'code_article' => 'nullable|string|max:50|unique:produits,code_article',
                 'code_barre' => 'nullable|string|max:50|unique:produits,code_barre',
                 'nom' => 'required|string|max:200',
                 'description' => 'nullable|string',
@@ -73,6 +74,11 @@ class ProduitController extends Controller
                 'date_application' => 'nullable|date',
                 'commentaire_prix' => 'nullable|string',
             ]);
+
+            // Auto-générer le code article si non fourni
+            if (empty($validated['code_article'])) {
+                $validated['code_article'] = CodeGenerator::produit();
+            }
 
             // Créer le produit
             $produit = Produit::create([

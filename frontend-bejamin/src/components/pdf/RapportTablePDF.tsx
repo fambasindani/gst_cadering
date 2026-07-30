@@ -82,7 +82,7 @@ export function RapportTablePDF({ title, subtitle, columns, rows, stats, totals 
             ))}
           </View>
           {rows.map((row, i) => (
-            <View key={i} style={[styles.tableRow, i % 2 === 1 ? styles.tableRowAlt : undefined]}>
+            <View key={i} style={[styles.tableRow, i % 2 === 1 ? styles.tableRowAlt : {}]}>
               {columns.map((col) => (
                 <Text key={col.key} style={[{ width: col.width, textAlign: col.align || 'left' }, col.align === 'right' ? styles.tableCellRight : styles.tableCell]}>
                   {col.render(row)}

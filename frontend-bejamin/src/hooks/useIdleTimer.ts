@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 export function useIdleTimer(timeout: number, onIdle: () => void) {
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const reset = () => {

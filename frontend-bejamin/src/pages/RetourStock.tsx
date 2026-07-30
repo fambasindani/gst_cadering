@@ -12,7 +12,7 @@ import { useToast } from '../hooks/useToast';
 import { retourService } from '../services/retour';
 import type { Retour } from '../types/retour';
 import {
-  Search, RefreshCw, Eye, CheckCircle, XCircle, Edit3, Trash2, Plus, Loader2, Building2, RotateCcw, Package,
+  Search, RefreshCw, Eye, CheckCircle, XCircle, Edit3, Trash2, Plus, Building2, RotateCcw,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 

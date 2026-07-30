@@ -24,7 +24,7 @@ export function AvoirForm() {
   const [factures, setFactures] = useState<{ id: number; numero_facture: string }[]>([]);
 
   const [values, setValues] = useState({
-    numero_avoir: '', date_avoir: new Date().toISOString().split('T')[0],
+    date_avoir: new Date().toISOString().split('T')[0],
     id_partenaire_client: '', id_facture_origine: '', id_retour: '',
     id_devise: '', montant_ht: '', commentaire: '',
   });
@@ -101,19 +101,11 @@ export function AvoirForm() {
               <h2 className="text-base font-bold text-gray-800">Informations de l'avoir</h2>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <LabelIcon required error={fieldErrors.numero_avoir}>Numéro avoir</LabelIcon>
-                <Input value={values.numero_avoir} onChange={(e) => set('numero_avoir', e.target.value)}
-                  placeholder="Ex: AV-2026-001" className={cn('h-11 border-gray-200 shadow-sm', errorClass(fieldErrors.numero_avoir))} />
-                {fieldErrors.numero_avoir && <p className="text-xs text-red-500 mt-1">{fieldErrors.numero_avoir}</p>}
-              </div>
-              <div>
-                <LabelIcon required error={fieldErrors.date_avoir}>Date</LabelIcon>
-                <Input type="date" value={values.date_avoir} onChange={(e) => set('date_avoir', e.target.value)}
-                  className={cn('h-11 border-gray-200 shadow-sm', errorClass(fieldErrors.date_avoir))} />
-                {fieldErrors.date_avoir && <p className="text-xs text-red-500 mt-1">{fieldErrors.date_avoir}</p>}
-              </div>
+            <div>
+              <LabelIcon required error={fieldErrors.date_avoir}>Date</LabelIcon>
+              <Input type="date" value={values.date_avoir} onChange={(e) => set('date_avoir', e.target.value)}
+                className={cn('h-11 border-gray-200 shadow-sm', errorClass(fieldErrors.date_avoir))} />
+              {fieldErrors.date_avoir && <p className="text-xs text-red-500 mt-1">{fieldErrors.date_avoir}</p>}
             </div>
 
             <div>

@@ -88,7 +88,7 @@ export function FicheTechniquePDF({ fiche }: { fiche: FicheTechnique }) {
                 <Text style={[styles.tableHeaderCell, styles.colCout]}>Coût</Text>
               </View>
               {lignes.map((l, i) => (
-                <View key={l.id} style={[styles.tableRow, i % 2 === 1 ? styles.tableRowAlt : undefined]}>
+                <View key={l.id} style={[styles.tableRow, i % 2 === 1 ? styles.tableRowAlt : {}]}>
                   <Text style={[styles.tableCell, styles.colIngredient]}>{l.ingredient?.nom || '-'}</Text>
                   <Text style={[styles.tableCellRight, styles.colQte]}>{l.quantite_ingredient}</Text>
                   <Text style={[styles.tableCellCenter, styles.colUnite]}>{l.unite?.symbole || '-'}</Text>

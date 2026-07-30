@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\FicheTechnique;
 use App\Models\LigneFicheTechnique;
 use App\Models\Produit;
+use App\Helpers\CodeGenerator;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
@@ -68,7 +69,7 @@ class FicheTechniqueController extends Controller
     {
         try {
             $validated = $request->validate([
-                'code' => 'required|string|max:50|unique:fiche_technique,code',
+                'code' => 'nullable|string|max:50|unique:fiche_technique,code',
                 'nom' => 'required|string|max:200',
                 'description' => 'nullable|string',
                 'id_produit_fini' => 'required|exists:produits,id',
@@ -81,6 +82,11 @@ class FicheTechniqueController extends Controller
                 'lignes.*.id_unite' => 'required|exists:unites,id',
                 'lignes.*.commentaire' => 'nullable|string',
             ]);
+
+            // Auto-générer le code si non fourni
+            if (empty($validated['code'])) {
+                $validated['code'] = CodeGenerator::ficheTechnique();
+            }
 
             DB::beginTransaction();
 
@@ -265,14 +271,34 @@ class FicheTechniqueController extends Controller
     {
         try {
             $fiche = FicheTechnique::findOrFail($id);
-            $fiche->lignes()->delete();
-            $fiche->delete();
+
+            DB::beginTransaction();
+            try {
+                $fiche->lignes()->delete();
+                $fiche->delete();
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
 
             return response()->json([
                 'success' => true,
                 'message' => 'Fiche technique supprimée avec succès'
             ]);
 
+        } catch (\Illuminate\Database\QueryException $e) {
+            if (str_contains($e->getMessage(), '23000')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Impossible de supprimer cette fiche technique car elle a déjà été utilisée dans une production (Entrée recette). Vous pouvez plutôt la désactiver.'
+                ], 409);
+            }
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la suppression',
+                'error' => $e->getMessage()
+            ], 500);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

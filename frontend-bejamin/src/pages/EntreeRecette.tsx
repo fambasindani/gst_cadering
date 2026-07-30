@@ -7,9 +7,6 @@ import { Card, CardContent } from '../components/ui/card';
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '../components/ui/select';
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from '../components/ui/table';
 import { useToast } from '../hooks/useToast';
 import { api } from '../services/api';
 import { ficheTechniqueService } from '../services/fiche-technique';
@@ -17,9 +14,8 @@ import { entreeRecetteService } from '../services/entree-recette';
 import { produitService } from '../services/produit';
 import type { FicheTechnique } from '../types/fiche-technique';
 import {
-  ArrowLeft, Save, Loader2, FileText, MapPin, Package, CalendarDays, Hash, DollarSign, Scale, Plus, CheckCircle2,
+  Save, Loader2, FileText, MapPin, Package, CalendarDays, DollarSign, Scale, Plus, CheckCircle2,
 } from 'lucide-react';
-import { cn } from '../lib/utils';
 import { formatCurrency } from '../lib/format';
 
 interface VilleOption { id: number; nom: string }

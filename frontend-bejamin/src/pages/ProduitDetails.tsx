@@ -21,7 +21,7 @@ import type { HistoriquePrix } from '../types/produit';
 import {
   ArrowLeft, Pencil, Package, DollarSign, Building2, AlertCircle,
   CheckCircle, XCircle, Scale, Hash, Barcode, Tag, FileText,
-  Warehouse, TrendingUp, Calendar, Plus, Loader2, Trash2, Save,
+  Warehouse, TrendingUp, Calendar, Plus, Loader2, Trash2,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { formatCurrency } from '../lib/format';

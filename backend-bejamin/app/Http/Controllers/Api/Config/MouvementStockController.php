@@ -145,7 +145,11 @@ class MouvementStockController extends Controller
                     'statut_validation' => 'EN ATTENTE',
                 ]);
 
-                // Le stock du lot n'est mis à jour qu'à la validation
+                // Mettre à jour le stock pour les entrées
+                if ($typeMouvement->sens === 1) {
+                    $lot->quantite_disponible += $validated['quantite'];
+                    $lot->save();
+                }
 
                 DB::commit();
 
@@ -306,15 +310,13 @@ public function show($id)
                 $lot = $mouvement->lot;
                 $typeMouvement = $mouvement->typeMouvement;
 
-                if ($typeMouvement->sens === 1) {
-                    $lot->quantite_disponible += $mouvement->quantite;
-                } else {
+                if ($typeMouvement->sens === -1) {
                     if ($lot->quantite_disponible < $mouvement->quantite) {
                         throw new \Exception("Stock insuffisant. Disponible: {$lot->quantite_disponible}, Demandé: {$mouvement->quantite}");
                     }
                     $lot->quantite_disponible -= $mouvement->quantite;
+                    $lot->save();
                 }
-                $lot->save();
 
                 $mouvement->update([
                     'statut_validation' => 'VALIDÉ',

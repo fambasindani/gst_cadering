@@ -1,5 +1,5 @@
 import { api } from './api';
-import type { ProduitListResponse, ProduitResponse, ProduitFormData, StockResponse } from '../types/produit';
+import type { ProduitListResponse, ProduitResponse, ProduitFormData, StockResponse, HistoriquePrix } from '../types/produit';
 
 export const produitService = {
   list: (params?: Record<string, string>) =>

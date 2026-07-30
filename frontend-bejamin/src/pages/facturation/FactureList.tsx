@@ -17,7 +17,7 @@ import { factureService } from '../../services/facture';
 import type { Facture } from '../../types/facturation';
 import { formatCurrency } from '../../lib/format';
 import {
-  Search, RefreshCw, Plus, Loader2, Eye, Pencil, Trash2, FileText,
+  Search, RefreshCw, Plus, Eye, Pencil, Trash2, FileText,
 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 

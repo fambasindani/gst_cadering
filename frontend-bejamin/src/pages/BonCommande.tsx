@@ -15,7 +15,7 @@ import { useToast } from '../hooks/useToast';
 import { bonCommandeService } from '../services/bon-commande';
 import type { BonCommande } from '../types/bon-commande';
 import {
-  Plus, Search, RefreshCw, Eye, Pencil, Trash2, FileText, Truck, XCircle, CheckCircle, Clock, AlertTriangle, Ban,
+  Plus, Search, RefreshCw, Eye, Pencil, Trash2, FileText,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { formatCurrency } from '../lib/format';

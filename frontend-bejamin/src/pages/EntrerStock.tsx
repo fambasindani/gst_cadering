@@ -35,6 +35,7 @@ export function EntrerStock() {
     try {
       const params: Record<string, string> = {
         statut: 'EN ATTENTE',
+        sens: '1',
         per_page: String(pageSize),
         page: String(currentPage),
         sort_by: 'date_mouvement',

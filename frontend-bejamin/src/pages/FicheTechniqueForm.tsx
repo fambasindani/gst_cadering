@@ -17,7 +17,6 @@ import { ficheTechniqueService } from '../services/fiche-technique';
 import { produitService } from '../services/produit';
 import { ArrowLeft, Save, Loader2, Plus, Trash2, FileText, MapPin, Hash, DollarSign, Package, Download } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { formatCurrency } from '../lib/format';
 
 interface IngredientRow {
   key: string;
@@ -199,7 +198,7 @@ export function FicheTechniqueForm() {
                   <div>
                     <LabelIcon icon={Hash} required error={fieldErrors.code}>Code</LabelIcon>
                     <Input value={values.code} onChange={(e) => set('code', e.target.value)}
-                      placeholder="Ex: FT-001" readOnly={isView}
+                      placeholder="Auto-généré si vide" readOnly={isView}
                       className={cn('h-11 border-gray-200 shadow-sm', errorClass(fieldErrors.code))} />
                     {fieldErrors.code && <p className="text-xs text-red-500 mt-1">{fieldErrors.code}</p>}
                   </div>
