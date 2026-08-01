@@ -61,6 +61,7 @@ export const menuItems: MenuItem[] = [
       { title: 'Entrée stock', path: '/stock/entree', permission: 'config:mouvements:create' },
       { title: 'Bon de réception', path: '/reception', permission: 'config:bon_commande:receive' },
       { title: 'Retour stock', path: '/stock/retour', permission: 'config:retours:view' },
+      { title: 'Avoirs', path: '/stock/avoir', permission: 'facturation:avoir:view' },
     ]
   },
   { 
@@ -70,31 +71,17 @@ export const menuItems: MenuItem[] = [
     permission: 'config:fiche_technique:view',
     subItems: [
       { title: 'Création Fiche Tech.', path: '/recettes/creation', permission: 'config:fiche_technique:view' },
-      { title: 'Entrée Recette', path: '/recettes/entree', permission: 'config:recette:create' },
-      { title: 'Rapport Recette', path: '/recettes/rapport', permission: 'config:fiche_technique:view' },
-    ]
-  },
-  { 
-    title: 'Facturation', 
-    icon: 'Receipt', 
-    path: '/facturation',
-    permission: 'facturation:devis:view',
-    subItems: [
-      { title: 'Factures', path: '/facturation/factures', permission: 'facturation:facture:view' },
-      { title: 'Paiements', path: '/facturation/paiements', permission: 'facturation:paiement:view' },
-      { title: 'Avoirs', path: '/facturation/avoirs', permission: 'facturation:avoir:view' },
-      { title: 'Devis', path: '/facturation/devis', permission: 'facturation:devis:view' },
+      { title: 'Entrée Recette', path: '/recettes/entree', permission: 'config:recette:view' },
+      { title: 'Rapport Recette', path: '/recettes/rapport', permission: 'config:recette:view' },
     ]
   },
   { 
     title: 'Configuration', 
     icon: 'Settings', 
     path: '/configuration',
-    permission: 'config:villes:view',
+    permission: 'config:magasins:view',
     subItems: [
-      { title: 'Zone', path: '/configuration/zone', permission: 'config:zones:view' },
-      { title: 'Emplacement', path: '/configuration/emplacement', permission: 'config:emplacements:view' },
-      { title: 'Ville', path: '/configuration/ville', permission: 'config:villes:view' },
+      { title: 'Magasin', path: '/configuration/magasin', permission: 'config:magasins:view' },
       { title: 'Département', path: '/configuration/departement', permission: 'config:departements:view' },
       { title: 'Catégorie', path: '/configuration/categorie', permission: 'config:categories:view' },
       { title: 'Devise', path: '/configuration/devise', permission: 'config:devises:view' },

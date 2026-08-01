@@ -126,10 +126,10 @@ export function PartenaireDetails() {
                 </div>
               </div>
               <div>
-                <Label>Ville</Label>
+                <Label>Magasin</Label>
                 <div className="flex items-center gap-2 mt-1">
                   <Globe className="w-4 h-4 text-gray-400 shrink-0" />
-                  <p className="text-sm text-gray-900">{partner.ville?.nom || '-'}</p>
+                  <p className="text-sm text-gray-900">{partner.magasin?.nom || '-'}</p>
                 </div>
               </div>
               <div>

@@ -4,18 +4,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\Auth\AuthController;
 use App\Http\Controllers\Api\Rapport\RapportController;
-use App\Http\Controllers\Api\Facturation\DevisController;
-use App\Http\Controllers\Api\Facturation\FactureController;
-use App\Http\Controllers\Api\Facturation\PaiementController;
 use App\Http\Controllers\Api\Facturation\AvoirController;
 use App\Http\Controllers\Api\Dashboard\DashboardController;
 use App\Http\Controllers\Api\Audit\AuditController;
 use App\Http\Controllers\Api\Config\{
     UniteController,
-    VilleController,
+    MagasinController,
     DepartementController,
-    ZoneController,
-    EmplacementController,
     CategorieController,
     DeviseController,
     UtilisateurController,
@@ -86,13 +81,13 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
         Route::delete('unites/{id}', [UniteController::class, 'destroy'])->middleware('permission:config:unites:delete');
         Route::patch('unites/{id}/toggle', [UniteController::class, 'toggleActif'])->middleware('permission:config:unites:update');
 
-        // ---------- Villes ----------
-        Route::get('villes', [VilleController::class, 'index'])->middleware('permission:config:villes:view');
-        Route::post('villes', [VilleController::class, 'store'])->middleware('permission:config:villes:create');
-        Route::get('villes/{id}', [VilleController::class, 'show'])->middleware('permission:config:villes:view');
-        Route::put('villes/{id}', [VilleController::class, 'update'])->middleware('permission:config:villes:update');
-        Route::delete('villes/{id}', [VilleController::class, 'destroy'])->middleware('permission:config:villes:delete');
-        Route::patch('villes/{id}/toggle', [VilleController::class, 'toggleActif'])->middleware('permission:config:villes:update');
+        // ---------- Magasins ----------
+        Route::get('magasins', [MagasinController::class, 'index'])->middleware('permission:config:magasins:view');
+        Route::post('magasins', [MagasinController::class, 'store'])->middleware('permission:config:magasins:create');
+        Route::get('magasins/{id}', [MagasinController::class, 'show'])->middleware('permission:config:magasins:view');
+        Route::put('magasins/{id}', [MagasinController::class, 'update'])->middleware('permission:config:magasins:update');
+        Route::delete('magasins/{id}', [MagasinController::class, 'destroy'])->middleware('permission:config:magasins:delete');
+        Route::patch('magasins/{id}/toggle', [MagasinController::class, 'toggleActif'])->middleware('permission:config:magasins:update');
 
         // ---------- Départements ----------
         Route::get('departements', [DepartementController::class, 'index'])->middleware('permission:config:departements:view');
@@ -100,26 +95,8 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
         Route::get('departements/{id}', [DepartementController::class, 'show'])->middleware('permission:config:departements:view');
         Route::put('departements/{id}', [DepartementController::class, 'update'])->middleware('permission:config:departements:update');
         Route::delete('departements/{id}', [DepartementController::class, 'destroy'])->middleware('permission:config:departements:delete');
-        Route::get('departements/by-ville/{villeId}', [DepartementController::class, 'getByVille'])->middleware('permission:config:departements:view');
+        Route::get('departements/by-magasin/{magasinId}', [DepartementController::class, 'getByMagasin'])->middleware('permission:config:departements:view');
         Route::patch('departements/{id}/toggle', [DepartementController::class, 'toggleActif'])->middleware('permission:config:departements:update');
-
-        // ---------- Zones ----------
-        Route::get('zones', [ZoneController::class, 'index'])->middleware('permission:config:zones:view');
-        Route::post('zones', [ZoneController::class, 'store'])->middleware('permission:config:zones:create');
-        Route::get('zones/{id}', [ZoneController::class, 'show'])->middleware('permission:config:zones:view');
-        Route::put('zones/{id}', [ZoneController::class, 'update'])->middleware('permission:config:zones:update');
-        Route::delete('zones/{id}', [ZoneController::class, 'destroy'])->middleware('permission:config:zones:delete');
-        Route::get('zones/by-ville/{villeId}', [ZoneController::class, 'getByVille'])->middleware('permission:config:zones:view');
-        Route::patch('zones/{id}/toggle', [ZoneController::class, 'toggleActif'])->middleware('permission:config:zones:update');
-
-        // ---------- Emplacements ----------
-        Route::get('emplacements', [EmplacementController::class, 'index'])->middleware('permission:config:emplacements:view');
-        Route::post('emplacements', [EmplacementController::class, 'store'])->middleware('permission:config:emplacements:create');
-        Route::get('emplacements/{id}', [EmplacementController::class, 'show'])->middleware('permission:config:emplacements:view');
-        Route::put('emplacements/{id}', [EmplacementController::class, 'update'])->middleware('permission:config:emplacements:update');
-        Route::delete('emplacements/{id}', [EmplacementController::class, 'destroy'])->middleware('permission:config:emplacements:delete');
-        Route::get('emplacements/by-zone/{zoneId}', [EmplacementController::class, 'getByZone'])->middleware('permission:config:emplacements:view');
-        Route::patch('emplacements/{id}/toggle', [EmplacementController::class, 'toggleActif'])->middleware('permission:config:emplacements:update');
 
         // ---------- Catégories ----------
         Route::get('categories', [CategorieController::class, 'index'])->middleware('permission:config:categories:view');
@@ -278,8 +255,11 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
         // ✅ ============================================================
         // ✅ ENTRÉE RECETTE - À L'INTÉRIEUR DU GROUPE CONFIG
         // ✅ ============================================================
+        Route::get('entree-recette', [EntreeRecetteController::class, 'index'])->middleware('permission:config:recette:view');
         Route::post('entree-recette/produire', [EntreeRecetteController::class, 'produire'])
             ->middleware('permission:config:recette:create');
+        Route::get('entree-recette/{id}', [EntreeRecetteController::class, 'show'])->middleware('permission:config:recette:view');
+        Route::delete('entree-recette/{id}', [EntreeRecetteController::class, 'destroy'])->middleware('permission:config:recette:delete');
 
         // ============================================================
         // NOTIFICATIONS
@@ -291,35 +271,9 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
     });
 
     // ============================================================
-    // FACTURATION
+    // FACTURATION (Avoirs uniquement)
     // ============================================================
     Route::prefix('facturation')->group(function () {
-
-        // ---------- Devis ----------
-        Route::get('devis', [DevisController::class, 'index'])->middleware('permission:facturation:devis:view');
-        Route::post('devis', [DevisController::class, 'store'])->middleware('permission:facturation:devis:create');
-        Route::get('devis/{id}', [DevisController::class, 'show'])->middleware('permission:facturation:devis:view');
-        Route::put('devis/{id}', [DevisController::class, 'update'])->middleware('permission:facturation:devis:update');
-        Route::delete('devis/{id}', [DevisController::class, 'destroy'])->middleware('permission:facturation:devis:delete');
-        Route::post('devis/{id}/transformer-commande', [DevisController::class, 'transformerEnCommande'])->middleware('permission:facturation:devis:update');
-        Route::patch('devis/{id}/statut', [DevisController::class, 'changeStatut'])->middleware('permission:facturation:devis:update');
-
-        // ---------- Factures ----------
-        Route::get('factures', [FactureController::class, 'index'])->middleware('permission:facturation:facture:view');
-        Route::post('factures', [FactureController::class, 'store'])->middleware('permission:facturation:facture:create');
-        Route::get('factures/{id}', [FactureController::class, 'show'])->middleware('permission:facturation:facture:view');
-        Route::put('factures/{id}', [FactureController::class, 'update'])->middleware('permission:facturation:facture:update');
-        Route::delete('factures/{id}', [FactureController::class, 'destroy'])->middleware('permission:facturation:facture:delete');
-        Route::patch('factures/{id}/emettre', [FactureController::class, 'emettre'])->middleware('permission:facturation:facture:update');
-        Route::patch('factures/{id}/annuler', [FactureController::class, 'annuler'])->middleware('permission:facturation:facture:update');
-        Route::patch('factures/{id}/payee', [FactureController::class, 'marquerPayee'])->middleware('permission:facturation:facture:update');
-        Route::post('factures/{id}/generer-sortie-stock', [FactureController::class, 'genererSortieStock'])->middleware('permission:facturation:facture:update');
-
-        // ---------- Paiements ----------
-        Route::get('paiements', [PaiementController::class, 'index'])->middleware('permission:facturation:paiement:view');
-        Route::post('paiements', [PaiementController::class, 'store'])->middleware('permission:facturation:paiement:create');
-        Route::get('paiements/{id}', [PaiementController::class, 'show'])->middleware('permission:facturation:paiement:view');
-        Route::delete('paiements/{id}', [PaiementController::class, 'destroy'])->middleware('permission:facturation:paiement:delete');
 
         // ---------- Avoirs ----------
         Route::get('avoirs', [AvoirController::class, 'index'])->middleware('permission:facturation:avoir:view');
@@ -335,7 +289,9 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
         Route::get('bon-commande', [RapportController::class, 'bonCommande'])->middleware('permission:rapport:commande');
         Route::get('bon-livraison', [RapportController::class, 'bonLivraison'])->middleware('permission:rapport:commande');
         Route::get('stock', [RapportController::class, 'rapportStock'])->middleware('permission:rapport:stock');
+        Route::get('stock-logique-physique', [RapportController::class, 'rapportStockPhysiqueLogique'])->middleware('permission:rapport:stock');
         Route::get('variation-stock', [RapportController::class, 'variationStock'])->middleware('permission:rapport:stock');
+        Route::get('variation-stock/calcul', [RapportController::class, 'variationStockCalcul'])->middleware('permission:rapport:stock');
         Route::get('client', [RapportController::class, 'rapportClient'])->middleware('permission:rapport:client');
         Route::get('sortie', [RapportController::class, 'rapportSortie'])->middleware('permission:rapport:stock');
         Route::get('sortie-full', [RapportController::class, 'rapportSortieFull'])->middleware('permission:rapport:stock');
@@ -355,7 +311,7 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
     Route::prefix('dashboard')->group(function () {
         Route::get('/', [DashboardController::class, 'index']);
         Route::get('/mini', [DashboardController::class, 'mini']);
-        Route::get('/ville/{villeId}', [DashboardController::class, 'byVille']);
+        Route::get('/magasin/{magasinId}', [DashboardController::class, 'byMagasin']);
     });
 
     // ============================================================

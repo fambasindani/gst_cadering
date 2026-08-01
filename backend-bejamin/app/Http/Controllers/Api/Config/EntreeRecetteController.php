@@ -3,10 +3,8 @@
 namespace App\Http\Controllers\Api\Config;
 
 use App\Http\Controllers\Controller;
+use App\Models\EntreeRecette;
 use App\Models\FicheTechnique;
-use App\Models\Lot;
-use App\Models\MouvementStock;
-use App\Models\Produit;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
@@ -15,17 +13,76 @@ use Illuminate\Support\Facades\DB;
 class EntreeRecetteController extends Controller
 {
     /**
-     * Produire à partir d'une recette
+     * Liste des entrées recette
+     */
+    public function index(Request $request)
+    {
+        try {
+            $perPage = $request->input('per_page', 15);
+            $search = $request->input('search');
+            $ficheId = $request->input('fiche_id');
+            $partenaireId = $request->input('partenaire_id');
+            $dateFrom = $request->input('date_from');
+            $dateTo = $request->input('date_to');
+            $sortBy = $request->input('sort_by', 'id');
+            $sortOrder = $request->input('sort_order', 'desc');
+
+            $query = EntreeRecette::with([
+                'ficheTechnique.lignes.ingredient',
+                'ficheTechnique.lignes.unite',
+                'partenaire',
+            ]);
+
+            if ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->whereHas('ficheTechnique', fn ($f) => $f->where('nom', 'LIKE', "%{$search}%"))
+                      ->orWhereHas('partenaire', fn ($p) => $p->where('nom', 'LIKE', "%{$search}%"));
+                });
+            }
+
+            if ($ficheId) {
+                $query->where('id_fiche_technique', $ficheId);
+            }
+
+            if ($partenaireId) {
+                $query->where('id_partenaire', $partenaireId);
+            }
+
+            if ($dateFrom) {
+                $query->whereDate('date_production', '>=', $dateFrom);
+            }
+
+            if ($dateTo) {
+                $query->whereDate('date_production', '<=', $dateTo);
+            }
+
+            $data = $query->orderBy($sortBy, $sortOrder)->paginate($perPage);
+
+            return response()->json([
+                'success' => true,
+                'data' => $data,
+                'message' => 'Liste des entrées recette récupérée avec succès'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la récupération des données',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Créer une entrée recette (commande de production client)
      */
     public function produire(Request $request)
     {
         try {
             $validated = $request->validate([
                 'id_fiche_technique' => 'required|exists:fiche_technique,id',
-                'quantite_produite' => 'required|integer|min:1',
-                'id_ville' => 'required|exists:villes,id',
-                'id_zone' => 'required|exists:zones,id',
-                'id_emplacement' => 'nullable|exists:emplacements,id',
+                'id_partenaire' => 'required|exists:partenaires,id',
+                'nombre_passages' => 'required|integer|min:1',
                 'date_production' => 'nullable|date',
                 'commentaire' => 'nullable|string',
             ]);
@@ -35,108 +92,31 @@ class EntreeRecetteController extends Controller
             DB::beginTransaction();
 
             try {
-                $quantiteProduite = $validated['quantite_produite'];
-                $produitFini = $fiche->produitFini;
-
-                // Vérifier les stocks des ingrédients
-                foreach ($fiche->lignes as $ligne) {
-                    $quantiteNecessaire = $ligne->quantite_ingredient * $quantiteProduite;
-                    $stockDisponible = Lot::where('id_produit', $ligne->id_produit_ingredient)
-                        ->where('id_ville', $validated['id_ville'])
-                        ->where('statut_validation', 'VALIDÉ')
-                        ->sum('quantite_disponible');
-
-                    if ($stockDisponible < $quantiteNecessaire) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => "Stock insuffisant pour l'ingrédient: {$ligne->ingredient->nom}. Disponible: {$stockDisponible}, Nécessaire: {$quantiteNecessaire}"
-                        ], 422);
-                    }
-                }
-
-                // 1. CONSOMMER LES INGRÉDIENTS (SORTIES)
-                foreach ($fiche->lignes as $ligne) {
-                    $quantiteNecessaire = $ligne->quantite_ingredient * $quantiteProduite;
-                    $quantiteRestante = $quantiteNecessaire;
-
-                    // Récupérer les lots disponibles (FIFO - premier entré, premier sorti)
-                    $lots = Lot::where('id_produit', $ligne->id_produit_ingredient)
-                        ->where('id_ville', $validated['id_ville'])
-                        ->where('statut_validation', 'VALIDÉ')
-                        ->where('quantite_disponible', '>', 0)
-                        ->orderBy('date_reception')
-                        ->get();
-
-                    foreach ($lots as $lot) {
-                        if ($quantiteRestante <= 0) break;
-
-                        $quantiteAPrelever = min($lot->quantite_disponible, $quantiteRestante);
-
-                        // Créer mouvement de sortie
-                        MouvementStock::create([
-                            'id_lot' => $lot->id,
-                            'id_type_mouvement' => 2, // Sortie consommation
-                            'quantite' => $quantiteAPrelever,
-                            'date_mouvement' => $validated['date_production'] ?? now(),
-                            'id_utilisateur' => Auth::id(),
-                            'reference_document' => $fiche->code,
-                            'commentaire' => "Consommation pour production: {$fiche->nom} (x{$quantiteProduite})",
-                            'statut_validation' => 'VALIDÉ',
-                        ]);
-
-                        // Mettre à jour le lot
-                        $lot->quantite_disponible -= $quantiteAPrelever;
-                        $lot->save();
-
-                        $quantiteRestante -= $quantiteAPrelever;
-                    }
-                }
-
-                // 2. ENTRÉE DU PRODUIT FINI
-                $quantiteProduiteTotale = $quantiteProduite * $fiche->rendement;
-
-                // Créer un lot pour le produit fini
-                $lot = Lot::create([
-                    'id_produit' => $produitFini->id,
-                    'id_ville' => $validated['id_ville'],
-                    'id_zone' => $validated['id_zone'],
-                    'id_emplacement' => $validated['id_emplacement'] ?? null,
-                    'numero_lot' => 'PROD-' . $fiche->code . '-' . date('YmdHis'),
-                    'code_qr' => 'QR-PROD-' . uniqid(),
-                    'quantite_recue' => $quantiteProduiteTotale,
-                    'quantite_disponible' => $quantiteProduiteTotale,
-                    'date_fabrication' => $validated['date_production'] ?? now(),
-                    'date_peremption' => now()->addDays(7), // À ajuster selon le produit
-                    'date_reception' => now(),
-                    'prix_achat_ht_unitaire' => $fiche->cout_unitaire,
-                    'statut_validation' => 'EN ATTENTE',
+                $recette = EntreeRecette::create([
+                    'id_fiche_technique' => $fiche->id,
+                    'id_partenaire' => $validated['id_partenaire'],
+                    'nombre_passages' => $validated['nombre_passages'],
+                    'date_production' => $validated['date_production'] ?? now()->toDateString(),
                     'commentaire' => $validated['commentaire'] ?? null,
-                ]);
-
-                // Créer mouvement d'entrée
-                MouvementStock::create([
-                    'id_lot' => $lot->id,
-                    'id_type_mouvement' => 1, // Entrée réception
-                    'quantite' => $quantiteProduiteTotale,
-                    'date_mouvement' => $validated['date_production'] ?? now(),
                     'id_utilisateur' => Auth::id(),
-                    'reference_document' => $fiche->code,
-                    'commentaire' => "Production: {$fiche->nom} (x{$quantiteProduite})",
-                    'statut_validation' => 'EN ATTENTE',
                 ]);
 
                 DB::commit();
 
+                $recette->load(['ficheTechnique', 'partenaire']);
+
+                $coutTotal = $fiche->cout_total * $recette->nombre_passages;
+
                 return response()->json([
                     'success' => true,
                     'data' => [
+                        'recette' => $recette,
                         'fiche_technique' => $fiche,
-                        'lot_produit' => $lot->load(['produit', 'ville', 'zone']),
-                        'quantite_produite' => $quantiteProduiteTotale,
-                        'cout_total' => $fiche->cout_total * $quantiteProduite,
+                        'nombre_passages' => $recette->nombre_passages,
+                        'cout_total' => $coutTotal,
                         'cout_unitaire' => $fiche->cout_unitaire,
                     ],
-                    'message' => 'Production réalisée avec succès'
+                    'message' => 'Entrée recette enregistrée avec succès'
                 ], 201);
 
             } catch (\Exception $e) {
@@ -154,6 +134,52 @@ class EntreeRecetteController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la production',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Détail d'une entrée recette
+     */
+    public function show($id)
+    {
+        try {
+            $recette = EntreeRecette::with(['ficheTechnique.lignes.ingredient', 'ficheTechnique.lignes.unite', 'partenaire', 'utilisateur'])
+                ->findOrFail($id);
+
+            return response()->json([
+                'success' => true,
+                'data' => $recette,
+                'message' => 'Détail de l\'entrée recette récupéré avec succès'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Entrée recette non trouvée'
+            ], 404);
+        }
+    }
+
+    /**
+     * Supprimer une entrée recette
+     */
+    public function destroy($id)
+    {
+        try {
+            $recette = EntreeRecette::findOrFail($id);
+            $recette->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Entrée recette supprimée avec succès'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la suppression',
                 'error' => $e->getMessage()
             ], 500);
         }

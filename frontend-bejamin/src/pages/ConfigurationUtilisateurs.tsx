@@ -14,7 +14,7 @@ import { ConfirmModal } from '../components/ui/confirm-modal';
 import { useToast } from '../hooks/useToast';
 import { utilisateurService } from '../services/utilisateur';
 import { roleService } from '../services/role';
-import { villeService } from '../services/ville';
+import { magasinService } from '../services/magasin';
 import { api } from '../services/api';
 import type { Utilisateur } from '../types/auth';
 import {
@@ -30,9 +30,9 @@ export function ConfigurationUtilisateurs() {
   const [loading, setLoading] = useState(true);
   const [searchInput, setSearchInput] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [villeFilter, setVilleFilter] = useState('_all');
+  const [magasinFilter, setMagasinFilter] = useState('_all');
   const [roleFilter, setRoleFilter] = useState('_all');
-  const [villes, setVilles] = useState<{ id: number; nom: string }[]>([]);
+  const [magasins, setMagasins] = useState<{ id: number; nom: string }[]>([]);
   const [roles, setRoles] = useState<{ id: number; nom: string }[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
@@ -56,7 +56,7 @@ export function ConfigurationUtilisateurs() {
         sort_order: 'desc',
       };
       if (searchTerm) params.search = searchTerm;
-      if (villeFilter && villeFilter !== '_all') params.ville_id = villeFilter;
+      if (magasinFilter && magasinFilter !== '_all') params.magasin_id = magasinFilter;
       if (roleFilter && roleFilter !== '_all') params.role_id = roleFilter;
 
       const res = await utilisateurService.list(params);
@@ -70,24 +70,20 @@ export function ConfigurationUtilisateurs() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, searchTerm, villeFilter, roleFilter]);
+  }, [currentPage, searchTerm, magasinFilter, roleFilter]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
   useEffect(() => {
-    villeService.list({ per_page: '200', sort_by: 'nom', sort_order: 'asc' })
-      .then((res) => { if (res.success) setVilles(res.data.data); })
+    magasinService.list({ per_page: '200', sort_by: 'nom', sort_order: 'asc' })
+      .then((res) => { if (res.success) setMagasins(res.data.data); })
       .catch(() => {});
     roleService.list({ per_page: '200', sort_by: 'nom', sort_order: 'asc' })
       .then((res) => { if (res.success) setRoles(res.data.data); })
       .catch(() => {});
     api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/departements', { params: { per_page: '200', sort_by: 'nom', sort_order: 'asc' } })
-      .catch(() => {});
-    api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/zones', { params: { per_page: '200', sort_by: 'nom', sort_order: 'asc' } })
-      .catch(() => {});
-    api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/emplacements', { params: { per_page: '200', sort_by: 'nom', sort_order: 'asc' } })
       .catch(() => {});
   }, []);
 
@@ -129,7 +125,7 @@ export function ConfigurationUtilisateurs() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => { setSearchInput(''); setSearchTerm(''); setVilleFilter('_all'); setRoleFilter('_all'); setCurrentPage(1); }} className="border-gray-300 text-gray-700 hover:bg-gray-50" title="Actualiser">
+          <Button variant="outline" onClick={() => { setSearchInput(''); setSearchTerm(''); setMagasinFilter('_all'); setRoleFilter('_all'); setCurrentPage(1); }} className="border-gray-300 text-gray-700 hover:bg-gray-50" title="Actualiser">
             <RefreshCw className={cn('h-4 w-4 mr-2', loading && 'animate-spin')} />
             Actualiser
           </Button>
@@ -171,13 +167,13 @@ export function ConfigurationUtilisateurs() {
               ))}
             </SelectContent>
           </Select>
-          <Select value={villeFilter} onValueChange={(v) => { setVilleFilter(v); setCurrentPage(1); }}>
+          <Select value={magasinFilter} onValueChange={(v) => { setMagasinFilter(v); setCurrentPage(1); }}>
             <SelectTrigger className="w-44 h-9 bg-white border-gray-200">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="_all">Toutes les villes</SelectItem>
-              {villes.map((v) => (
+              <SelectItem value="_all">Tous les magasins</SelectItem>
+              {magasins.map((v) => (
                 <SelectItem key={v.id} value={String(v.id)}>{v.nom}</SelectItem>
               ))}
             </SelectContent>
@@ -199,7 +195,7 @@ export function ConfigurationUtilisateurs() {
                     <TableHead className="font-semibold text-gray-600">Prénom</TableHead>
                     <TableHead className="hidden md:table-cell font-semibold text-gray-600">Email</TableHead>
                     <TableHead className="hidden md:table-cell font-semibold text-gray-600">Rôle</TableHead>
-                    <TableHead className="hidden lg:table-cell font-semibold text-gray-600">Ville</TableHead>
+                    <TableHead className="hidden lg:table-cell font-semibold text-gray-600">Magasin</TableHead>
                     <TableHead className="text-center font-semibold text-gray-600">Statut</TableHead>
                     <TableHead className="text-center font-semibold text-gray-600">Actions</TableHead>
                   </TableRow>
@@ -235,7 +231,7 @@ export function ConfigurationUtilisateurs() {
                       <TableHead className="font-semibold text-gray-600">Prénom</TableHead>
                       <TableHead className="hidden md:table-cell font-semibold text-gray-600">Email</TableHead>
                       <TableHead className="hidden md:table-cell font-semibold text-gray-600">Rôle</TableHead>
-                      <TableHead className="hidden lg:table-cell font-semibold text-gray-600">Ville</TableHead>
+                      <TableHead className="hidden lg:table-cell font-semibold text-gray-600">Magasin</TableHead>
                       <TableHead className="text-center font-semibold text-gray-600">Statut</TableHead>
                       <TableHead className="text-center font-semibold text-gray-600">Actions</TableHead>
                     </TableRow>
@@ -252,7 +248,7 @@ export function ConfigurationUtilisateurs() {
                             {u.role?.nom || '-'}
                           </span>
                         </TableCell>
-                        <TableCell className="hidden lg:table-cell text-sm text-gray-600">{u.ville?.nom || '-'}</TableCell>
+                        <TableCell className="hidden lg:table-cell text-sm text-gray-600">{u.magasin?.nom || '-'}</TableCell>
                         <TableCell className="text-center">
                           <span className={cn(
                             'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium',

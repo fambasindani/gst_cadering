@@ -28,8 +28,8 @@ export function ConfigurationDepartement() {
   const [loading, setLoading] = useState(true);
   const [searchInput, setSearchInput] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [villeFilter, setVilleFilter] = useState('_all');
-  const [villes, setVilles] = useState<{ id: number; nom: string }[]>([]);
+  const [magasinFilter, setMagasinFilter] = useState('_all');
+  const [magasins, setMagasins] = useState<{ id: number; nom: string }[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -45,7 +45,7 @@ export function ConfigurationDepartement() {
   const [form, setForm] = useState({
     nom: '',
     code: '',
-    id_ville: '',
+    id_magasin: '',
     actif: true,
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -62,7 +62,7 @@ export function ConfigurationDepartement() {
         sort_order: 'desc',
       };
       if (searchTerm) params.search = searchTerm;
-      if (villeFilter && villeFilter !== '_all') params.ville_id = villeFilter;
+      if (magasinFilter && magasinFilter !== '_all') params.magasin_id = magasinFilter;
 
       const res = await departementService.list(params);
       if (res.success) {
@@ -74,19 +74,19 @@ export function ConfigurationDepartement() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, searchTerm, villeFilter, pageSize]);
+  }, [currentPage, searchTerm, magasinFilter, pageSize]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
   useEffect(() => {
-    departementService.getVilles({ per_page: '200', sort_by: 'nom', sort_order: 'asc' })
-      .then((res) => { if (res.success) setVilles(res.data.data); })
+    departementService.getMagasins({ per_page: '200', sort_by: 'nom', sort_order: 'asc' })
+      .then((res) => { if (res.success) setMagasins(res.data.data); })
       .catch(() => {});
   }, []);
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ nom: '', code: '', id_ville: '', actif: true });
+    setForm({ nom: '', code: '', id_magasin: '', actif: true });
     setFieldErrors({});
     setPanelOpen(true);
   };
@@ -96,7 +96,7 @@ export function ConfigurationDepartement() {
     setForm({
       nom: dep.nom,
       code: dep.code || '',
-      id_ville: String(dep.id_ville),
+      id_magasin: String(dep.id_magasin),
       actif: dep.actif,
     });
     setFieldErrors({});
@@ -158,7 +158,7 @@ export function ConfigurationDepartement() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => { setSearchInput(''); setSearchTerm(''); setVilleFilter('_all'); setCurrentPage(1); }} className="border-gray-300 text-gray-700 hover:bg-gray-50" title="Actualiser">
+          <Button variant="outline" onClick={() => { setSearchInput(''); setSearchTerm(''); setMagasinFilter('_all'); setCurrentPage(1); }} className="border-gray-300 text-gray-700 hover:bg-gray-50" title="Actualiser">
             <RefreshCw className={cn('h-4 w-4 mr-2', loading && 'animate-spin')} />
             Actualiser
           </Button>
@@ -189,13 +189,13 @@ export function ConfigurationDepartement() {
         </div>
         <div className="flex items-center gap-3 w-full sm:w-auto">
           <Globe className="w-4 h-4 text-gray-400" />
-          <Select value={villeFilter} onValueChange={(v) => { setVilleFilter(v); setCurrentPage(1); }}>
+          <Select value={magasinFilter} onValueChange={(v) => { setMagasinFilter(v); setCurrentPage(1); }}>
             <SelectTrigger className="w-44 h-9 bg-white border-gray-200">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="_all">Toutes les villes</SelectItem>
-              {villes.map((v) => (
+              <SelectItem value="_all">Tous les magasins</SelectItem>
+              {magasins.map((v) => (
                 <SelectItem key={v.id} value={String(v.id)}>{v.nom}</SelectItem>
               ))}
             </SelectContent>
@@ -215,7 +215,7 @@ export function ConfigurationDepartement() {
                   <TableRow>
                     <TableHead className="font-semibold text-gray-600">Nom</TableHead>
                     <TableHead className="font-semibold text-gray-600">Code</TableHead>
-                    <TableHead className="hidden md:table-cell font-semibold text-gray-600">Ville</TableHead>
+                    <TableHead className="hidden md:table-cell font-semibold text-gray-600">Magasin</TableHead>
                     <TableHead className="text-center font-semibold text-gray-600">Statut</TableHead>
                     <TableHead className="text-center font-semibold text-gray-600">Actions</TableHead>
                   </TableRow>
@@ -247,7 +247,7 @@ export function ConfigurationDepartement() {
                     <TableRow>
                       <TableHead className="font-semibold text-gray-600">Nom</TableHead>
                       <TableHead className="font-semibold text-gray-600">Code</TableHead>
-                      <TableHead className="hidden md:table-cell font-semibold text-gray-600">Ville</TableHead>
+                      <TableHead className="hidden md:table-cell font-semibold text-gray-600">Magasin</TableHead>
                       <TableHead className="text-center font-semibold text-gray-600">Statut</TableHead>
                       <TableHead className="text-center font-semibold text-gray-600">Actions</TableHead>
                     </TableRow>
@@ -257,7 +257,7 @@ export function ConfigurationDepartement() {
                       <TableRow key={d.id} className={cn('hover:bg-royal-50/50 transition-colors', i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50')}>
                         <TableCell className="font-medium text-gray-900">{d.nom}</TableCell>
                         <TableCell><span className="text-sm font-mono text-gray-600">{d.code || '-'}</span></TableCell>
-                        <TableCell className="hidden md:table-cell text-sm text-gray-600">{d.ville?.nom || '-'}</TableCell>
+                        <TableCell className="hidden md:table-cell text-sm text-gray-600">{d.magasin?.nom || '-'}</TableCell>
                         <TableCell className="text-center">
                           <span className={cn(
                             'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium',
@@ -322,14 +322,14 @@ export function ConfigurationDepartement() {
           </div>
 
           <div>
-            <Label className="text-sm font-medium text-white/80">Ville *</Label>
+            <Label className="text-sm font-medium text-white/80">Magasin *</Label>
             <SearchableSelect
-              options={villes.map(v => ({ id: v.id, nom: v.nom }))}
-              value={form.id_ville}
-              onValueChange={(v) => { setForm((f) => ({ ...f, id_ville: v })); setFieldErrors((f) => ({ ...f, id_ville: '' })); }}
-              placeholder="Sélectionner une ville"
-              searchPlaceholder="Rechercher une ville..."
-              error={fieldErrors.id_ville}
+              options={magasins.map(v => ({ id: v.id, nom: v.nom }))}
+              value={form.id_magasin}
+              onValueChange={(v) => { setForm((f) => ({ ...f, id_magasin: v })); setFieldErrors((f) => ({ ...f, id_magasin: '' })); }}
+              placeholder="Sélectionner un magasin"
+              searchPlaceholder="Rechercher un magasin..."
+              error={fieldErrors.id_magasin}
               triggerClassName="mt-1.5 bg-royal-700 border-royal-600 text-white placeholder:text-white/40 h-11"
             />
           </div>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Config;
 use App\Http\Controllers\Controller;
 use App\Models\Produit;
 use App\Models\HistoriquePrix;
+use App\Models\Magasin;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
@@ -69,7 +70,6 @@ class ProduitController extends Controller
                 'actif' => 'nullable|boolean',
                 // Prix
                 'prix_achat_ht' => 'required|numeric|min:0',
-                'prix_vente_ht' => 'nullable|numeric|min:0',
                 'id_devise' => 'required|exists:devises,id',
                 'date_application' => 'nullable|date',
                 'commentaire_prix' => 'nullable|string',
@@ -97,7 +97,6 @@ class ProduitController extends Controller
             HistoriquePrix::create([
                 'id_produit' => $produit->id,
                 'prix_achat_ht' => $validated['prix_achat_ht'],
-                'prix_vente_ht' => $validated['prix_vente_ht'] ?? null,
                 'id_devise' => $validated['id_devise'],
                 'date_application' => $validated['date_application'] ?? now(),
                 'commentaire' => $validated['commentaire_prix'] ?? 'Prix initial',
@@ -246,14 +245,14 @@ public function getStock($id)
         // Stock total
         $stockTotal = $produit->getStockTotal();
         
-        // Stock par ville
-        $villes = \App\Models\Ville::where('actif', true)->get();
-        $stockParVille = [];
-        foreach ($villes as $ville) {
-            $stockParVille[] = [
-                'ville' => $ville->nom,
-                'ville_id' => $ville->id,
-                'stock' => $produit->getStockParVille($ville->id)
+        // Stock par magasin
+        $magasins = Magasin::where('actif', true)->get();
+        $stockParMagasin = [];
+        foreach ($magasins as $magasin) {
+            $stockParMagasin[] = [
+                'magasin' => $magasin->nom,
+                'magasin_id' => $magasin->id,
+                'stock' => $produit->getStockParMagasin($magasin->id)
             ];
         }
 
@@ -268,7 +267,7 @@ public function getStock($id)
                     'unite' => $produit->unite->symbole ?? 'pc',
                 ],
                 'stock_total' => $stockTotal,
-                'stock_par_ville' => $stockParVille,
+                'stock_par_magasin' => $stockParMagasin,
                 'seuil_alerte' => $produit->seuil_alerte,
                 'statut' => $stockTotal <= $produit->seuil_alerte ? '⚠️ Stock bas' : '✅ Stock normal'
             ],

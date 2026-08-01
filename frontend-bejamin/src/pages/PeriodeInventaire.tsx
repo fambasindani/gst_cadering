@@ -51,13 +51,13 @@ export function PeriodeInventaire() {
 
   const [detailPeriode, setDetailPeriode] = useState<PeriodeInventaire | null>(null);
 
-  const [villes, setVilles] = useState<{ id: number; nom: string }[]>([]);
+  const [magasins, setMagasins] = useState<{ id: number; nom: string }[]>([]);
 
   const [form, setForm] = useState({
     libelle: '',
     date_debut: '',
     date_fin: '',
-    id_ville: '',
+    id_magasin: '',
     description: '',
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -89,11 +89,11 @@ export function PeriodeInventaire() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const loadVilles = useCallback(async () => {
+  const loadMagasins = useCallback(async () => {
     try {
-      const res = await bonCommandeService.getVilles();
+      const res = await bonCommandeService.getMagasins();
       if (res.success) {
-        setVilles(res.data.data);
+        setMagasins(res.data.data);
       }
     } catch {
       // silent
@@ -102,9 +102,9 @@ export function PeriodeInventaire() {
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ libelle: '', date_debut: '', date_fin: '', id_ville: '', description: '' });
+    setForm({ libelle: '', date_debut: '', date_fin: '', id_magasin: '', description: '' });
     setFieldErrors({});
-    loadVilles();
+    loadMagasins();
     setPanelOpen(true);
   };
 
@@ -114,11 +114,11 @@ export function PeriodeInventaire() {
       libelle: item.libelle,
       date_debut: item.date_debut ? item.date_debut.slice(0, 10) : '',
       date_fin: item.date_fin ? item.date_fin.slice(0, 10) : '',
-      id_ville: String(item.id_ville),
+      id_magasin: String(item.id_magasin),
       description: item.description || '',
     });
     setFieldErrors({});
-    loadVilles();
+    loadMagasins();
     setPanelOpen(true);
   };
 
@@ -287,7 +287,7 @@ export function PeriodeInventaire() {
                 <TableHeader className="bg-gray-50">
                   <TableRow>
                     <TableHead className="font-semibold text-gray-600">Libellé</TableHead>
-                    <TableHead className="font-semibold text-gray-600">Ville</TableHead>
+                    <TableHead className="font-semibold text-gray-600">Magasin</TableHead>
                     <TableHead className="font-semibold text-gray-600">Date début</TableHead>
                     <TableHead className="font-semibold text-gray-600">Date fin</TableHead>
                     <TableHead className="text-center font-semibold text-gray-600">Statut</TableHead>
@@ -321,7 +321,7 @@ export function PeriodeInventaire() {
                   <TableHeader className="bg-gray-50">
                     <TableRow>
                       <TableHead className="font-semibold text-gray-600">Libellé</TableHead>
-                      <TableHead className="font-semibold text-gray-600">Ville</TableHead>
+                      <TableHead className="font-semibold text-gray-600">Magasin</TableHead>
                       <TableHead className="font-semibold text-gray-600">Date début</TableHead>
                       <TableHead className="font-semibold text-gray-600">Date fin</TableHead>
                       <TableHead className="text-center font-semibold text-gray-600">Statut</TableHead>
@@ -334,7 +334,7 @@ export function PeriodeInventaire() {
                       return (
                         <TableRow key={item.id} className={cn('hover:bg-royal-50/50 transition-colors', i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50')}>
                           <TableCell className="font-medium text-gray-900">{item.libelle}</TableCell>
-                          <TableCell className="text-sm text-gray-600">{item.ville?.nom || '-'}</TableCell>
+                          <TableCell className="text-sm text-gray-600">{item.magasin?.nom || '-'}</TableCell>
                           <TableCell className="text-sm text-gray-600">
                             {item.date_debut ? new Date(item.date_debut).toLocaleDateString('fr-FR') : '-'}
                           </TableCell>
@@ -407,18 +407,18 @@ export function PeriodeInventaire() {
           </div>
 
           <div>
-            <Label className="text-sm font-medium text-white/80">Ville *</Label>
+            <Label className="text-sm font-medium text-white/80">Magasin *</Label>
             <div className="mt-1.5">
               <SearchableSelect
-                options={villes.map(v => ({ id: v.id, nom: v.nom }))}
-                value={form.id_ville}
-                onValueChange={(value) => { setForm((f) => ({ ...f, id_ville: value })); setFieldErrors((f) => ({ ...f, id_ville: '' })); }}
-                placeholder="Sélectionner une ville"
-                searchPlaceholder="Rechercher une ville..."
-                className={cn(fieldErrors.id_ville ? 'border-red-400' : '')}
+                options={magasins.map(v => ({ id: v.id, nom: v.nom }))}
+                value={form.id_magasin}
+                onValueChange={(value) => { setForm((f) => ({ ...f, id_magasin: value })); setFieldErrors((f) => ({ ...f, id_magasin: '' })); }}
+                placeholder="Sélectionner un magasin"
+                searchPlaceholder="Rechercher un magasin..."
+                className={cn(fieldErrors.id_magasin ? 'border-red-400' : '')}
               />
             </div>
-            {fieldErrors.id_ville && <p className="text-red-400 text-xs mt-1">{fieldErrors.id_ville}</p>}
+            {fieldErrors.id_magasin && <p className="text-red-400 text-xs mt-1">{fieldErrors.id_magasin}</p>}
           </div>
 
           <div>
@@ -474,8 +474,8 @@ export function PeriodeInventaire() {
               </div>
             </div>
             <div>
-              <h3 className="text-sm font-medium text-white/60 mb-1">Ville</h3>
-              <p className="text-white text-base">{detailPeriode.ville?.nom ?? '—'}</p>
+              <h3 className="text-sm font-medium text-white/60 mb-1">Magasin</h3>
+              <p className="text-white text-base">{detailPeriode.magasin?.nom ?? '—'}</p>
             </div>
             <div>
               <h3 className="text-sm font-medium text-white/60 mb-1">Statut</h3>

@@ -10,10 +10,10 @@ import {
 import { useToast } from '../hooks/useToast';
 import { utilisateurService } from '../services/utilisateur';
 import { roleService } from '../services/role';
-import { villeService } from '../services/ville';
+import { magasinService } from '../services/magasin';
 import { api } from '../services/api';
 import {
-  ArrowLeft, Save, Loader2, User, Mail, Shield, MapPin, Building2, Map, Locate, Lock, Key, CheckCircle, XCircle,
+  ArrowLeft, Save, Loader2, User, Mail, Shield, MapPin, Building2, Lock, Key, CheckCircle, XCircle,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -27,7 +27,7 @@ export function ConfigurationUtilisateurForm() {
 
   const initialForm = {
     nom: '', prenom: '', email: '',
-    id_role: '', id_ville: '', id_departement: '', id_zone: '', id_emplacement: '',
+    id_role: '', id_magasin: '', id_departement: '',
     actif: true, mot_de_passe: '', mot_de_passe_confirmation: '',
   };
   const [form, setForm] = useState({ ...initialForm });
@@ -36,26 +36,25 @@ export function ConfigurationUtilisateurForm() {
   const [loading, setLoading] = useState(isEditing);
 
   const [roles, setRoles] = useState<SelectOption[]>([]);
-  const [villes, setVilles] = useState<SelectOption[]>([]);
+  const [magasins, setMagasins] = useState<SelectOption[]>([]);
   const [departements, setDepartements] = useState<SelectOption[]>([]);
-  const [zones, setZones] = useState<SelectOption[]>([]);
-  const [emplacements, setEmplacements] = useState<SelectOption[]>([]);
+
+  const chargerDepartements = (magasinId: string) => {
+    if (!magasinId) {
+      setDepartements([]);
+      return;
+    }
+    api.get<{ success: boolean; data: SelectOption[] }>(`/config/departements/by-magasin/${magasinId}`)
+      .then((res) => { if (res.success) setDepartements(res.data); })
+      .catch(() => setDepartements([]));
+  };
 
   useEffect(() => {
-    villeService.list({ per_page: '200', sort_by: 'nom', sort_order: 'asc' })
-      .then((res) => { if (res.success) setVilles(res.data.data); })
+    magasinService.list({ per_page: '200', sort_by: 'nom', sort_order: 'asc' })
+      .then((res) => { if (res.success) setMagasins(res.data.data); })
       .catch(() => {});
     roleService.list({ per_page: '200', sort_by: 'nom', sort_order: 'asc' })
       .then((res) => { if (res.success) setRoles(res.data.data); })
-      .catch(() => {});
-    api.get<{ success: boolean; data: { data: SelectOption[] } }>('/config/departements', { params: { per_page: '200', sort_by: 'nom', sort_order: 'asc' } })
-      .then((res) => { if (res.success) setDepartements(res.data.data); })
-      .catch(() => {});
-    api.get<{ success: boolean; data: { data: SelectOption[] } }>('/config/zones', { params: { per_page: '200', sort_by: 'nom', sort_order: 'asc' } })
-      .then((res) => { if (res.success) setZones(res.data.data); })
-      .catch(() => {});
-    api.get<{ success: boolean; data: { data: SelectOption[] } }>('/config/emplacements', { params: { per_page: '200', sort_by: 'nom', sort_order: 'asc' } })
-      .then((res) => { if (res.success) setEmplacements(res.data.data); })
       .catch(() => {});
   }, []);
 
@@ -70,20 +69,27 @@ export function ConfigurationUtilisateurForm() {
               prenom: u.prenom,
               email: u.email,
               id_role: String(u.role?.id || ''),
-              id_ville: String(u.ville?.id || ''),
+              id_magasin: String(u.magasin?.id || ''),
               id_departement: String(u.departement?.id || ''),
-              id_zone: String(u.zone?.id || ''),
-              id_emplacement: String(u.emplacement?.id || ''),
               actif: u.actif,
               mot_de_passe: '',
               mot_de_passe_confirmation: '',
             });
+            if (u.magasin?.id) {
+              chargerDepartements(String(u.magasin.id));
+            }
           }
         })
         .catch(() => toast('Erreur lors du chargement', 'error'))
         .finally(() => setLoading(false));
     }
   }, [id]);
+
+  const handleMagasinChange = (v: string) => {
+    setForm((f) => ({ ...f, id_magasin: v, id_departement: '' }));
+    setFieldErrors((f) => ({ ...f, id_magasin: '', id_departement: '' }));
+    chargerDepartements(v);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,10 +102,8 @@ export function ConfigurationUtilisateurForm() {
         prenom: form.prenom,
         email: form.email,
         id_role: form.id_role,
-        id_ville: form.id_ville,
+        id_magasin: form.id_magasin,
         id_departement: form.id_departement,
-        id_zone: form.id_zone,
-        id_emplacement: form.id_emplacement,
         actif: form.actif,
       };
       if (form.mot_de_passe) {
@@ -228,56 +232,33 @@ export function ConfigurationUtilisateurForm() {
                 </div>
 
                 <div>
-                  <LabelIcon icon={MapPin} error={fieldErrors.id_ville}>Ville *</LabelIcon>
-                  <Select value={form.id_ville} onValueChange={(v) => { setForm((f) => ({ ...f, id_ville: v })); setFieldErrors((f) => ({ ...f, id_ville: '' })); }}>
-                    <SelectTrigger className={cn('w-full h-11 border-gray-200 shadow-sm', fieldErrors.id_ville ? 'border-red-400' : '')}>
-                      <SelectValue placeholder="Sélectionner une ville" />
+                  <LabelIcon icon={MapPin} error={fieldErrors.id_magasin}>Magasin *</LabelIcon>
+                  <Select value={form.id_magasin} onValueChange={handleMagasinChange}>
+                    <SelectTrigger className={cn('w-full h-11 border-gray-200 shadow-sm', fieldErrors.id_magasin ? 'border-red-400' : '')}>
+                      <SelectValue placeholder="Sélectionner un magasin" />
                     </SelectTrigger>
                     <SelectContent>
-                      {villes.map((v) => (<SelectItem key={v.id} value={String(v.id)}>{v.nom}</SelectItem>))}
+                      {magasins.map((v) => (<SelectItem key={v.id} value={String(v.id)}>{v.nom}</SelectItem>))}
                     </SelectContent>
                   </Select>
-                  {fieldErrors.id_ville && <p className="text-xs text-red-500 mt-1">{fieldErrors.id_ville}</p>}
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <LabelIcon icon={Building2}>Département</LabelIcon>
-                    <Select value={form.id_departement} onValueChange={(v) => { setForm((f) => ({ ...f, id_departement: v })); setFieldErrors((f) => ({ ...f, id_departement: '' })); }}>
-                      <SelectTrigger className={cn('w-full h-11 border-gray-200 shadow-sm', fieldErrors.id_departement ? 'border-red-400' : '')}>
-                        <SelectValue placeholder="Sélectionner" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {departements.map((d) => (<SelectItem key={d.id} value={String(d.id)}>{d.nom}</SelectItem>))}
-                      </SelectContent>
-                    </Select>
-                    {fieldErrors.id_departement && <p className="text-xs text-red-500 mt-1">{fieldErrors.id_departement}</p>}
-                  </div>
-                  <div>
-                    <LabelIcon icon={Map}>Zone</LabelIcon>
-                    <Select value={form.id_zone} onValueChange={(v) => { setForm((f) => ({ ...f, id_zone: v })); setFieldErrors((f) => ({ ...f, id_zone: '' })); }}>
-                      <SelectTrigger className={cn('w-full h-11 border-gray-200 shadow-sm', fieldErrors.id_zone ? 'border-red-400' : '')}>
-                        <SelectValue placeholder="Sélectionner" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {zones.map((z) => (<SelectItem key={z.id} value={String(z.id)}>{z.nom}</SelectItem>))}
-                      </SelectContent>
-                    </Select>
-                    {fieldErrors.id_zone && <p className="text-xs text-red-500 mt-1">{fieldErrors.id_zone}</p>}
-                  </div>
+                  {fieldErrors.id_magasin && <p className="text-xs text-red-500 mt-1">{fieldErrors.id_magasin}</p>}
                 </div>
 
                 <div>
-                  <LabelIcon icon={Locate}>Emplacement</LabelIcon>
-                  <Select value={form.id_emplacement} onValueChange={(v) => { setForm((f) => ({ ...f, id_emplacement: v })); setFieldErrors((f) => ({ ...f, id_emplacement: '' })); }}>
-                    <SelectTrigger className={cn('w-full h-11 border-gray-200 shadow-sm', fieldErrors.id_emplacement ? 'border-red-400' : '')}>
-                      <SelectValue placeholder="Sélectionner" />
+                  <LabelIcon icon={Building2}>Département</LabelIcon>
+                  <Select
+                    value={form.id_departement}
+                    onValueChange={(v) => { setForm((f) => ({ ...f, id_departement: v })); setFieldErrors((f) => ({ ...f, id_departement: '' })); }}
+                    disabled={!form.id_magasin}
+                  >
+                    <SelectTrigger className={cn('w-full h-11 border-gray-200 shadow-sm', fieldErrors.id_departement ? 'border-red-400' : '')}>
+                      <SelectValue placeholder={form.id_magasin ? 'Sélectionner un département' : 'Choisissez d\'abord un magasin'} />
                     </SelectTrigger>
                     <SelectContent>
-                      {emplacements.map((e) => (<SelectItem key={e.id} value={String(e.id)}>{e.nom}</SelectItem>))}
+                      {departements.map((d) => (<SelectItem key={d.id} value={String(d.id)}>{d.nom}</SelectItem>))}
                     </SelectContent>
                   </Select>
-                  {fieldErrors.id_emplacement && <p className="text-xs text-red-500 mt-1">{fieldErrors.id_emplacement}</p>}
+                  {fieldErrors.id_departement && <p className="text-xs text-red-500 mt-1">{fieldErrors.id_departement}</p>}
                 </div>
               </CardContent>
             </Card>

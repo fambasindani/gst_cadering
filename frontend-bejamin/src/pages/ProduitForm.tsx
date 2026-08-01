@@ -46,7 +46,7 @@ export function ProduitForm() {
 
   const formFields = isEdit
     ? (['code_article', 'code_barre', 'nom', 'description', 'id_categorie', 'id_partenaire_principal', 'id_unite', 'seuil_alerte'] as const)
-    : (['code_article', 'code_barre', 'nom', 'description', 'id_categorie', 'id_partenaire_principal', 'id_unite', 'seuil_alerte', 'prix_achat_ht', 'prix_vente_ht', 'id_devise', 'date_application', 'commentaire_prix'] as const);
+    : (['code_article', 'code_barre', 'nom', 'description', 'id_categorie', 'id_partenaire_principal', 'id_unite', 'seuil_alerte', 'prix_achat_ht', 'id_devise', 'date_application', 'commentaire_prix'] as const);
 
   const [values, setValues] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {};
@@ -285,17 +285,6 @@ export function ProduitForm() {
                         placeholder="0,00" className={cn('h-11 border-gray-200 shadow-sm pl-9', errorClass(fieldErrors.prix_achat_ht))} />
                     </div>
                     {fieldErrors.prix_achat_ht && <p className="text-xs text-red-500 mt-1">{fieldErrors.prix_achat_ht}</p>}
-                  </div>
-
-                  <div>
-                    <LabelIcon icon={DollarSign} error={fieldErrors.prix_vente_ht}>Prix de vente HT</LabelIcon>
-                    <div className="relative">
-                      <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <Input type="number" step="0.01" min="0" value={values.prix_vente_ht}
-                        onChange={(e) => set('prix_vente_ht', e.target.value)}
-                        placeholder="0,00" className={cn('h-11 border-gray-200 shadow-sm pl-9', errorClass(fieldErrors.prix_vente_ht))} />
-                    </div>
-                    {fieldErrors.prix_vente_ht && <p className="text-xs text-red-500 mt-1">{fieldErrors.prix_vente_ht}</p>}
                   </div>
 
                   <div>

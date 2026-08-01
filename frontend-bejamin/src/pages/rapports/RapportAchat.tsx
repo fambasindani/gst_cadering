@@ -46,7 +46,7 @@ export function RapportAchat() {
     { key: 'numero', label: 'N° commande', width: '18%', render: (r) => r.numero },
     { key: 'date', label: 'Date', width: '15%', render: (r) => r.date },
     { key: 'fournisseur', label: 'Fournisseur', width: '27%', render: (r) => r.fournisseur },
-    { key: 'ville', label: 'Ville', width: '18%', render: (r) => r.ville },
+    { key: 'magasin', label: 'Magasin', width: '18%', render: (r) => r.magasin },
     { key: 'montant', label: 'Montant HT', width: '22%', align: 'right', render: (r) => r.montant },
   ];
 
@@ -60,7 +60,7 @@ export function RapportAchat() {
     numero: a.numero_commande || `#${a.id}`,
     date: formatDate(a.date_commande || a.created_at || ''),
     fournisseur: a.partenaire?.nom || '-',
-    ville: a.ville_destination?.nom || '-',
+    magasin: a.magasin_destination?.nom || '-',
     montant: formatCurrency(Number(a.montant_total_ht) || 0),
   }));
 
@@ -202,7 +202,7 @@ export function RapportAchat() {
                     <TableHead className="font-semibold text-gray-600">N° commande</TableHead>
                     <TableHead className="font-semibold text-gray-600">Date</TableHead>
                     <TableHead className="font-semibold text-gray-600">Fournisseur</TableHead>
-                    <TableHead className="font-semibold text-gray-600">Ville</TableHead>
+                    <TableHead className="font-semibold text-gray-600">Magasin</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Montant HT</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -231,7 +231,7 @@ export function RapportAchat() {
                     <TableHead className="font-semibold text-gray-600">N° commande</TableHead>
                     <TableHead className="font-semibold text-gray-600">Date</TableHead>
                     <TableHead className="font-semibold text-gray-600">Fournisseur</TableHead>
-                    <TableHead className="font-semibold text-gray-600">Ville</TableHead>
+                    <TableHead className="font-semibold text-gray-600">Magasin</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Montant HT</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -241,7 +241,7 @@ export function RapportAchat() {
                       <TableCell className="font-mono text-sm font-medium text-royal-700">{a.numero_commande || `#${a.id}`}</TableCell>
                       <TableCell className="text-sm text-gray-600">{formatDate(a.date_commande || a.created_at || '')}</TableCell>
                       <TableCell className="font-medium text-gray-900">{a.partenaire?.nom || '-'}</TableCell>
-                      <TableCell className="text-sm text-gray-600">{a.ville_destination?.nom || '-'}</TableCell>
+                      <TableCell className="text-sm text-gray-600">{a.magasin_destination?.nom || '-'}</TableCell>
                       <TableCell className="text-right font-mono text-sm font-semibold text-gray-900">{formatCurrency(Number(a.montant_total_ht) || 0)}</TableCell>
                     </TableRow>
                   ))}

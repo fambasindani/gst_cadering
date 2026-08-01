@@ -15,12 +15,12 @@ class UtilisateurController extends Controller
         try {
             $perPage = $request->input('per_page', 15);
             $search = $request->input('search');
-            $villeId = $request->input('ville_id');
+            $magasinId = $request->input('magasin_id');
             $roleId = $request->input('role_id');
             $sortBy = $request->input('sort_by', 'id');
             $sortOrder = $request->input('sort_order', 'desc');
 
-            $query = Utilisateur::with(['role', 'ville', 'departement', 'zone', 'emplacement']);
+            $query = Utilisateur::with(['role', 'magasin', 'departement']);
 
             if ($search) {
                 $query->where(function($q) use ($search) {
@@ -30,8 +30,8 @@ class UtilisateurController extends Controller
                 });
             }
 
-            if ($villeId) {
-                $query->where('id_ville', $villeId);
+            if ($magasinId) {
+                $query->where('id_magasin', $magasinId);
             }
 
             if ($roleId) {
@@ -64,10 +64,8 @@ class UtilisateurController extends Controller
                 'email' => 'required|string|email|max:100|unique:utilisateurs,email',
                 'mot_de_passe' => 'required|string|min:6|confirmed',
                 'id_role' => 'required|exists:roles,id',
-                'id_ville' => 'required|exists:villes,id',
+                'id_magasin' => 'required|exists:magasins,id',
                 'id_departement' => 'required|exists:departements,id',
-                'id_zone' => 'nullable|exists:zones,id',
-                'id_emplacement' => 'nullable|exists:emplacements,id',
                 'actif' => 'nullable|boolean',
             ]);
 
@@ -77,16 +75,14 @@ class UtilisateurController extends Controller
                 'email' => $validated['email'],
                 'mot_de_passe_hash' => Hash::make($validated['mot_de_passe']),
                 'id_role' => $validated['id_role'],
-                'id_ville' => $validated['id_ville'],
+                'id_magasin' => $validated['id_magasin'],
                 'id_departement' => $validated['id_departement'],
-                'id_zone' => $validated['id_zone'] ?? null,
-                'id_emplacement' => $validated['id_emplacement'] ?? null,
                 'actif' => $validated['actif'] ?? true,
             ]);
 
             return response()->json([
                 'success' => true,
-                'data' => $utilisateur->load(['role', 'ville', 'departement']),
+                'data' => $utilisateur->load(['role', 'magasin', 'departement']),
                 'message' => 'Utilisateur créé avec succès'
             ], 201);
 
@@ -108,7 +104,7 @@ class UtilisateurController extends Controller
     public function show($id)
     {
         try {
-            $utilisateur = Utilisateur::with(['role', 'ville', 'departement', 'zone', 'emplacement'])
+            $utilisateur = Utilisateur::with(['role', 'magasin', 'departement'])
                                      ->findOrFail($id);
 
             return response()->json([
@@ -136,10 +132,8 @@ class UtilisateurController extends Controller
                 'email' => "sometimes|required|email|max:100|unique:utilisateurs,email,{$id}",
                 'mot_de_passe' => 'nullable|string|min:6|confirmed',
                 'id_role' => 'sometimes|required|exists:roles,id',
-                'id_ville' => 'sometimes|required|exists:villes,id',
+                'id_magasin' => 'sometimes|required|exists:magasins,id',
                 'id_departement' => 'sometimes|required|exists:departements,id',
-                'id_zone' => 'nullable|exists:zones,id',
-                'id_emplacement' => 'nullable|exists:emplacements,id',
                 'actif' => 'nullable|boolean',
             ]);
 
@@ -152,7 +146,7 @@ class UtilisateurController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $utilisateur->load(['role', 'ville', 'departement']),
+                'data' => $utilisateur->load(['role', 'magasin', 'departement']),
                 'message' => 'Utilisateur mis à jour avec succès'
             ]);
 

@@ -162,7 +162,7 @@ export function AjustementProduit() {
               ) : (
                 periodes.map((p) => (
                   <SelectItem key={p.id} value={String(p.id)}>
-                    {p.libelle} ({p.ville?.nom || '-'})
+                    {p.libelle} ({p.magasin?.nom || '-'})
                   </SelectItem>
                 ))
               )}
@@ -207,7 +207,7 @@ export function AjustementProduit() {
                   <TableRow>
                     <TableHead className="font-semibold text-gray-600">Produit</TableHead>
                     <TableHead className="font-semibold text-gray-600">Code article</TableHead>
-                    <TableHead className="font-semibold text-gray-600">Ville</TableHead>
+                    <TableHead className="font-semibold text-gray-600">Magasin</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Stock théorique</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Stock physique</TableHead>
                     <TableHead className="text-center font-semibold text-gray-600">Écart</TableHead>
@@ -243,7 +243,7 @@ export function AjustementProduit() {
                     <TableRow>
                       <TableHead className="font-semibold text-gray-600">Produit</TableHead>
                       <TableHead className="font-semibold text-gray-600">Code article</TableHead>
-                      <TableHead className="font-semibold text-gray-600">Ville</TableHead>
+                      <TableHead className="font-semibold text-gray-600">Magasin</TableHead>
                       <TableHead className="text-right font-semibold text-gray-600">Stock théorique</TableHead>
                       <TableHead className="text-right font-semibold text-gray-600">Stock physique</TableHead>
                       <TableHead className="text-center font-semibold text-gray-600">Écart</TableHead>
@@ -255,7 +255,7 @@ export function AjustementProduit() {
                       <TableRow key={inv.id} className={cn('hover:bg-royal-50/50 transition-colors', i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50')}>
                         <TableCell className="font-medium text-gray-900">{inv.produit?.nom || '-'}</TableCell>
                         <TableCell className="font-mono text-sm text-gray-600">{inv.produit?.code_article || '-'}</TableCell>
-                        <TableCell className="text-sm text-gray-600">{inv.ville?.nom || '-'}</TableCell>
+                        <TableCell className="text-sm text-gray-600">{inv.magasin?.nom || '-'}</TableCell>
                         <TableCell className="text-right font-mono text-sm text-gray-600">{inv.stock_theorique}</TableCell>
                         <TableCell className="text-right font-mono text-sm text-gray-600">{inv.stock_physique_compte}</TableCell>
                         <TableCell className="text-center">{getEcartDisplay(inv.ecart)}</TableCell>

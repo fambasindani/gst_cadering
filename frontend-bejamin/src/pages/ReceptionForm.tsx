@@ -4,9 +4,6 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from '../components/ui/select';
 import { useToast } from '../hooks/useToast';
 import { bonCommandeService, type ReceptionItem } from '../services/bon-commande';
 import type { BonCommande } from '../types/bon-commande';
@@ -24,14 +21,10 @@ export function ReceptionForm() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [zones, setZones] = useState<{ id: number; nom: string; type_zone: string }[]>([]);
-  const [emplacementsByZone, setEmplacementsByZone] = useState<Record<number, { id: number; nom: string }[]>>({});
   const [receptionData, setReceptionData] = useState<Record<number, {
     quantite_recue: string;
     numero_lot: string;
     date_peremption: string;
-    id_zone: string;
-    id_emplacement: string;
     prix_achat_ht_unitaire: string;
   }>>({});
 
@@ -72,29 +65,11 @@ export function ReceptionForm() {
           quantite_recue: String(reste),
           numero_lot: generateNumeroLot(),
           date_peremption: '',
-          id_zone: '',
-          id_emplacement: '',
           prix_achat_ht_unitaire: String(l.prix_unitaire_ht),
         };
       }
     }
     setReceptionData(initial);
-    setZones([]);
-    setEmplacementsByZone({});
-    if (b.id_ville_destination) {
-      bonCommandeService.getZonesByVille(b.id_ville_destination).then((r) => {
-        if (r.success) setZones(r.data);
-      });
-    }
-  };
-
-  const handleZoneChange = (zoneId: string) => {
-    if (!zoneId) return;
-    const zid = Number(zoneId);
-    if (emplacementsByZone[zid]) return;
-    bonCommandeService.getEmplacementsByZone(zid).then((r) => {
-      if (r.success) setEmplacementsByZone(prev => ({ ...prev, [zid]: r.data }));
-    });
   };
 
   const updateLigne = (ligneId: number, field: string, value: string) => {
@@ -132,8 +107,6 @@ export function ReceptionForm() {
         quantite_recue: Number(data.quantite_recue) || 0,
         numero_lot: data.numero_lot,
         date_peremption: data.date_peremption,
-        id_zone: Number(data.id_zone),
-        id_emplacement: data.id_emplacement ? Number(data.id_emplacement) : null,
         prix_achat_ht_unitaire: Number(data.prix_achat_ht_unitaire) || undefined,
       }));
       const res = await bonCommandeService.receive(Number(id), { receptions });
@@ -205,7 +178,7 @@ export function ReceptionForm() {
             <div className="flex items-center gap-2 text-gray-500">
               <MapPin className="w-4 h-4" />
               <span className="font-medium text-gray-700">Destination :</span>
-              <span className="text-gray-900">{bon.ville_destination?.nom || '-'}</span>
+              <span className="text-gray-900">{bon.magasin_destination?.nom || '-'}</span>
             </div>
             <div className="flex items-center gap-2 text-gray-500">
               <Calendar className="w-4 h-4" />
@@ -287,43 +260,6 @@ export function ReceptionForm() {
                         className={errorClass(fieldErrors[`${l.id}.date_peremption`])} />
                       {fieldErrors[`${l.id}.date_peremption`] && (
                         <p className="text-xs text-red-500">{fieldErrors[`${l.id}.date_peremption`]}</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <Label className="text-xs text-gray-500">Zone *</Label>
-                      <Select value={rd.id_zone} onValueChange={(v) => {
-                        updateLigne(l.id, 'id_zone', v);
-                        handleZoneChange(v);
-                      }}>
-                        <SelectTrigger className={errorClass(fieldErrors[`${l.id}.id_zone`])}>
-                          <SelectValue placeholder="Choisir" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {zones.map((z) => (
-                            <SelectItem key={z.id} value={String(z.id)}>{z.nom} ({z.type_zone})</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {fieldErrors[`${l.id}.id_zone`] && (
-                        <p className="text-xs text-red-500">{fieldErrors[`${l.id}.id_zone`]}</p>
-                      )}
-                    </div>
-                    <div className="space-y-1">
-                      <Label className="text-xs text-gray-500">Emplacement</Label>
-                      <Select value={rd.id_emplacement} onValueChange={(v) => updateLigne(l.id, 'id_emplacement', v)}>
-                        <SelectTrigger className={errorClass(fieldErrors[`${l.id}.id_emplacement`])}>
-                          <SelectValue placeholder="Optionnel" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {(emplacementsByZone[Number(rd.id_zone)] || []).map((e) => (
-                            <SelectItem key={e.id} value={String(e.id)}>{e.nom}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      {fieldErrors[`${l.id}.id_emplacement`] && (
-                        <p className="text-xs text-red-500">{fieldErrors[`${l.id}.id_emplacement`]}</p>
                       )}
                     </div>
                   </div>

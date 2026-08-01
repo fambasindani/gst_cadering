@@ -25,7 +25,6 @@ export interface HistoriquePrix {
   id: number;
   id_produit: number;
   prix_achat_ht: number;
-  prix_vente_ht: number | null;
   id_devise: number;
   devise?: { id: number; code: string; nom: string; symbole: string } | null;
   date_application: string;
@@ -44,7 +43,6 @@ export interface ProduitFormData {
   seuil_alerte: string;
   actif: boolean;
   prix_achat_ht: string;
-  prix_vente_ht: string;
   id_devise: string;
   date_application: string;
   commentaire_prix: string;
@@ -68,9 +66,9 @@ export interface ProduitResponse {
   message: string;
 }
 
-export interface StockParVille {
-  ville: string;
-  ville_id: number;
+export interface StockParMagasin {
+  magasin: string;
+  magasin_id: number;
   stock: number;
 }
 
@@ -85,7 +83,7 @@ export interface StockResponse {
       unite: string;
     };
     stock_total: number;
-    stock_par_ville: StockParVille[];
+    stock_par_magasin: StockParMagasin[];
     seuil_alerte: number;
     statut: string;
   };

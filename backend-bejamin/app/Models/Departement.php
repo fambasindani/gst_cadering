@@ -12,7 +12,7 @@ class Departement extends Model
     protected $fillable = [
         'nom',
         'code',
-        'id_ville',
+        'id_magasin',
         'actif'
     ];
 
@@ -20,9 +20,9 @@ class Departement extends Model
         'actif' => 'boolean',
     ];
 
-    public function ville()
+    public function magasin()
     {
-        return $this->belongsTo(Ville::class, 'id_ville');
+        return $this->belongsTo(Magasin::class, 'id_magasin');
     }
 
     public function utilisateurs()
@@ -41,8 +41,8 @@ class Departement extends Model
                      ->orWhere('code', 'LIKE', "%{$search}%");
     }
 
-    public function scopeByVille($query, $villeId)
+    public function scopeByMagasin($query, $magasinId)
     {
-        return $query->where('id_ville', $villeId);
+        return $query->where('id_magasin', $magasinId);
     }
 }

@@ -62,7 +62,6 @@ class HistoriquePrixController extends Controller
             $validated = $request->validate([
                 'id_produit' => 'required|exists:produits,id',
                 'prix_achat_ht' => 'required|numeric|min:0',
-                'prix_vente_ht' => 'nullable|numeric|min:0',
                 'id_devise' => 'required|exists:devises,id',
                 'date_application' => 'nullable|date',
                 'commentaire' => 'nullable|string',
@@ -71,7 +70,6 @@ class HistoriquePrixController extends Controller
             $historique = HistoriquePrix::create([
                 'id_produit' => $validated['id_produit'],
                 'prix_achat_ht' => $validated['prix_achat_ht'],
-                'prix_vente_ht' => $validated['prix_vente_ht'] ?? null,
                 'id_devise' => $validated['id_devise'],
                 'date_application' => $validated['date_application'] ?? now(),
                 'commentaire' => $validated['commentaire'] ?? null,
@@ -132,7 +130,6 @@ class HistoriquePrixController extends Controller
 
             $validated = $request->validate([
                 'prix_achat_ht' => 'sometimes|required|numeric|min:0',
-                'prix_vente_ht' => 'nullable|numeric|min:0',
                 'id_devise' => 'sometimes|required|exists:devises,id',
                 'date_application' => 'nullable|date',
                 'commentaire' => 'nullable|string',
@@ -193,7 +190,6 @@ class HistoriquePrixController extends Controller
             $produit = Produit::findOrFail($produitId);
             
             $dernierAchat = $produit->getDernierPrixAchat();
-            $dernierVente = $produit->getDernierPrixVente();
 
             return response()->json([
                 'success' => true,
@@ -203,11 +199,6 @@ class HistoriquePrixController extends Controller
                         'prix' => $dernierAchat->prix_achat_ht,
                         'devise' => $dernierAchat->devise->code,
                         'date' => $dernierAchat->date_application,
-                    ] : null,
-                    'dernier_prix_vente' => $dernierVente ? [
-                        'prix' => $dernierVente->prix_vente_ht,
-                        'devise' => $dernierVente->devise->code,
-                        'date' => $dernierVente->date_application,
                     ] : null,
                 ],
                 'message' => 'Derniers prix récupérés avec succès'

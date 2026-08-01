@@ -13,16 +13,10 @@ export interface Retour {
   date_retour: string;
   id_partenaire_client: number | null;
   partenaire_client?: { id: number; nom: string } | null;
-  id_zone_provenance: number | null;
-  zone_provenance?: { id: number; nom: string } | null;
-  id_emplacement_provenance: number | null;
   id_partenaire_dest: number | null;
   partenaire_dest?: { id: number; nom: string } | null;
-  id_zone_dest: number | null;
-  zone_dest?: { id: number; nom: string } | null;
-  id_emplacement_dest: number | null;
-  id_ville: number;
-  ville?: { id: number; nom: string } | null;
+  id_magasin: number;
+  magasin?: { id: number; nom: string } | null;
   id_utilisateur: number;
   utilisateur?: { id: number; nom: string; prenom: string } | null;
   commentaire: string | null;
@@ -36,12 +30,8 @@ export interface RetourFormData {
   numero_retour: string;
   date_retour: string;
   id_partenaire_client: string;
-  id_zone_provenance: string;
-  id_emplacement_provenance: string;
   id_partenaire_dest: string;
-  id_zone_dest: string;
-  id_emplacement_dest: string;
-  id_ville: string;
+  id_magasin: string;
   commentaire: string;
   lignes: Array<{
     id_lot: string;

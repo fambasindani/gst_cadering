@@ -22,15 +22,14 @@ class LotController extends Controller
             $perPage = $request->input('per_page', 15);
             $search = $request->input('search');
             $produitId = $request->input('produit_id');
-            $villeId = $request->input('ville_id');
-            $zoneId = $request->input('zone_id');
+            $magasinId = $request->input('magasin_id');
             $statut = $request->input('statut');
             $dateDebut = $request->input('date_debut');
             $dateFin = $request->input('date_fin');
             $sortBy = $request->input('sort_by', 'id');
             $sortOrder = $request->input('sort_order', 'desc');
 
-            $query = Lot::with(['produit', 'ville', 'zone', 'emplacement', 'partenaire', 'devise']);
+            $query = Lot::with(['produit', 'magasin', 'partenaire', 'devise']);
 
             if ($search) {
                 $query->where(function($q) use ($search) {
@@ -47,12 +46,8 @@ class LotController extends Controller
                 $query->where('id_produit', $produitId);
             }
 
-            if ($villeId) {
-                $query->where('id_ville', $villeId);
-            }
-
-            if ($zoneId) {
-                $query->where('id_zone', $zoneId);
+            if ($magasinId) {
+                $query->where('id_magasin', $magasinId);
             }
 
             if ($statut) {
@@ -92,9 +87,7 @@ class LotController extends Controller
         try {
             $validated = $request->validate([
                 'id_produit' => 'required|exists:produits,id',
-                'id_ville' => 'required|exists:villes,id',
-                'id_zone' => 'required|exists:zones,id',
-                'id_emplacement' => 'nullable|exists:emplacements,id',
+                'id_magasin' => 'required|exists:magasins,id',
                 'numero_lot' => 'nullable|string|max:50',
                 'quantite_recue' => 'required|integer|min:1',
                 'date_peremption' => 'required|date|after:today',
@@ -115,9 +108,7 @@ class LotController extends Controller
 
             $lot = Lot::create([
                 'id_produit' => $validated['id_produit'],
-                'id_ville' => $validated['id_ville'],
-                'id_zone' => $validated['id_zone'],
-                'id_emplacement' => $validated['id_emplacement'] ?? null,
+                'id_magasin' => $validated['id_magasin'],
                 'numero_lot' => $validated['numero_lot'],
                 'code_qr' => $codeQr,
                 'quantite_recue' => $validated['quantite_recue'],
@@ -145,7 +136,7 @@ class LotController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $lot->load(['produit', 'ville', 'zone', 'partenaire']),
+                'data' => $lot->load(['produit', 'magasin', 'partenaire']),
                 'message' => 'Lot créé avec succès'
             ], 201);
 
@@ -171,7 +162,7 @@ class LotController extends Controller
     {
         try {
             $lot = Lot::with([
-                'produit', 'ville', 'zone', 'emplacement',
+                'produit', 'magasin',
                 'partenaire', 'devise', 'validePar',
                 'mouvements' => function($query) {
                     $query->orderBy('created_at', 'desc')->with('typeMouvement', 'utilisateur');
@@ -211,8 +202,6 @@ class LotController extends Controller
             }
 
             $validated = $request->validate([
-                'id_zone' => 'sometimes|required|exists:zones,id',
-                'id_emplacement' => 'nullable|exists:emplacements,id',
                 'date_peremption' => 'sometimes|required|date',
                 'commentaire' => 'nullable|string',
                 'numero_lot' => 'sometimes|required|string|max:50',
@@ -233,8 +222,6 @@ class LotController extends Controller
             $message = 'Lot mis à jour avec succès';
             if (count($champs) === 1) {
                 $labels = [
-                    'id_zone' => 'la zone',
-                    'id_emplacement' => "l'emplacement",
                     'date_peremption' => 'la date de péremption',
                     'commentaire' => 'le commentaire',
                     'numero_lot' => 'le numéro de lot',
@@ -250,7 +237,7 @@ class LotController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $lot->load(['produit', 'ville', 'zone']),
+                'data' => $lot->load(['produit', 'magasin']),
                 'message' => $message
             ]);
 
@@ -382,15 +369,15 @@ class LotController extends Controller
     {
         try {
             $jours = $request->input('jours', 7);
-            $villeId = $request->input('ville_id');
+            $magasinId = $request->input('magasin_id');
 
-            $query = Lot::with(['produit', 'ville', 'zone'])
+            $query = Lot::with(['produit', 'magasin'])
                 ->where('quantite_disponible', '>', 0)
                 ->where('statut_validation', 'VALIDÉ')
                 ->whereBetween('date_peremption', [now(), now()->addDays($jours)]);
 
-            if ($villeId) {
-                $query->where('id_ville', $villeId);
+            if ($magasinId) {
+                $query->where('id_magasin', $magasinId);
             }
 
             $data = $query->orderBy('date_peremption')->get();
@@ -416,7 +403,7 @@ class LotController extends Controller
     public function scan($codeQr)
     {
         try {
-            $lot = Lot::with(['produit', 'ville', 'zone', 'emplacement'])
+            $lot = Lot::with(['produit', 'magasin'])
                 ->where('code_qr', $codeQr)
                 ->firstOrFail();
 

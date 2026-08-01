@@ -1,30 +1,30 @@
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer';
 
 const styles = StyleSheet.create({
-  page: { padding: 35, fontSize: 9, fontFamily: 'Helvetica' },
-  header: { marginBottom: 16, borderBottom: '2 solid #1e3a5f', paddingBottom: 10 },
-  companyName: { fontSize: 14, fontWeight: 'bold', color: '#1e3a5f', marginBottom: 2 },
+  page: { padding: 25, fontSize: 8, fontFamily: 'Helvetica' },
+  header: { marginBottom: 12, borderBottom: '2 solid #1e3a5f', paddingBottom: 8 },
+  companyName: { fontSize: 13, fontWeight: 'bold', color: '#1e3a5f', marginBottom: 2 },
   companyInfo: { fontSize: 7, color: '#555', lineHeight: 1.4 },
-  title: { fontSize: 13, fontWeight: 'bold', color: '#1e3a5f', marginTop: 4, marginBottom: 3 },
-  subtitle: { fontSize: 8, color: '#666', marginBottom: 12 },
-  statsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
-  statBox: { flex: 1, alignItems: 'center', padding: 8, border: '1 solid #e0e0e0', borderRadius: 3, marginHorizontal: 4 },
-  statValue: { fontSize: 14, fontWeight: 'bold', color: '#1e3a5f', marginBottom: 2 },
-  statLabel: { fontSize: 7.5, color: '#888' },
-  sectionTitle: { fontSize: 9, fontWeight: 'bold', color: '#1e3a5f', marginBottom: 5, paddingBottom: 3, borderBottom: '1 solid #ddd' },
-  table: { marginTop: 4 },
-  tableHeader: { flexDirection: 'row', backgroundColor: '#1e3a5f', padding: 5 },
-  tableHeaderCell: { color: '#fff', fontSize: 7.5, fontWeight: 'bold' },
-  tableRow: { flexDirection: 'row', padding: 4, borderBottom: '1 solid #f0f0f0', alignItems: 'center' },
+  title: { fontSize: 12, fontWeight: 'bold', color: '#1e3a5f', marginTop: 3, marginBottom: 2 },
+  subtitle: { fontSize: 7.5, color: '#666', marginBottom: 8 },
+  statsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
+  statBox: { flex: 1, alignItems: 'center', padding: 6, border: '1 solid #e0e0e0', borderRadius: 3, marginHorizontal: 3 },
+  statValue: { fontSize: 12, fontWeight: 'bold', color: '#1e3a5f', marginBottom: 2 },
+  statLabel: { fontSize: 7, color: '#888' },
+  sectionTitle: { fontSize: 8.5, fontWeight: 'bold', color: '#1e3a5f', marginBottom: 4, paddingBottom: 2, borderBottom: '1 solid #ddd' },
+  table: { marginTop: 3 },
+  tableHeader: { flexDirection: 'row', backgroundColor: '#1e3a5f', paddingVertical: 3, paddingHorizontal: 0 },
+  tableHeaderCell: { color: '#fff', fontSize: 6.5, fontWeight: 'bold', paddingHorizontal: 2 },
+  tableRow: { flexDirection: 'row', paddingVertical: 3, paddingHorizontal: 0, borderBottom: '1 solid #f0f0f0', alignItems: 'center' },
   tableRowAlt: { backgroundColor: '#f9f9f9' },
-  tableCell: { fontSize: 7.5, color: '#333' },
-  tableCellRight: { fontSize: 7.5, color: '#333', textAlign: 'right' },
-  footer: { position: 'absolute', bottom: 30, left: 35, right: 35, borderTop: '1 solid #ddd', paddingTop: 6, flexDirection: 'row', justifyContent: 'space-between' },
-  footerText: { fontSize: 7, color: '#999' },
-  totalSection: { marginTop: 10, borderTop: '1 solid #ddd', paddingTop: 6, alignItems: 'flex-end' },
+  tableCell: { fontSize: 6.5, color: '#333', paddingHorizontal: 2 },
+  tableCellRight: { fontSize: 6.5, color: '#333', textAlign: 'right', paddingHorizontal: 2 },
+  footer: { position: 'absolute', bottom: 25, left: 25, right: 25, borderTop: '1 solid #ddd', paddingTop: 5, flexDirection: 'row', justifyContent: 'space-between' },
+  footerText: { fontSize: 6.5, color: '#999' },
+  totalSection: { marginTop: 8, borderTop: '1 solid #ddd', paddingTop: 5, alignItems: 'flex-end' },
   totalRow: { flexDirection: 'row', marginBottom: 2 },
-  totalLabel: { fontSize: 9, color: '#666', marginRight: 15, width: 100, textAlign: 'right' },
-  totalValue: { fontSize: 9, fontWeight: 'bold', color: '#1e3a5f', width: 100, textAlign: 'right' },
+  totalLabel: { fontSize: 8, color: '#666', marginRight: 12, width: 110, textAlign: 'right' },
+  totalValue: { fontSize: 8, fontWeight: 'bold', color: '#1e3a5f', width: 110, textAlign: 'right' },
 });
 
 export interface Column {
@@ -43,23 +43,25 @@ interface Stat {
 interface RapportTablePDFProps {
   title: string;
   subtitle?: string;
+  period?: string;
+  orientation?: 'portrait' | 'landscape';
   columns: Column[];
   rows: Record<string, string>[];
   stats?: Stat[];
   totals?: { label: string; value: string }[];
 }
 
-export function RapportTablePDF({ title, subtitle, columns, rows, stats, totals }: RapportTablePDFProps) {
+export function RapportTablePDF({ title, subtitle, period, orientation = 'portrait', columns, rows, stats, totals }: RapportTablePDFProps) {
   return (
     <Document>
-      <Page size="A4" style={styles.page}>
+      <Page size="A4" orientation={orientation} style={styles.page}>
         <View style={styles.header}>
           <Text style={styles.companyName}>FONDEG CATERING CONGO SA</Text>
           <Text style={styles.companyInfo}>Aéroport de Ndjili, Commune de Nsele, Kinshasa, RDC</Text>
         </View>
 
         <Text style={styles.title}>{title}</Text>
-        {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
+        {(subtitle || period) && <Text style={styles.subtitle}>{subtitle ? `${subtitle}${period ? ` — ${period}` : ''}` : period}</Text>}
 
         {stats && stats.length > 0 && (
           <View style={styles.statsRow}>

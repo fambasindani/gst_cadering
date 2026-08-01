@@ -23,10 +23,8 @@ class AuthController extends Controller
                 'email' => 'required|string|email|max:100|unique:utilisateurs,email',
                 'mot_de_passe' => 'required|string|min:6|confirmed',
                 'id_role' => 'required|exists:roles,id',
-                'id_ville' => 'required|exists:villes,id',
+                'id_magasin' => 'required|exists:magasins,id',
                 'id_departement' => 'required|exists:departements,id',
-                'id_zone' => 'nullable|exists:zones,id',
-                'id_emplacement' => 'nullable|exists:emplacements,id',
             ]);
 
             $utilisateur = Utilisateur::create([
@@ -35,10 +33,8 @@ class AuthController extends Controller
                 'email' => $validated['email'],
                 'mot_de_passe_hash' => Hash::make($validated['mot_de_passe']),
                 'id_role' => $validated['id_role'],
-                'id_ville' => $validated['id_ville'],
+                'id_magasin' => $validated['id_magasin'],
                 'id_departement' => $validated['id_departement'],
-                'id_zone' => $validated['id_zone'] ?? null,
-                'id_emplacement' => $validated['id_emplacement'] ?? null,
                 'actif' => true,
             ]);
 
@@ -54,7 +50,7 @@ class AuthController extends Controller
                     'nom' => $utilisateur->nom,
                     'prenom' => $utilisateur->prenom,
                     'role_id' => $utilisateur->id_role,
-                    'ville_id' => $utilisateur->id_ville,
+                    'magasin_id' => $utilisateur->id_magasin,
                 ]),
                 'date_action' => now(),
                 'adresse_ip' => $request->ip(),
@@ -67,7 +63,7 @@ class AuthController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'utilisateur' => $utilisateur->load(['role', 'ville', 'departement']),
+                    'utilisateur' => $utilisateur->load(['role', 'magasin', 'departement']),
                     'token' => $token,
                     'token_type' => 'Bearer',
                 ],
@@ -101,7 +97,7 @@ class AuthController extends Controller
             ]);
 
             $utilisateur = Utilisateur::where('email', $validated['email'])
-                                      ->with(['role', 'ville', 'departement', 'zone', 'emplacement'])
+                                      ->with(['role', 'magasin', 'departement'])
                                       ->first();
 
             // Tentative de connexion échouée - email inexistant
@@ -212,10 +208,8 @@ class AuthController extends Controller
                         'email' => $utilisateur->email,
                         'full_name' => $utilisateur->full_name,
                         'role' => $utilisateur->role,
-                        'ville' => $utilisateur->ville,
+                        'magasin' => $utilisateur->magasin,
                         'departement' => $utilisateur->departement,
-                        'zone' => $utilisateur->zone,
-                        'emplacement' => $utilisateur->emplacement,
                         'permissions' => $utilisateur->role->permissions->pluck('code'),
                     ],
                     'token' => $token,
@@ -287,7 +281,7 @@ class AuthController extends Controller
     public function me(Request $request)
     {
         try {
-            $user = $request->user()->load(['role.permissions', 'ville', 'departement', 'zone', 'emplacement']);
+            $user = $request->user()->load(['role.permissions', 'magasin', 'departement']);
 
             return response()->json([
                 'success' => true,
@@ -299,10 +293,8 @@ class AuthController extends Controller
                         'email' => $user->email,
                         'full_name' => $user->full_name,
                         'role' => $user->role,
-                        'ville' => $user->ville,
+                        'magasin' => $user->magasin,
                         'departement' => $user->departement,
-                        'zone' => $user->zone,
-                        'emplacement' => $user->emplacement,
                         'permissions' => $user->role->permissions->pluck('code'),
                         'actif' => $user->actif,
                         'derniere_connexion' => $user->derniere_connexion,
@@ -341,7 +333,7 @@ class AuthController extends Controller
             }
 
             $user->update($validated);
-            $user->load(['role.permissions', 'ville', 'departement', 'zone', 'emplacement']);
+            $user->load(['role.permissions', 'magasin', 'departement']);
 
             return response()->json([
                 'success' => true,
@@ -353,10 +345,8 @@ class AuthController extends Controller
                         'email' => $user->email,
                         'full_name' => $user->full_name,
                         'role' => $user->role,
-                        'ville' => $user->ville,
+                        'magasin' => $user->magasin,
                         'departement' => $user->departement,
-                        'zone' => $user->zone,
-                        'emplacement' => $user->emplacement,
                         'permissions' => $user->role->permissions->pluck('code'),
                         'actif' => $user->actif,
                         'derniere_connexion' => $user->derniere_connexion,

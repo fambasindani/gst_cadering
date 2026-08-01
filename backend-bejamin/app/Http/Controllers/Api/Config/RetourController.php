@@ -26,7 +26,7 @@ class RetourController extends Controller
         try {
             $perPage = $request->input('per_page', 15);
             $search = $request->input('search');
-            $villeId = $request->input('ville_id');
+            $magasinId = $request->input('magasin_id');
             $statut = $request->input('statut');
             $dateDebut = $request->input('date_debut');
             $dateFin = $request->input('date_fin');
@@ -35,10 +35,8 @@ class RetourController extends Controller
 
             $query = Retour::with([
                 'partenaireClient',
-                'zoneProvenance',
                 'partenaireDest',
-                'zoneDest',
-                'ville',
+                'magasin',
                 'utilisateur',
                 'validePar',
                 'lignes.lot.produit'
@@ -48,8 +46,8 @@ class RetourController extends Controller
                 $query->search($search);
             }
 
-            if ($villeId) {
-                $query->byVille($villeId);
+            if ($magasinId) {
+                $query->byMagasin($magasinId);
             }
 
             if ($statut) {
@@ -91,12 +89,8 @@ class RetourController extends Controller
                 'numero_retour' => 'nullable|string|max:50|unique:retour,numero_retour',
                 'date_retour' => 'required|date',
                 'id_partenaire_client' => 'nullable|exists:partenaires,id',
-                'id_zone_provenance' => 'nullable|exists:zones,id',
-                'id_emplacement_provenance' => 'nullable|exists:emplacements,id',
                 'id_partenaire_dest' => 'nullable|exists:partenaires,id',
-                'id_zone_dest' => 'nullable|exists:zones,id',
-                'id_emplacement_dest' => 'nullable|exists:emplacements,id',
-                'id_ville' => 'required|exists:villes,id',
+                'id_magasin' => 'required|exists:magasins,id',
                 'commentaire' => 'nullable|string',
                 'lignes' => 'required|array|min:1',
                 'lignes.*.id_lot' => 'required|exists:lots,id',
@@ -105,7 +99,7 @@ class RetourController extends Controller
             ]);
 
             // Vérifier qu'au moins une provenance ou une destination est spécifiée
-            if (empty($validated['id_partenaire_client']) && empty($validated['id_zone_provenance']) && empty($validated['id_partenaire_dest']) && empty($validated['id_zone_dest'])) {
+            if (empty($validated['id_partenaire_client']) && empty($validated['id_partenaire_dest'])) {
                 return response()->json([
                     'success' => false,
                     'message' => 'La provenance (client) ou la destination (fournisseur) est obligatoire'
@@ -125,12 +119,8 @@ class RetourController extends Controller
                     'numero_retour' => $validated['numero_retour'],
                     'date_retour' => $validated['date_retour'],
                     'id_partenaire_client' => $validated['id_partenaire_client'] ?? null,
-                    'id_zone_provenance' => $validated['id_zone_provenance'] ?? null,
-                    'id_emplacement_provenance' => $validated['id_emplacement_provenance'] ?? null,
                     'id_partenaire_dest' => $validated['id_partenaire_dest'] ?? null,
-                    'id_zone_dest' => $validated['id_zone_dest'] ?? null,
-                    'id_emplacement_dest' => $validated['id_emplacement_dest'] ?? null,
-                    'id_ville' => $validated['id_ville'],
+                    'id_magasin' => $validated['id_magasin'],
                     'id_utilisateur' => Auth::id(),
                     'commentaire' => $validated['commentaire'] ?? null,
                     'statut_validation' => 'EN ATTENTE',
@@ -142,9 +132,9 @@ class RetourController extends Controller
                 foreach ($validated['lignes'] as $ligne) {
                     $lot = Lot::findOrFail($ligne['id_lot']);
 
-                    // Vérifier que le lot est dans la même ville
-                    if ($lot->id_ville != $validated['id_ville']) {
-                        throw new \Exception('Le lot n\'appartient pas à la même ville');
+                    // Vérifier que le lot est dans la même magasin
+                    if ($lot->id_magasin != $validated['id_magasin']) {
+                        throw new \Exception('Le lot n\'appartient pas à la même magasin');
                     }
 
                     // Créer la ligne de retour
@@ -197,7 +187,7 @@ class RetourController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'data' => $retour->load(['partenaireClient', 'zoneProvenance', 'partenaireDest', 'zoneDest', 'lignes.lot.produit']),
+                    'data' => $retour->load(['partenaireClient', 'partenaireDest', 'lignes.lot.produit']),
                     'message' => 'Retour créé avec succès'
                 ], 201);
 
@@ -229,16 +219,12 @@ class RetourController extends Controller
         try {
             $retour = Retour::with([
                 'partenaireClient',
-                'zoneProvenance',
-                'emplacementProvenance',
                 'partenaireDest',
-                'zoneDest',
-                'emplacementDest',
-                'ville',
+                'magasin',
                 'utilisateur',
                 'validePar',
                 'lignes.lot.produit',
-                'lignes.lot.ville'
+                'lignes.lot.magasin'
             ])->findOrFail($id);
 
             return response()->json([

@@ -14,9 +14,7 @@ import { mouvementStockService } from '../services/mouvement-stock';
 import { typeMouvementService } from '../services/type-mouvement';
 import type { TypeMouvement } from '../services/type-mouvement';
 import { lotService } from '../services/lot';
-import { factureService } from '../services/facture';
 import type { MouvementStock } from '../types/validation';
-import type { Facture } from '../types/facturation';
 import {
   Search, RefreshCw, Plus, Package, ArrowUp, Loader2, Pencil, Trash2, CheckCircle, XCircle,
 } from 'lucide-react';
@@ -196,7 +194,6 @@ export function SortieStockForm() {
                       <TableHead className="font-semibold text-gray-600">Type</TableHead>
                       <TableHead className="text-right font-semibold text-gray-600">Qté</TableHead>
                       <TableHead className="font-semibold text-gray-600">Date</TableHead>
-                      <TableHead className="font-semibold text-gray-600">Facture</TableHead>
                       <TableHead className="text-center w-20 font-semibold text-gray-600">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -215,7 +212,6 @@ export function SortieStockForm() {
                         <TableCell className="text-sm text-gray-600">
                           {m.date_mouvement ? new Date(m.date_mouvement).toLocaleDateString('fr-FR') : '-'}
                         </TableCell>
-                        <TableCell className="text-sm text-gray-600">{m.facture?.numero_facture || '-'}</TableCell>
                         <TableCell>
                           <div className="flex items-center justify-center gap-1">
                             {m.statut_validation === 'EN ATTENTE' ? (
@@ -297,8 +293,7 @@ function SortieFormSlide({ isOpen, editingMvt, onClose, onSuccess }: { isOpen: b
   const [submitting, setSubmitting] = useState(false);
   const [types, setTypes] = useState<TypeMouvement[]>([]);
   const [lots, setLots] = useState<{ id: number; numero_lot: string; quantite_disponible: number; produit?: { nom: string } | null }[]>([]);
-  const [factures, setFactures] = useState<Facture[]>([]);
-  const [form, setForm] = useState({ id_lot: '', id_type_mouvement: '', id_facture: '', quantite: '', date_mouvement: '', reference_document: '', commentaire: '' });
+  const [form, setForm] = useState({ id_lot: '', id_type_mouvement: '', quantite: '', date_mouvement: '', reference_document: '', commentaire: '' });
 
   const isEdit = Boolean(editingMvt);
 
@@ -308,18 +303,16 @@ function SortieFormSlide({ isOpen, editingMvt, onClose, onSuccess }: { isOpen: b
       setForm({
         id_lot: String(editingMvt.id_lot),
         id_type_mouvement: String(editingMvt.id_type_mouvement),
-        id_facture: String(editingMvt.id_facture || ''),
         quantite: String(editingMvt.quantite),
         date_mouvement: editingMvt.date_mouvement || '',
         reference_document: editingMvt.reference_document || '',
         commentaire: editingMvt.commentaire || '',
       });
     } else {
-      setForm({ id_lot: '', id_type_mouvement: '', id_facture: '', quantite: '', date_mouvement: new Date().toISOString().split('T')[0], reference_document: '', commentaire: '' });
+      setForm({ id_lot: '', id_type_mouvement: '', quantite: '', date_mouvement: new Date().toISOString().split('T')[0], reference_document: '', commentaire: '' });
     }
     typeMouvementService.getSortie().then(r => { if (r.success) setTypes(r.data); }).catch(() => {});
     lotService.list({ per_page: '500', statut: 'VALIDÉ' }).then(r => { if (r.success) setLots(r.data.data); }).catch(() => {});
-    factureService.list({ per_page: '200', statut: 'EMISE' }).then(r => { if (r.success) setFactures(r.data.data); }).catch(() => {});
   }, [isOpen, editingMvt]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -331,7 +324,6 @@ function SortieFormSlide({ isOpen, editingMvt, onClose, onSuccess }: { isOpen: b
         id_type_mouvement: Number(form.id_type_mouvement),
         quantite: Number(form.quantite),
       };
-      if (form.id_facture) payload.id_facture = Number(form.id_facture);
       if (form.date_mouvement) payload.date_mouvement = form.date_mouvement;
       if (form.reference_document) payload.reference_document = form.reference_document;
       if (form.commentaire) payload.commentaire = form.commentaire;
@@ -383,17 +375,6 @@ function SortieFormSlide({ isOpen, editingMvt, onClose, onSuccess }: { isOpen: b
         <div>
           <label className="block text-sm font-medium text-white/80 mb-1">Quantité *</label>
           <Input type="number" min="1" value={form.quantite} onChange={e => setForm(f => ({ ...f, quantite: e.target.value }))} className="bg-white/10 border-white/20 text-white" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-white/80 mb-1">Facture liée</label>
-          <SearchableSelect
-            options={factures.map(f => ({ id: f.id, nom: f.numero_facture, sousTitre: f.client?.nom }))}
-            value={form.id_facture}
-            onValueChange={v => setForm(f => ({ ...f, id_facture: v }))}
-            placeholder="Sélectionner une facture (optionnel)"
-            searchPlaceholder="Rechercher une facture..."
-            className="w-full bg-white/10 border-white/20 text-white"
-          />
         </div>
         <div>
           <label className="block text-sm font-medium text-white/80 mb-1">Date mouvement</label>

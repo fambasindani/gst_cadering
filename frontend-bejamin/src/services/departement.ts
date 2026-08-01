@@ -20,6 +20,6 @@ export const departementService = {
   toggle: (id: number) =>
     api.patch<DepartementResponse>(`/config/departements/${id}/toggle`),
 
-  getVilles: (params?: Record<string, string>) =>
-    api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/villes', { params }),
+  getMagasins: (params?: Record<string, string>) =>
+    api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/magasins', { params }),
 };

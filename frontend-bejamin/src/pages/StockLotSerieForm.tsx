@@ -26,14 +26,12 @@ export function StockLotSerieForm() {
   const [lotStatut, setLotStatut] = useState<string | null>(null);
   const estVerrouille = isEdit && lotStatut === 'VALIDÉ';
   const [produits, setProduits] = useState<SelectOption[]>([]);
-  const [villes, setVilles] = useState<SelectOption[]>([]);
-  const [zones, setZones] = useState<SelectOption[]>([]);
-  const [emplacements, setEmplacements] = useState<SelectOption[]>([]);
+  const [magasins, setMagasins] = useState<SelectOption[]>([]);
   const [partenaires, setPartenaires] = useState<SelectOption[]>([]);
   const [devises, setDevises] = useState<SelectOption[]>([]);
 
   const [form, setForm] = useState({
-    id_produit: '', id_ville: '', id_zone: '', id_emplacement: '',
+    id_produit: '', id_magasin: '',
     numero_lot: '',
     quantite_recue: '', date_peremption: '', date_fabrication: '',
     id_partenaire: '', prix_achat_ht_unitaire: '', id_devise: '', commentaire: '',
@@ -42,12 +40,12 @@ export function StockLotSerieForm() {
   useEffect(() => {
     Promise.all([
       bonCommandeService.getProduits({ per_page: '500' }),
-      bonCommandeService.getVilles({ per_page: '500' }),
+      bonCommandeService.getMagasins({ per_page: '500' }),
       bonCommandeService.getPartenaires({ per_page: '500' }),
       bonCommandeService.getDevises({ per_page: '500' }),
     ]).then(([pr, vr, par, dr]) => {
       if (pr.success) setProduits(pr.data.data);
-      if (vr.success) setVilles(vr.data.data);
+      if (vr.success) setMagasins(vr.data.data);
       if (par.success) setPartenaires(par.data.data);
       if (dr.success) setDevises(dr.data.data);
     }).catch(() => {});
@@ -62,8 +60,7 @@ export function StockLotSerieForm() {
         setLotStatut(l.statut_validation);
         setForm({
           id_produit: String(l.id_produit),
-          id_ville: String(l.id_ville), id_zone: String(l.id_zone),
-          id_emplacement: l.id_emplacement ? String(l.id_emplacement) : '',
+          id_magasin: String(l.id_magasin),
           numero_lot: l.numero_lot || '',
           quantite_recue: String(l.quantite_recue),
           date_peremption: l.date_peremption?.split('T')[0] || '',
@@ -73,32 +70,13 @@ export function StockLotSerieForm() {
           id_devise: l.id_devise ? String(l.id_devise) : '',
           commentaire: l.commentaire || '',
         });
-        if (l.id_ville) loadZones(l.id_ville);
-        if (l.id_emplacement) loadEmplacements(l.id_zone);
       }
       setLoading(false);
     }).catch(() => setLoading(false));
   }, [id]);
 
-  const loadZones = async (villeId: number) => {
-    try { const r = await bonCommandeService.getZonesByVille(villeId); if (r.success) setZones(r.data); }
-    catch { setZones([]); }
-  };
-
-  const loadEmplacements = async (zoneId: number) => {
-    if (!zoneId) { setEmplacements([]); return; }
-    try { const r = await bonCommandeService.getEmplacementsByZone(zoneId); if (r.success) setEmplacements(r.data); }
-    catch { setEmplacements([]); }
-  };
-
-  const handleVilleChange = (v: string) => {
-    setForm(f => ({ ...f, id_ville: v, id_zone: '', id_emplacement: '' }));
-    if (v) loadZones(Number(v));
-  };
-
-  const handleZoneChange = (v: string) => {
-    setForm(f => ({ ...f, id_zone: v, id_emplacement: '' }));
-    if (v) loadEmplacements(Number(v));
+  const handleMagasinChange = (v: string) => {
+    setForm(f => ({ ...f, id_magasin: v }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -108,11 +86,10 @@ export function StockLotSerieForm() {
     try {
       const payload: Record<string, string | number> = {
         id_produit: Number(form.id_produit),
-        id_ville: Number(form.id_ville), id_zone: Number(form.id_zone),
+        id_magasin: Number(form.id_magasin),
         quantite_recue: Number(form.quantite_recue), date_peremption: form.date_peremption,
       };
       if (form.numero_lot) payload.numero_lot = form.numero_lot;
-      if (form.id_emplacement) payload.id_emplacement = Number(form.id_emplacement);
       if (form.date_fabrication) payload.date_fabrication = form.date_fabrication;
       if (form.id_partenaire) payload.id_partenaire = Number(form.id_partenaire);
       if (form.prix_achat_ht_unitaire) payload.prix_achat_ht_unitaire = Number(form.prix_achat_ht_unitaire);
@@ -147,7 +124,7 @@ export function StockLotSerieForm() {
     );
   }
 
-  const isValid = form.id_produit && form.id_ville && form.id_zone && form.quantite_recue && form.date_peremption;
+  const isValid = form.id_produit && form.id_magasin && form.quantite_recue && form.date_peremption;
 
   const errorClass = (field: string) => fieldErrors[field] ? 'border-red-400 focus-visible:border-red-400 focus-visible:ring-red-400/30' : 'border-gray-200';
 
@@ -256,46 +233,17 @@ export function StockLotSerieForm() {
                   <h2 className="text-base font-bold text-gray-800">Stockage</h2>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <Label icon={MapPin} required>Ville</Label>
-                    <SearchableSelect
-                      options={villes.map(v => ({ id: v.id, nom: v.nom }))}
-                      value={form.id_ville}
-                      onValueChange={v => { setFieldErrors(f => { const n = { ...f }; delete n.id_ville; return n; }); handleVilleChange(v); }}
-                      placeholder="Sélectionner une ville"
-                      searchPlaceholder="Rechercher une ville..."
-                      error={fieldErrors.id_ville}
-                    />
-                    <FieldError field="id_ville" />
-                  </div>
-                  <div>
-                    <Label icon={Warehouse} required>Zone</Label>
-                    <SearchableSelect
-                      options={zones.map(z => ({ id: z.id, nom: z.nom }))}
-                      value={form.id_zone}
-                      onValueChange={v => { setFieldErrors(f => { const n = { ...f }; delete n.id_zone; return n; }); handleZoneChange(v); }}
-                      disabled={!form.id_ville}
-                      placeholder={form.id_ville ? 'Sélectionner une zone' : "Choisissez une ville d'abord"}
-                      searchPlaceholder="Rechercher une zone..."
-                      error={fieldErrors.id_zone}
-                    />
-                    <FieldError field="id_zone" />
-                  </div>
-                </div>
-
                 <div>
-                  <Label icon={MapPin}>Emplacement</Label>
-<SearchableSelect
-                      options={emplacements.map(e => ({ id: e.id, nom: e.nom }))}
-                      value={form.id_emplacement}
-                      onValueChange={v => { setFieldErrors(f => { const n = { ...f }; delete n.id_emplacement; return n; }); setForm(f => ({ ...f, id_emplacement: v })); }}
-                      disabled={!form.id_zone}
-                      placeholder={form.id_zone ? 'Sélectionner un emplacement (optionnel)' : "Choisissez une zone d'abord"}
-                      searchPlaceholder="Rechercher un emplacement..."
-                      error={fieldErrors.id_emplacement}
-                    />
-                  <FieldError field="id_emplacement" />
+                  <Label icon={MapPin} required>Magasin</Label>
+                  <SearchableSelect
+                    options={magasins.map(v => ({ id: v.id, nom: v.nom }))}
+                    value={form.id_magasin}
+                    onValueChange={v => { setFieldErrors(f => { const n = { ...f }; delete n.id_magasin; return n; }); handleMagasinChange(v); }}
+                    placeholder="Sélectionner un magasin"
+                    searchPlaceholder="Rechercher un magasin..."
+                    error={fieldErrors.id_magasin}
+                  />
+                  <FieldError field="id_magasin" />
                 </div>
               </CardContent>
             </Card>

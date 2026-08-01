@@ -3,8 +3,8 @@ export interface BonCommande {
   numero_commande: string;
   id_partenaire: number;
   partenaire?: { id: number; nom: string } | null;
-  id_ville_destination: number;
-  ville_destination?: { id: number; nom: string } | null;
+  id_magasin_destination: number;
+  magasin_destination?: { id: number; nom: string } | null;
   date_commande: string;
   date_livraison_prevue: string | null;
   statut: 'BROUILLON' | 'ENVOYÉ' | 'REÇU PARTIELLEMENT' | 'REÇU' | 'ANNULE';
@@ -38,7 +38,7 @@ export interface LigneCommande {
 export interface BonCommandeFormData {
   numero_commande: string;
   id_partenaire: string;
-  id_ville_destination: string;
+  id_magasin_destination: string;
   date_commande: string;
   date_livraison_prevue: string;
   id_devise: string;

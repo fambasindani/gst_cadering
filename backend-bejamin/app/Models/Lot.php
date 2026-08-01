@@ -11,9 +11,7 @@ class Lot extends Model
 
     protected $fillable = [
         'id_produit',
-        'id_ville',
-        'id_zone',
-        'id_emplacement',
+        'id_magasin',
         'numero_lot',
         'code_qr',
         'quantite_recue',
@@ -45,19 +43,9 @@ class Lot extends Model
         return $this->belongsTo(Produit::class, 'id_produit');
     }
 
-    public function ville()
+    public function magasin()
     {
-        return $this->belongsTo(Ville::class, 'id_ville');
-    }
-
-    public function zone()
-    {
-        return $this->belongsTo(Zone::class, 'id_zone');
-    }
-
-    public function emplacement()
-    {
-        return $this->belongsTo(Emplacement::class, 'id_emplacement');
+        return $this->belongsTo(Magasin::class, 'id_magasin');
     }
 
     public function partenaire()
@@ -98,14 +86,9 @@ class Lot extends Model
         return $query->where('id_produit', $produitId);
     }
 
-    public function scopeByVille($query, $villeId)
+    public function scopeByMagasin($query, $magasinId)
     {
-        return $query->where('id_ville', $villeId);
-    }
-
-    public function scopeByZone($query, $zoneId)
-    {
-        return $query->where('id_zone', $zoneId);
+        return $query->where('id_magasin', $magasinId);
     }
 
     public function scopePerime($query)

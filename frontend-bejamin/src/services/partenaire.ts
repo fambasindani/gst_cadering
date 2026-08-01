@@ -1,5 +1,5 @@
 import { api } from './api';
-import type { PartenairePaginatedResponse, PartenaireResponse, PartenaireFormData, VilleListResponse } from '../types/partenaire';
+import type { PartenairePaginatedResponse, PartenaireResponse, PartenaireFormData, MagasinListResponse } from '../types/partenaire';
 
 export const partenaireService = {
   list: (params?: Record<string, string>) =>
@@ -20,8 +20,8 @@ export const partenaireService = {
   toggle: (id: number) =>
     api.patch<PartenaireResponse>(`/config/partenaires/${id}/toggle`),
 
-  getVilles: () =>
-    api.get<VilleListResponse>('/config/villes'),
+  getMagasins: () =>
+    api.get<MagasinListResponse>('/config/magasins'),
 
   getClients: (params?: Record<string, string>) =>
     api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/partenaires/clients', { params: { ...params, per_page: '200' } }),

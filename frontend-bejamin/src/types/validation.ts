@@ -1,11 +1,9 @@
 export interface MouvementStock {
   id: number;
   id_lot: number;
-  lot?: { id: number; numero_lot: string; quantite_disponible: number; produit?: { id: number; nom: string; code_article: string } | null; ville?: { id: number; nom: string } | null } | null;
+  lot?: { id: number; numero_lot: string; quantite_disponible: number; produit?: { id: number; nom: string; code_article: string } | null; magasin?: { id: number; nom: string } | null } | null;
   id_type_mouvement: number;
   type_mouvement?: { id: number; libelle: string; sens: number } | null;
-  id_facture?: number | null;
-  facture?: { id: number; numero_facture: string; client?: { nom: string } | null } | null;
   quantite: number;
   date_mouvement: string;
   id_utilisateur: number;
@@ -25,8 +23,8 @@ export interface PeriodeInventaire {
   date_debut: string;
   date_fin: string;
   statut: 'PREVU' | 'EN_COURS' | 'CLOTURE' | 'ANNULE';
-  id_ville: number;
-  ville?: { id: number; nom: string } | null;
+  id_magasin: number;
+  magasin?: { id: number; nom: string } | null;
   description: string | null;
   inventaires?: Inventaire[];
 }
@@ -37,8 +35,8 @@ export interface Inventaire {
   periode_inventaire?: { id: number; libelle: string } | null;
   id_produit: number;
   produit?: { id: number; nom: string; code_article: string } | null;
-  id_ville: number;
-  ville?: { id: number; nom: string } | null;
+  id_magasin: number;
+  magasin?: { id: number; nom: string } | null;
   stock_theorique: number;
   stock_physique_compte: number;
   ecart: number;

@@ -28,12 +28,8 @@ abstract class BaseController extends Controller
                 });
             }
 
-            if ($request->has('ville_id')) {
-                $query->where('id_ville', $request->ville_id);
-            }
-
-            if ($request->has('zone_id')) {
-                $query->where('id_zone', $request->zone_id);
+            if ($request->has('magasin_id')) {
+                $query->where('id_magasin', $request->magasin_id);
             }
 
             $data = $query->orderBy($sortBy, $sortOrder)->paginate($perPage);

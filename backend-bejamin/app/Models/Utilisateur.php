@@ -20,10 +20,8 @@ class Utilisateur extends Authenticatable
         'email',
         'mot_de_passe_hash',
         'id_role',
-        'id_ville',
+        'id_magasin',
         'id_departement',
-        'id_zone',
-        'id_emplacement',
         'actif',
         'derniere_connexion'
     ];
@@ -50,24 +48,14 @@ class Utilisateur extends Authenticatable
         return $this->belongsTo(Role::class, 'id_role');
     }
 
-    public function ville()
+    public function magasin()
     {
-        return $this->belongsTo(Ville::class, 'id_ville');
+        return $this->belongsTo(Magasin::class, 'id_magasin');
     }
 
     public function departement()
     {
         return $this->belongsTo(Departement::class, 'id_departement');
-    }
-
-    public function zone()
-    {
-        return $this->belongsTo(Zone::class, 'id_zone');
-    }
-
-    public function emplacement()
-    {
-        return $this->belongsTo(Emplacement::class, 'id_emplacement');
     }
 
     // Scopes
@@ -83,9 +71,9 @@ class Utilisateur extends Authenticatable
                      ->orWhere('email', 'LIKE', "%{$search}%");
     }
 
-    public function scopeByVille($query, $villeId)
+    public function scopeByMagasin($query, $magasinId)
     {
-        return $query->where('id_ville', $villeId);
+        return $query->where('id_magasin', $magasinId);
     }
 
     public function scopeByDepartement($query, $departementId)

@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
   colCode: { width: '14%' },
   colNom: { width: '24%' },
   colProduit: { width: '20%' },
-  colVille: { width: '14%' },
+  colMagasin: { width: '14%' },
   colRendement: { width: '12%', textAlign: 'right' },
   colCoutTotal: { width: '16%', textAlign: 'right' },
   tableRow: { flexDirection: 'row', padding: 4, borderBottom: '1 solid #f0f0f0', alignItems: 'center' },
@@ -71,7 +71,7 @@ export function RapportRecettePDF({ fiches }: { fiches: FicheTechnique[] }) {
             <Text style={[styles.tableHeaderCell, styles.colCode]}>Code</Text>
             <Text style={[styles.tableHeaderCell, styles.colNom]}>Nom</Text>
             <Text style={[styles.tableHeaderCell, styles.colProduit]}>Produit fini</Text>
-            <Text style={[styles.tableHeaderCell, styles.colVille]}>Ville</Text>
+            <Text style={[styles.tableHeaderCell, styles.colMagasin]}>Magasin</Text>
             <Text style={[styles.tableHeaderCell, styles.colRendement]}>Rendement</Text>
             <Text style={[styles.tableHeaderCell, styles.colCoutTotal]}>Coût total</Text>
           </View>
@@ -80,7 +80,7 @@ export function RapportRecettePDF({ fiches }: { fiches: FicheTechnique[] }) {
               <Text style={[styles.tableCell, styles.colCode]}>{f.code}</Text>
               <Text style={[styles.tableCell, styles.colNom]}>{f.nom}</Text>
               <Text style={[styles.tableCell, styles.colProduit]}>{f.produitFini?.nom || '-'}</Text>
-              <Text style={[styles.tableCell, styles.colVille]}>{f.ville?.nom || '-'}</Text>
+              <Text style={[styles.tableCell, styles.colMagasin]}>{f.magasin?.nom || '-'}</Text>
               <Text style={[styles.tableCellRight, styles.colRendement]}>{f.rendement}</Text>
               <Text style={[styles.tableCellRight, styles.colCoutTotal]}>{formatCurrency(f.cout_total)}</Text>
             </View>

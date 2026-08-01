@@ -9,7 +9,6 @@ use App\Models\Partenaire;
 use App\Models\Lot;
 use App\Models\Retour;
 use App\Models\MouvementStock;
-use App\Models\Facture;
 use App\Models\LigneCommande;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -22,7 +21,7 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         try {
-            $villeId = $request->input('ville_id');
+            $magasinId = $request->input('magasin_id');
             $dateDebut = $request->input('date_debut', now()->startOfMonth());
             $dateFin = $request->input('date_fin', now());
 
@@ -91,10 +90,7 @@ class DashboardController extends Controller
             // 1.12 Nombre de retours en attente
             $retoursEnAttente = Retour::where('statut_validation', 'EN ATTENTE')->count();
 
-            // 1.13 Nombre de factures en attente de paiement
-            $facturesImpayees = Facture::where('statut', 'EMISE')->count();
-
-            // 1.14 Nombre de lots proches de péremption (7 jours)
+            // 1.13 Nombre de lots proches de péremption (7 jours)
             $lotsPeremptionProche = Lot::where('quantite_disponible', '>', 0)
                 ->where('statut_validation', 'VALIDÉ')
                 ->whereBetween('date_peremption', [now(), now()->addDays(7)])
@@ -181,7 +177,7 @@ class DashboardController extends Controller
             // ============================================================
             // 6. ALERTES - Lots proches de péremption
             // ============================================================
-            $lotsPerimesProches = Lot::with(['produit', 'ville', 'zone'])
+            $lotsPerimesProches = Lot::with(['produit', 'magasin'])      
                 ->where('quantite_disponible', '>', 0)
                 ->where('statut_validation', 'VALIDÉ')
                 ->whereBetween('date_peremption', [now(), now()->addDays(7)])
@@ -196,8 +192,7 @@ class DashboardController extends Controller
                         'quantite' => $lot->quantite_disponible,
                         'date_peremption' => $lot->date_peremption,
                         'jours_restants' => now()->diffInDays($lot->date_peremption),
-                        'ville' => $lot->ville->nom,
-                        'zone' => $lot->zone->nom
+                        'magasin' => $lot->magasin->nom
                     ];
                 });
 
@@ -218,7 +213,7 @@ class DashboardController extends Controller
             // ============================================================
             $activitesRecentes = MouvementStock::with([
                     'lot.produit',
-                    'lot.ville',
+                    'lot.magasin',
                     'typeMouvement',
                     'utilisateur'
                 ])
@@ -254,7 +249,6 @@ class DashboardController extends Controller
                         'stock_total' => $stockTotal,
                         'valeur_stock' => $valeurStock,
                         'retours_en_attente' => $retoursEnAttente,
-                        'factures_impayees' => $facturesImpayees,
                         'lots_peremption_proche' => $lotsPeremptionProche,
                         'produits_stock_bas' => $produitsStockBas->count(),
                     ],
@@ -287,35 +281,35 @@ class DashboardController extends Controller
     }
 
     /**
-     * Dashboard par ville (statistiques spécifiques)
+     * Dashboard par magasin (statistiques spécifiques)
      */
-    public function byVille($villeId)
+    public function byMagasin($magasinId)
     {
         try {
-            // Vérifier que la ville existe
-            $ville = \App\Models\Ville::findOrFail($villeId);
+            // Vérifier que la magasin existe
+            $magasin = \App\Models\Magasin::findOrFail($magasinId);               
 
-            // Statistiques par ville
-            $stock = Lot::where('id_ville', $villeId)
+            // Statistiques par magasin
+            $stock = Lot::where('id_magasin', $magasinId)
                 ->where('quantite_disponible', '>', 0)
                 ->where('statut_validation', 'VALIDÉ')
                 ->sum('quantite_disponible');
 
-            $commandes = BonCommande::where('id_ville_destination', $villeId)
+            $commandes = BonCommande::where('id_magasin_destination', $magasinId)
                 ->whereIn('statut', ['ENVOYÉ', 'REÇU PARTIELLEMENT', 'REÇU'])
                 ->count();
 
-            $clients = Partenaire::where('id_ville', $villeId)
+            $clients = Partenaire::where('id_magasin', $magasinId)
                 ->where('type_client', 'aerien')
                 ->count();
 
-            $produits = Lot::where('id_ville', $villeId)
+            $produits = Lot::where('id_magasin', $magasinId)
                 ->where('quantite_disponible', '>', 0)
                 ->where('statut_validation', 'VALIDÉ')
                 ->distinct('id_produit')
                 ->count();
 
-            $valeur = Lot::where('id_ville', $villeId)
+            $valeur = Lot::where('id_magasin', $magasinId)
                 ->where('quantite_disponible', '>', 0)
                 ->where('statut_validation', 'VALIDÉ')
                 ->get()
@@ -326,7 +320,7 @@ class DashboardController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'ville' => $ville,
+                    'magasin' => $magasin,
                     'statistiques' => [
                         'stock_total' => $stock,
                         'valeur_stock' => $valeur,
@@ -335,7 +329,7 @@ class DashboardController extends Controller
                         'produits_en_stock' => $produits,
                     ]
                 ],
-                'message' => 'Dashboard de la ville récupéré avec succès'
+                'message' => 'Dashboard du magasin récupéré avec succès'
             ]);
 
         } catch (\Exception $e) {

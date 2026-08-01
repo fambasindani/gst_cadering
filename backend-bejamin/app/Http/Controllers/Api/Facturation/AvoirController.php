@@ -23,7 +23,7 @@ class AvoirController extends Controller
             $sortBy = $request->input('sort_by', 'id');
             $sortOrder = $request->input('sort_order', 'desc');
 
-            $query = Avoir::with(['client', 'factureOrigine', 'devise', 'utilisateur']);
+            $query = Avoir::with(['client', 'retour', 'devise', 'utilisateur']);
 
             if ($search) {
                 $query->where('numero_avoir', 'LIKE', "%{$search}%");
@@ -60,20 +60,11 @@ class AvoirController extends Controller
                 'numero_avoir' => 'nullable|string|max:50|unique:avoir,numero_avoir',
                 'date_avoir' => 'required|date',
                 'id_partenaire_client' => 'required|exists:partenaires,id',
-                'id_facture_origine' => 'nullable|exists:facture,id',
-                'id_retour' => 'nullable|exists:retour,id',
+                'id_retour' => 'required|exists:retour,id',
                 'id_devise' => 'required|exists:devises,id',
                 'montant_ht' => 'required|numeric|min:0.01',
                 'commentaire' => 'nullable|string',
             ]);
-
-            // Vérifier qu'au moins une des deux est spécifiée
-            if (!($validated['id_facture_origine'] ?? null) && !($validated['id_retour'] ?? null)) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'La facture d\'origine ou le retour est obligatoire'
-                ], 422);
-            }
 
             // Auto-générer le numéro d'avoir si non fourni
             if (empty($validated['numero_avoir'])) {
@@ -84,8 +75,7 @@ class AvoirController extends Controller
                 'numero_avoir' => $validated['numero_avoir'],
                 'date_avoir' => $validated['date_avoir'],
                 'id_partenaire_client' => $validated['id_partenaire_client'],
-                'id_facture_origine' => $validated['id_facture_origine'] ?? null,
-                'id_retour' => $validated['id_retour'] ?? null,
+                'id_retour' => $validated['id_retour'],
                 'id_devise' => $validated['id_devise'],
                 'montant_ht' => $validated['montant_ht'],
                 'id_utilisateur' => Auth::id(),
@@ -94,7 +84,7 @@ class AvoirController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $avoir->load(['client', 'factureOrigine', 'devise']),
+                'data' => $avoir->load(['client', 'retour', 'devise']),
                 'message' => 'Avoir créé avec succès'
             ], 201);
 
@@ -119,7 +109,7 @@ class AvoirController extends Controller
     public function show($id)
     {
         try {
-            $avoir = Avoir::with(['client', 'factureOrigine', 'retour', 'devise', 'utilisateur'])
+            $avoir = Avoir::with(['client', 'retour', 'devise', 'utilisateur'])
                 ->findOrFail($id);
 
             return response()->json([

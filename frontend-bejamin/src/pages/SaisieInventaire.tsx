@@ -39,11 +39,11 @@ export function SaisieInventaire() {
   const [selectedPeriode, setSelectedPeriode] = useState<PeriodeInventaire | null>(null);
 
   const [produits, setProduits] = useState<{ id: number; nom: string; code_article: string }[]>([]);
-  const [villes, setVilles] = useState<{ id: number; nom: string }[]>([]);
+  const [magasins, setMagasins] = useState<{ id: number; nom: string }[]>([]);
 
   const [form, setForm] = useState({
     id_produit: '',
-    id_ville: '',
+    id_magasin: '',
     stock_physique_compte: '',
     commentaire: '',
   });
@@ -87,18 +87,18 @@ export function SaisieInventaire() {
     }
   }, []);
 
-  const fetchVilles = useCallback(async () => {
+  const fetchMagasins = useCallback(async () => {
     try {
-      const res = await bonCommandeService.getVilles();
+      const res = await bonCommandeService.getMagasins();
       if (res.success) {
-        setVilles(res.data.data);
+        setMagasins(res.data.data);
       }
     } catch {
       //
     }
   }, []);
 
-  useEffect(() => { fetchProduits(); fetchVilles(); }, [fetchProduits, fetchVilles]);
+  useEffect(() => { fetchProduits(); fetchMagasins(); }, [fetchProduits, fetchMagasins]);
 
   const fetchData = useCallback(async () => {
     if (!selectedPeriodeId) {
@@ -131,7 +131,7 @@ export function SaisieInventaire() {
 
   const resetForm = () => {
     setEditingId(null);
-    setForm({ id_produit: '', id_ville: String(selectedPeriode?.id_ville ?? ''), stock_physique_compte: '', commentaire: '' });
+    setForm({ id_produit: '', id_magasin: String(selectedPeriode?.id_magasin ?? ''), stock_physique_compte: '', commentaire: '' });
     setFieldErrors({});
   };
 
@@ -142,7 +142,7 @@ export function SaisieInventaire() {
     setSelectedPeriode(periode ?? null);
     resetForm();
     if (periode) {
-      setForm((f) => ({ ...f, id_ville: String(periode.id_ville) }));
+      setForm((f) => ({ ...f, id_magasin: String(periode.id_magasin) }));
     }
   };
 
@@ -150,7 +150,7 @@ export function SaisieInventaire() {
     setEditingId(inv.id);
     setForm({
       id_produit: String(inv.id_produit),
-      id_ville: String(inv.id_ville),
+      id_magasin: String(inv.id_magasin),
       stock_physique_compte: String(inv.stock_physique_compte),
       commentaire: inv.commentaire || '',
     });
@@ -169,8 +169,8 @@ export function SaisieInventaire() {
       setFieldErrors((f) => ({ ...f, id_produit: 'Sélectionnez un produit' }));
       return;
     }
-    if (!form.id_ville) {
-      setFieldErrors((f) => ({ ...f, id_ville: 'Sélectionnez une ville' }));
+    if (!form.id_magasin) {
+      setFieldErrors((f) => ({ ...f, id_magasin: 'Sélectionnez un magasin' }));
       return;
     }
     if (!form.stock_physique_compte || parseInt(form.stock_physique_compte) < 0) {
@@ -190,7 +190,7 @@ export function SaisieInventaire() {
         const res = await inventaireService.create({
           id_periode_inventaire: Number(selectedPeriodeId),
           id_produit: Number(form.id_produit),
-          id_ville: Number(form.id_ville),
+          id_magasin: Number(form.id_magasin),
           stock_physique_compte: parseInt(form.stock_physique_compte),
           commentaire: form.commentaire,
         });
@@ -302,7 +302,7 @@ export function SaisieInventaire() {
                   ) : (
                     periodesEnCours.map((p) => (
                       <SelectItem key={p.id} value={String(p.id)}>
-                        {p.libelle} ({p.ville?.nom || '-'})
+                        {p.libelle} ({p.magasin?.nom || '-'})
                       </SelectItem>
                     ))
                   )}
@@ -407,24 +407,24 @@ export function SaisieInventaire() {
                 <div>
                   <Label className="text-sm font-medium text-gray-700">
                     <MapPin className="w-3.5 h-3.5 inline mr-1" />
-                    Ville *
+                    Magasin *
                   </Label>
                   <Select
-                    value={form.id_ville}
-                    onValueChange={(value) => { setForm((f) => ({ ...f, id_ville: value })); setFieldErrors((f) => ({ ...f, id_ville: '' })); }}
+                    value={form.id_magasin}
+                    onValueChange={(value) => { setForm((f) => ({ ...f, id_magasin: value })); setFieldErrors((f) => ({ ...f, id_magasin: '' })); }}
                     disabled={!!editingId}
                   >
                     <SelectTrigger className={cn("mt-1.5 bg-white text-gray-900 border-gray-300 focus:border-royal-500 focus:ring-royal-500 h-11",
-                      fieldErrors.id_ville ? 'border-red-400' : '')}>
-                      <SelectValue placeholder="Sélectionner une ville" />
+                      fieldErrors.id_magasin ? 'border-red-400' : '')}>
+                      <SelectValue placeholder="Sélectionner un magasin" />
                     </SelectTrigger>
                     <SelectContent>
-                      {villes.map((v) => (
+                      {magasins.map((v) => (
                         <SelectItem key={v.id} value={String(v.id)}>{v.nom}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  {fieldErrors.id_ville && <p className="text-red-500 text-xs mt-1">{fieldErrors.id_ville}</p>}
+                  {fieldErrors.id_magasin && <p className="text-red-500 text-xs mt-1">{fieldErrors.id_magasin}</p>}
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -504,7 +504,7 @@ export function SaisieInventaire() {
                     <TableRow>
                       <TableHead className="font-semibold text-gray-600">Produit</TableHead>
                       <TableHead className="font-semibold text-gray-600">Code article</TableHead>
-                      <TableHead className="font-semibold text-gray-600">Ville</TableHead>
+                      <TableHead className="font-semibold text-gray-600">Magasin</TableHead>
                       <TableHead className="text-right font-semibold text-gray-600">Stock théorique</TableHead>
                       <TableHead className="text-right font-semibold text-gray-600">Stock physique</TableHead>
                       <TableHead className="text-center font-semibold text-gray-600">Écart</TableHead>
@@ -545,7 +545,7 @@ export function SaisieInventaire() {
                     <TableRow>
                       <TableHead className="font-semibold text-gray-600">Produit</TableHead>
                       <TableHead className="font-semibold text-gray-600">Code article</TableHead>
-                      <TableHead className="font-semibold text-gray-600">Ville</TableHead>
+                      <TableHead className="font-semibold text-gray-600">Magasin</TableHead>
                       <TableHead className="text-right font-semibold text-gray-600">Stock théorique</TableHead>
                       <TableHead className="text-right font-semibold text-gray-600">Stock physique</TableHead>
                       <TableHead className="text-center font-semibold text-gray-600">Écart</TableHead>
@@ -558,7 +558,7 @@ export function SaisieInventaire() {
                       <TableRow key={inv.id} className={cn('hover:bg-royal-50/50 transition-colors', i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50')}>
                         <TableCell className="font-medium text-gray-900">{inv.produit?.nom || '-'}</TableCell>
                         <TableCell className="font-mono text-sm text-gray-600">{inv.produit?.code_article || '-'}</TableCell>
-                        <TableCell className="text-sm text-gray-600">{inv.ville?.nom || '-'}</TableCell>
+                        <TableCell className="text-sm text-gray-600">{inv.magasin?.nom || '-'}</TableCell>
                         <TableCell className="text-right font-mono text-sm text-gray-600">{inv.stock_theorique}</TableCell>
                         <TableCell className="text-right font-mono text-sm font-semibold text-gray-900">{inv.stock_physique_compte}</TableCell>
                         <TableCell className="text-center">{getEcartDisplay(inv.ecart)}</TableCell>

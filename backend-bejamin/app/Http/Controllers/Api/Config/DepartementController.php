@@ -15,11 +15,11 @@ class DepartementController extends BaseController
         try {
             $perPage = $request->input('per_page', 15);
             $search = $request->input('search');
-            $villeId = $request->input('ville_id');
+            $magasinId = $request->input('magasin_id');
             $sortBy = $request->input('sort_by', 'id');
             $sortOrder = $request->input('sort_order', 'desc');
 
-            $query = Departement::with('ville');
+            $query = Departement::with('magasin');
 
             if ($search) {
                 $query->where(function($q) use ($search) {
@@ -28,8 +28,8 @@ class DepartementController extends BaseController
                 });
             }
 
-            if ($villeId) {
-                $query->where('id_ville', $villeId);
+            if ($magasinId) {
+                $query->where('id_magasin', $magasinId);
             }
 
             $data = $query->orderBy($sortBy, $sortOrder)->paginate($perPage);
@@ -49,10 +49,10 @@ class DepartementController extends BaseController
         }
     }
 
-    public function getByVille($villeId)
+    public function getByMagasin($magasinId)
     {
         try {
-            $departements = Departement::where('id_ville', $villeId)
+            $departements = Departement::where('id_magasin', $magasinId)
                                        ->where('actif', true)
                                        ->get();
 
@@ -75,7 +75,7 @@ class DepartementController extends BaseController
         return [
             'nom' => "required|string|max:100",
             'code' => "nullable|string|max:20",
-            'id_ville' => "required|exists:villes,id",
+            'id_magasin' => "required|exists:magasins,id",
             'actif' => 'nullable|boolean'
         ];
     }

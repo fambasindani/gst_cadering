@@ -184,7 +184,7 @@ export function Partenaires() {
                     <TableHead className="font-semibold text-gray-600">Type</TableHead>
                     <TableHead className="font-semibold text-gray-600">Nom</TableHead>
                     <TableHead className="hidden md:table-cell font-semibold text-gray-600">Contact</TableHead>
-                    <TableHead className="hidden lg:table-cell font-semibold text-gray-600">Ville</TableHead>
+                    <TableHead className="hidden lg:table-cell font-semibold text-gray-600">Magasin</TableHead>
                     <TableHead className="text-center font-semibold text-gray-600">Statut</TableHead>
                     <TableHead className="text-center font-semibold text-gray-600">Actions</TableHead>
                   </TableRow>
@@ -224,7 +224,7 @@ export function Partenaires() {
                       <TableHead className="font-semibold text-gray-600">Type</TableHead>
                       <TableHead className="font-semibold text-gray-600">Nom</TableHead>
                       <TableHead className="hidden md:table-cell font-semibold text-gray-600">Contact</TableHead>
-                      <TableHead className="hidden lg:table-cell font-semibold text-gray-600">Ville</TableHead>
+                      <TableHead className="hidden lg:table-cell font-semibold text-gray-600">Magasin</TableHead>
                       <TableHead className="text-center font-semibold text-gray-600">Statut</TableHead>
                       <TableHead className="text-center font-semibold text-gray-600">Actions</TableHead>
                     </TableRow>
@@ -249,7 +249,7 @@ export function Partenaires() {
                           <div className="text-xs text-gray-400">{p.telephone || '-'}</div>
                         </TableCell>
                         <TableCell className="hidden lg:table-cell text-sm text-gray-600">
-                          {p.ville?.nom || '-'}
+                          {p.magasin?.nom || '-'}
                         </TableCell>
                         <TableCell className="text-center">
                           <span className={cn(

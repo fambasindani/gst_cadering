@@ -27,7 +27,7 @@ class BonCommandeController extends Controller
             $search = $request->input('search');
             $statut = $request->input('statut');
             $statutValidation = $request->input('statut_validation');
-            $villeId = $request->input('ville_id');
+            $magasinId = $request->input('magasin_id');
             $partenaireId = $request->input('partenaire_id');
             $dateDebut = $request->input('date_debut');
             $dateFin = $request->input('date_fin');
@@ -36,7 +36,7 @@ class BonCommandeController extends Controller
 
             $query = BonCommande::with([
                 'partenaire',
-                'villeDestination',
+                'magasinDestination',
                 'devise',
                 'utilisateur',
                 'validePar',
@@ -55,8 +55,8 @@ class BonCommandeController extends Controller
                 $query->where('statut_validation', $statutValidation);
             }
 
-            if ($villeId) {
-                $query->byVille($villeId);
+            if ($magasinId) {
+                $query->byMagasin($magasinId);
             }
 
             if ($partenaireId) {
@@ -97,7 +97,7 @@ class BonCommandeController extends Controller
             $validated = $request->validate([
                 'numero_commande' => 'nullable|string|max:50|unique:bon_commande,numero_commande',
                 'id_partenaire' => 'required|exists:partenaires,id',
-                'id_ville_destination' => 'required|exists:villes,id',
+                'id_magasin_destination' => 'required|exists:magasins,id',
                 'date_commande' => 'required|date',
                 'date_livraison_prevue' => 'nullable|date|after_or_equal:date_commande',
                 'id_devise' => 'nullable|exists:devises,id',
@@ -121,7 +121,7 @@ class BonCommandeController extends Controller
                 $bonCommande = BonCommande::create([
                     'numero_commande' => $validated['numero_commande'],
                     'id_partenaire' => $validated['id_partenaire'],
-                    'id_ville_destination' => $validated['id_ville_destination'],
+                    'id_magasin_destination' => $validated['id_magasin_destination'],
                     'date_commande' => $validated['date_commande'],
                     'date_livraison_prevue' => $validated['date_livraison_prevue'] ?? null,
                     'id_devise' => $validated['id_devise'] ?? null,
@@ -174,7 +174,7 @@ class BonCommandeController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'data' => $bonCommande->load(['partenaire', 'villeDestination', 'devise', 'lignes.produit']),
+                    'data' => $bonCommande->load(['partenaire', 'magasinDestination', 'devise', 'lignes.produit']),
                     'message' => 'Bon de commande créé avec succès'
                 ], 201);
 
@@ -206,7 +206,7 @@ class BonCommandeController extends Controller
         try {
             $bonCommande = BonCommande::with([
                 'partenaire',
-                'villeDestination',
+                'magasinDestination',
                 'devise',
                 'utilisateur',
                 'validePar',
@@ -246,7 +246,7 @@ class BonCommandeController extends Controller
 
             $validated = $request->validate([
                 'id_partenaire' => 'sometimes|required|exists:partenaires,id',
-                'id_ville_destination' => 'sometimes|required|exists:villes,id',
+                'id_magasin_destination' => 'sometimes|required|exists:magasins,id',
                 'date_commande' => 'sometimes|required|date',
                 'date_livraison_prevue' => 'nullable|date|after_or_equal:date_commande',
                 'id_devise' => 'nullable|exists:devises,id',
@@ -257,7 +257,7 @@ class BonCommandeController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $bonCommande->load(['partenaire', 'villeDestination', 'devise']),
+                'data' => $bonCommande->load(['partenaire', 'magasinDestination', 'devise']),
                 'message' => 'Bon de commande mis à jour avec succès'
             ]);
 
@@ -428,8 +428,6 @@ class BonCommandeController extends Controller
                 'receptions.*.quantite_recue' => 'required|integer|min:1',
                 'receptions.*.numero_lot' => 'nullable|string|max:50',
                 'receptions.*.date_peremption' => 'required|date|after_or_equal:today',
-                'receptions.*.id_zone' => 'required|exists:zones,id',
-                'receptions.*.id_emplacement' => 'nullable|exists:emplacements,id',
                 'receptions.*.prix_achat_ht_unitaire' => 'nullable|numeric|min:0',
             ]);
 
@@ -458,9 +456,7 @@ class BonCommandeController extends Controller
                     // Créer le lot
                     $lot = Lot::create([
                         'id_produit' => $ligne->id_produit,
-                        'id_ville' => $bonCommande->id_ville_destination,
-                        'id_zone' => $reception['id_zone'],
-                        'id_emplacement' => $reception['id_emplacement'] ?? null,
+                        'id_magasin' => $bonCommande->id_magasin_destination,
                         'numero_lot' => $reception['numero_lot'],
                         'code_qr' => 'QR-' . $reception['numero_lot'] . '-' . uniqid(),
                         'quantite_recue' => $reception['quantite_recue'],
@@ -503,7 +499,7 @@ class BonCommandeController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'data' => $bonCommande->load(['partenaire', 'villeDestination', 'lignes']),
+                    'data' => $bonCommande->load(['partenaire', 'magasinDestination', 'lignes']),
                     'message' => 'Réception effectuée avec succès'
                 ]);
 

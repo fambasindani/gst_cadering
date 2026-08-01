@@ -162,9 +162,10 @@ export function FicheTechniqueList() {
                   <TableRow>
                     <TableHead className="font-semibold text-gray-600">Code</TableHead>
                     <TableHead className="font-semibold text-gray-600">Nom</TableHead>
-                    <TableHead className="font-semibold text-gray-600">Produit fini</TableHead>
-                    <TableHead className="text-right font-semibold text-gray-600">Rendement</TableHead>
+                    <TableHead className="text-right font-semibold text-gray-600">Portions</TableHead>
+                    <TableHead className="text-right font-semibold text-gray-600">Poids/port.</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Coût unit.</TableHead>
+                    <TableHead className="text-right font-semibold text-gray-600">Coût / kg</TableHead>
                     <TableHead className="text-center font-semibold text-gray-600">Actif</TableHead>
                     <TableHead className="text-center w-28 font-semibold text-gray-600">Actions</TableHead>
                   </TableRow>
@@ -174,8 +175,9 @@ export function FicheTechniqueList() {
                     <TableRow key={i} className="animate-pulse">
                       <TableCell><div className="h-5 w-20 bg-gray-200 rounded" /></TableCell>
                       <TableCell><div className="h-5 w-36 bg-gray-200 rounded" /></TableCell>
-                      <TableCell><div className="h-5 w-28 bg-gray-200 rounded" /></TableCell>
                       <TableCell className="text-right"><div className="h-5 w-12 bg-gray-200 rounded ml-auto" /></TableCell>
+                      <TableCell className="text-right"><div className="h-5 w-12 bg-gray-200 rounded ml-auto" /></TableCell>
+                      <TableCell className="text-right"><div className="h-5 w-16 bg-gray-200 rounded ml-auto" /></TableCell>
                       <TableCell className="text-right"><div className="h-5 w-16 bg-gray-200 rounded ml-auto" /></TableCell>
                       <TableCell className="text-center"><div className="h-6 w-14 bg-gray-200 rounded-full mx-auto" /></TableCell>
                       <TableCell className="text-center"><div className="h-8 w-24 bg-gray-200 rounded mx-auto" /></TableCell>
@@ -198,10 +200,10 @@ export function FicheTechniqueList() {
                     <TableRow>
                       <TableHead className="font-semibold text-gray-600">Code</TableHead>
                       <TableHead className="font-semibold text-gray-600">Nom</TableHead>
-                      <TableHead className="font-semibold text-gray-600">Produit fini</TableHead>
-                      <TableHead className="font-semibold text-gray-600">Ville</TableHead>
-                      <TableHead className="text-right font-semibold text-gray-600">Rendement</TableHead>
+                      <TableHead className="text-right font-semibold text-gray-600">Portions</TableHead>
+                      <TableHead className="text-right font-semibold text-gray-600">Poids/port.</TableHead>
                       <TableHead className="text-right font-semibold text-gray-600">Coût unit.</TableHead>
+                      <TableHead className="text-right font-semibold text-gray-600">Coût / kg</TableHead>
                       <TableHead className="text-center font-semibold text-gray-600">Actif</TableHead>
                       <TableHead className="text-center w-28 font-semibold text-gray-600">Actions</TableHead>
                     </TableRow>
@@ -211,10 +213,10 @@ export function FicheTechniqueList() {
                       <TableRow key={f.id} className={cn('hover:bg-royal-50/50 transition-colors', i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50')}>
                         <TableCell className="font-mono text-sm font-medium text-royal-700">{f.code}</TableCell>
                         <TableCell className="font-medium text-gray-900">{f.nom}</TableCell>
-                        <TableCell className="text-sm text-gray-600">{f.produitFini?.nom || '-'}</TableCell>
-                        <TableCell className="text-sm text-gray-600">{f.ville?.nom || '-'}</TableCell>
                         <TableCell className="text-right font-mono text-sm text-gray-600">{f.rendement}</TableCell>
+                        <TableCell className="text-right font-mono text-sm text-gray-600">{Number(f.poids_portion) || 0} {f.unite_poids_portion || 'gm'}</TableCell>
                         <TableCell className="text-right font-mono text-sm font-medium text-gray-900">{formatCurrency(f.cout_unitaire)}</TableCell>
+                        <TableCell className="text-right font-mono text-sm text-gray-600">{formatCurrency(f.prix_kg)}</TableCell>
                         <TableCell className="text-center">
                           <Badge variant={f.actif ? 'success' : 'secondary'} className="text-xs">
                             {f.actif ? 'Oui' : 'Non'}

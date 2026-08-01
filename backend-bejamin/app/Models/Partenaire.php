@@ -18,7 +18,7 @@ class Partenaire extends Model
         'telephone',
         'email',
         'identifiant_fiscal',
-        'id_ville',
+        'id_magasin',
         'actif'
     ];
 
@@ -27,9 +27,9 @@ class Partenaire extends Model
     ];
 
     // Relations
-    public function ville()
+    public function magasin()
     {
-        return $this->belongsTo(Ville::class, 'id_ville');
+        return $this->belongsTo(Magasin::class, 'id_magasin');
     }
 
     public function produits()

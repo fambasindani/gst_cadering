@@ -22,13 +22,13 @@ class InventaireController extends Controller
         try {
             $perPage = $request->input('per_page', 15);
             $periodeId = $request->input('periode_id');
-            $villeId = $request->input('ville_id');
+            $magasinId = $request->input('magasin_id');
             $produitId = $request->input('produit_id');
             $search = $request->input('search');
             $sortBy = $request->input('sort_by', 'id');
             $sortOrder = $request->input('sort_order', 'desc');
 
-            $query = Inventaire::with(['periodeInventaire', 'produit', 'ville', 'utilisateur']);
+            $query = Inventaire::with(['periodeInventaire', 'produit', 'magasin', 'utilisateur']);
 
             if ($search) {
                 $query->whereHas('produit', function ($q) use ($search) {
@@ -41,8 +41,8 @@ class InventaireController extends Controller
                 $query->where('id_periode_inventaire', $periodeId);
             }
 
-            if ($villeId) {
-                $query->where('id_ville', $villeId);
+            if ($magasinId) {
+                $query->where('id_magasin', $magasinId);
             }
 
             if ($produitId) {
@@ -75,7 +75,7 @@ class InventaireController extends Controller
             $validated = $request->validate([
                 'id_periode_inventaire' => 'required|exists:periode_inventaire,id',
                 'id_produit' => 'required|exists:produits,id',
-                'id_ville' => 'required|exists:villes,id',
+                'id_magasin' => 'required|exists:magasins,id',
                 'stock_physique_compte' => 'required|integer|min:0',
                 'commentaire' => 'nullable|string',
             ]);
@@ -91,7 +91,7 @@ class InventaireController extends Controller
 
             // Calculer le stock théorique
             $stockTheorique = Lot::where('id_produit', $validated['id_produit'])
-                ->where('id_ville', $validated['id_ville'])
+                ->where('id_magasin', $validated['id_magasin'])
                 ->where('statut_validation', 'VALIDÉ')
                 ->where('quantite_disponible', '>', 0)
                 ->sum('quantite_disponible');
@@ -99,7 +99,7 @@ class InventaireController extends Controller
             // Vérifier si un inventaire existe déjà pour ce produit dans cette période
             $existing = Inventaire::where('id_periode_inventaire', $validated['id_periode_inventaire'])
                 ->where('id_produit', $validated['id_produit'])
-                ->where('id_ville', $validated['id_ville'])
+                ->where('id_magasin', $validated['id_magasin'])
                 ->first();
 
             if ($existing) {
@@ -112,7 +112,7 @@ class InventaireController extends Controller
             $inventaire = Inventaire::create([
                 'id_periode_inventaire' => $validated['id_periode_inventaire'],
                 'id_produit' => $validated['id_produit'],
-                'id_ville' => $validated['id_ville'],
+                'id_magasin' => $validated['id_magasin'],
                 'stock_theorique' => $stockTheorique,
                 'stock_physique_compte' => $validated['stock_physique_compte'],
                 'date_saisie' => now(),
@@ -122,7 +122,7 @@ class InventaireController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $inventaire->load(['periodeInventaire', 'produit', 'ville']),
+                'data' => $inventaire->load(['periodeInventaire', 'produit', 'magasin']),
                 'message' => 'Inventaire créé avec succès'
             ], 201);
 
@@ -147,7 +147,7 @@ class InventaireController extends Controller
     public function show($id)
     {
         try {
-            $inventaire = Inventaire::with(['periodeInventaire', 'produit', 'ville', 'utilisateur'])
+            $inventaire = Inventaire::with(['periodeInventaire', 'produit', 'magasin', 'utilisateur'])
                 ->findOrFail($id);
 
             return response()->json([
@@ -193,7 +193,7 @@ class InventaireController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $inventaire->load(['periodeInventaire', 'produit', 'ville']),
+                'data' => $inventaire->load(['periodeInventaire', 'produit', 'magasin']),
                 'message' => 'Inventaire mis à jour avec succès'
             ]);
 
@@ -310,7 +310,7 @@ class InventaireController extends Controller
     public function resume($periodeId)
     {
         try {
-            $periode = PeriodeInventaire::with(['ville', 'inventaires.produit'])
+            $periode = PeriodeInventaire::with(['magasin', 'inventaires.produit'])
                 ->findOrFail($periodeId);
 
             $inventaires = $periode->inventaires;
@@ -330,7 +330,7 @@ class InventaireController extends Controller
                         'id' => $periode->id,
                         'libelle' => $periode->libelle,
                         'statut' => $periode->statut,
-                        'ville' => $periode->ville->nom,
+                        'magasin' => $periode->magasin->nom,
                     ],
                     'total' => [
                         'stock_theorique' => $totalTheorique,

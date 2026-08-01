@@ -42,16 +42,6 @@ class CodeGenerator
         return self::generate('lots', 'numero_lot', 'LOT');
     }
 
-    public static function facture(): string
-    {
-        return self::generate('facture', 'numero_facture', 'FAC');
-    }
-
-    public static function devis(): string
-    {
-        return self::generate('devis', 'numero_devis', 'DEV');
-    }
-
     public static function avoir(): string
     {
         return self::generate('avoir', 'numero_avoir', 'AV');

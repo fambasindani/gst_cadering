@@ -276,7 +276,7 @@ export function ConfigurationDevise() {
             <Input
               value={form.code}
               onChange={(e) => { setForm((f) => ({ ...f, code: e.target.value.toUpperCase() })); setFieldErrors((f) => ({ ...f, code: '' })); }}
-              placeholder="EX: USD, EUR, CDF"
+              placeholder="EX: USD"
               maxLength={10}
               className={cn("mt-1.5 bg-royal-700 text-white placeholder:text-white/40 focus:border-royal-500 focus:ring-royal-500 h-11 uppercase",
                 fieldErrors.code ? 'border-red-400' : 'border-royal-600')}

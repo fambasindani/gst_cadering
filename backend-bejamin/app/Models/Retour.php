@@ -15,12 +15,8 @@ class Retour extends Model
         'numero_retour',
         'date_retour',
         'id_partenaire_client',
-        'id_zone_provenance',
-        'id_emplacement_provenance',
         'id_partenaire_dest',
-        'id_zone_dest',
-        'id_emplacement_dest',
-        'id_ville',
+        'id_magasin',
         'id_utilisateur',
         'commentaire',
         'valide_par',
@@ -39,34 +35,14 @@ class Retour extends Model
         return $this->belongsTo(Partenaire::class, 'id_partenaire_client');
     }
 
-    public function zoneProvenance()
-    {
-        return $this->belongsTo(Zone::class, 'id_zone_provenance');
-    }
-
-    public function emplacementProvenance()
-    {
-        return $this->belongsTo(Emplacement::class, 'id_emplacement_provenance');
-    }
-
     public function partenaireDest()
     {
         return $this->belongsTo(Partenaire::class, 'id_partenaire_dest');
     }
 
-    public function zoneDest()
+    public function magasin()
     {
-        return $this->belongsTo(Zone::class, 'id_zone_dest');
-    }
-
-    public function emplacementDest()
-    {
-        return $this->belongsTo(Emplacement::class, 'id_emplacement_dest');
-    }
-
-    public function ville()
-    {
-        return $this->belongsTo(Ville::class, 'id_ville');
+        return $this->belongsTo(Magasin::class, 'id_magasin');
     }
 
     public function utilisateur()
@@ -90,9 +66,9 @@ class Retour extends Model
         return $query->where('numero_retour', 'LIKE', "%{$search}%");
     }
 
-    public function scopeByVille($query, $villeId)
+    public function scopeByMagasin($query, $magasinId)
     {
-        return $query->where('id_ville', $villeId);
+        return $query->where('id_magasin', $magasinId);
     }
 
     public function scopeByStatut($query, $statut)
@@ -111,9 +87,6 @@ class Retour extends Model
         if ($this->id_partenaire_client) {
             return 'Client: ' . $this->partenaireClient->nom;
         }
-        if ($this->id_zone_provenance) {
-            return 'Zone: ' . $this->zoneProvenance->nom;
-        }
         return 'Non spécifié';
     }
 
@@ -121,9 +94,6 @@ class Retour extends Model
     {
         if ($this->id_partenaire_dest) {
             return 'Fournisseur: ' . $this->partenaireDest->nom;
-        }
-        if ($this->id_zone_dest) {
-            return 'Zone: ' . $this->zoneDest->nom;
         }
         return 'Non spécifié';
     }

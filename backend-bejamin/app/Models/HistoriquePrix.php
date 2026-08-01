@@ -14,7 +14,6 @@ class HistoriquePrix extends Model
     protected $fillable = [
         'id_produit',
         'prix_achat_ht',
-        'prix_vente_ht',
         'id_devise',
         'date_application',
         'commentaire',
@@ -23,7 +22,6 @@ class HistoriquePrix extends Model
 
     protected $casts = [
         'prix_achat_ht' => 'decimal:2',
-        'prix_vente_ht' => 'decimal:2',
         'date_application' => 'date',
     ];
 

@@ -14,7 +14,7 @@ class BonCommande extends Model
     protected $fillable = [
         'numero_commande',
         'id_partenaire',
-        'id_ville_destination',
+        'id_magasin_destination',
         'date_commande',
         'date_livraison_prevue',
         'statut',
@@ -40,9 +40,9 @@ class BonCommande extends Model
         return $this->belongsTo(Partenaire::class, 'id_partenaire');
     }
 
-    public function villeDestination()
+    public function magasinDestination()
     {
-        return $this->belongsTo(Ville::class, 'id_ville_destination');
+        return $this->belongsTo(Magasin::class, 'id_magasin_destination');
     }
 
     public function devise()
@@ -83,9 +83,9 @@ class BonCommande extends Model
         return $query->where('statut', $statut);
     }
 
-    public function scopeByVille($query, $villeId)
+    public function scopeByMagasin($query, $magasinId)
     {
-        return $query->where('id_ville_destination', $villeId);
+        return $query->where('id_magasin_destination', $magasinId);
     }
 
     public function scopeByPartenaire($query, $partenaireId)

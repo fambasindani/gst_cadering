@@ -99,7 +99,7 @@ export function Dashboard() {
                 {user?.full_name}
               </h1>
               <p className="text-gray-500 mt-1">
-                {user?.ville?.nom}{user?.ville?.nom && user?.departement?.nom ? ' — ' : ''}{user?.departement?.nom}
+                {user?.magasin?.nom}{user?.magasin?.nom && user?.departement?.nom ? ' — ' : ''}{user?.departement?.nom}
               </p>
             </>
           )}
@@ -194,11 +194,6 @@ export function Dashboard() {
                       label="Retours en attente"
                       count={data?.statistiques?.retours_en_attente ?? 0}
                       color="text-purple-600 bg-purple-50"
-                    />
-                    <AlerteBadge
-                      label="Factures impayées"
-                      count={data?.statistiques?.factures_impayees ?? 0}
-                      color="text-pink-600 bg-pink-50"
                     />
                   </>
                 )}

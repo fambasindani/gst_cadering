@@ -16,7 +16,7 @@ class PeriodeInventaire extends Model
         'date_debut',
         'date_fin',
         'statut',
-        'id_ville',
+        'id_magasin',
         'description'
     ];
 
@@ -26,9 +26,9 @@ class PeriodeInventaire extends Model
     ];
 
     // Relations
-    public function ville()
+    public function magasin()
     {
-        return $this->belongsTo(Ville::class, 'id_ville');
+        return $this->belongsTo(Magasin::class, 'id_magasin');
     }
 
     public function inventaires()
@@ -47,9 +47,9 @@ class PeriodeInventaire extends Model
         return $query->where('statut', 'CLOTURE');
     }
 
-    public function scopeByVille($query, $villeId)
+    public function scopeByMagasin($query, $magasinId)
     {
-        return $query->where('id_ville', $villeId);
+        return $query->where('id_magasin', $magasinId);
     }
 
     // Méthodes

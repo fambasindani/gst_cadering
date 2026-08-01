@@ -216,20 +216,12 @@ export function MonProfil() {
                 <p className="font-medium">{user.role?.nom || '—'}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Ville</p>
-                <p className="font-medium">{user.ville?.nom || '—'}</p>
+                <p className="text-sm text-gray-500">Magasin</p>
+                <p className="font-medium">{user.magasin?.nom || '—'}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Département</p>
                 <p className="font-medium">{user.departement?.nom || '—'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Zone</p>
-                <p className="font-medium">{user.zone?.nom || '—'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500">Emplacement</p>
-                <p className="font-medium">{user.emplacement?.nom || '—'}</p>
               </div>
               <div>
                 <p className="text-sm text-gray-500">Dernière connexion</p>

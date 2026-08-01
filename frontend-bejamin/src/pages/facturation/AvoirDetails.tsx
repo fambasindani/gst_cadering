@@ -54,7 +54,7 @@ export function AvoirDetails() {
       <div className="text-center py-20 text-gray-500">
         <FileText className="w-12 h-12 mx-auto text-gray-300 mb-3" />
         <p>Avoir non trouvé</p>
-        <Button variant="outline" onClick={() => navigate('/facturation/avoirs')} className="mt-4">
+        <Button variant="outline" onClick={() => navigate('/stock/avoir')} className="mt-4">
           <ArrowLeft className="w-4 h-4 mr-1" /> Retour
         </Button>
       </div>
@@ -64,7 +64,7 @@ export function AvoirDetails() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-4">
-        <button onClick={() => navigate('/facturation/avoirs')}
+        <button onClick={() => navigate('/stock/avoir')}
           className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-colors">
           <ArrowLeft className="w-4 h-4" />
         </button>
@@ -86,7 +86,7 @@ export function AvoirDetails() {
               <div className="grid grid-cols-2 gap-4">
                 <div><span className="text-sm text-gray-500">Numéro</span><p className="font-mono font-medium text-gray-900">{avoir.numero_avoir}</p></div>
                 <div><span className="text-sm text-gray-500">Date</span><p className="font-medium text-gray-900">{formatDate(avoir.date_avoir)}</p></div>
-                <div><span className="text-sm text-gray-500">Facture d'origine</span><p className="font-medium text-gray-900">{avoir.facture_origine?.numero_facture || 'N/A'}</p></div>
+                <div><span className="text-sm text-gray-500">Retour lié</span><p className="font-medium text-gray-900">{avoir.retour?.numero_retour || 'N/A'}</p></div>
                 <div><span className="text-sm text-gray-500">Devise</span><p className="font-medium text-gray-900">{avoir.devise?.code || '-'}</p></div>
               </div>
             </CardContent>

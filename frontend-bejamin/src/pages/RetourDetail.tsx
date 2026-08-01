@@ -106,23 +106,23 @@ export function RetourDetail() {
                   <Building2 className="w-3.5 h-3.5 text-gray-400" />
                   Client / Provenance
                 </p>
-                <p className="text-sm text-gray-900 mt-1">{retour.partenaire_client?.nom || retour.zone_provenance?.nom || '-'}</p>
+                <p className="text-sm text-gray-900 mt-1">{retour.partenaire_client?.nom || '-'}</p>
               </div>
               <div>
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5 text-gray-400" />
                   Destination
                 </p>
-                <p className="text-sm text-gray-900 mt-1">{retour.partenaire_dest?.nom || retour.zone_dest?.nom || '-'}</p>
+                <p className="text-sm text-gray-900 mt-1">{retour.partenaire_dest?.nom || '-'}</p>
               </div>
             </div>
             <div className="space-y-4">
               <div>
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide flex items-center gap-1.5">
                   <MapPin className="w-3.5 h-3.5 text-gray-400" />
-                  Ville
+                  Magasin
                 </p>
-                <p className="text-sm text-gray-900 mt-1">{retour.ville?.nom || '-'}</p>
+                <p className="text-sm text-gray-900 mt-1">{retour.magasin?.nom || '-'}</p>
               </div>
               <div>
                 <p className="text-xs font-medium text-gray-500 uppercase tracking-wide flex items-center gap-1.5">

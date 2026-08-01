@@ -20,11 +20,11 @@ class PartenaireController extends Controller
             $search = $request->input('search');
             $type = $request->input('type');
             $typeClient = $request->input('type_client');
-            $villeId = $request->input('ville_id');
+            $magasinId = $request->input('magasin_id');
             $sortBy = $request->input('sort_by', 'id');
             $sortOrder = $request->input('sort_order', 'desc');
 
-            $query = Partenaire::with('ville');
+            $query = Partenaire::with('magasin');
 
             if ($search) {
                 $query->where(function($q) use ($search) {
@@ -44,8 +44,8 @@ class PartenaireController extends Controller
                 $query->where('type_client', $typeClient);
             }
 
-            if ($villeId) {
-                $query->where('id_ville', $villeId);
+            if ($magasinId) {
+                $query->where('id_magasin', $magasinId);
             }
 
             $data = $query->orderBy($sortBy, $sortOrder)->paginate($perPage);
@@ -80,7 +80,7 @@ class PartenaireController extends Controller
                 'telephone' => 'nullable|string|max:20',
                 'email' => 'nullable|email|max:100',
                 'identifiant_fiscal' => 'nullable|string|max:50',
-                'id_ville' => 'nullable|exists:villes,id',
+                'id_magasin' => 'nullable|exists:magasins,id',
                 'actif' => 'nullable|boolean',
             ]);
 
@@ -104,13 +104,13 @@ class PartenaireController extends Controller
                 'telephone' => $validated['telephone'] ?? null,
                 'email' => $validated['email'] ?? null,
                 'identifiant_fiscal' => $validated['identifiant_fiscal'] ?? null,
-                'id_ville' => $validated['id_ville'] ?? null,
+                'id_magasin' => $validated['id_magasin'] ?? null,
                 'actif' => $validated['actif'] ?? true,
             ]);
 
             return response()->json([
                 'success' => true,
-                'data' => $partenaire->load('ville'),
+                'data' => $partenaire->load('magasin'),
                 'message' => 'Partenaire créé avec succès'
             ], 201);
 
@@ -135,7 +135,7 @@ class PartenaireController extends Controller
     public function show($id)
     {
         try {
-            $partenaire = Partenaire::with('ville')->findOrFail($id);
+            $partenaire = Partenaire::with('magasin')->findOrFail($id);
 
             return response()->json([
                 'success' => true,
@@ -174,7 +174,7 @@ class PartenaireController extends Controller
                 'telephone' => 'nullable|string|max:20',
                 'email' => 'nullable|email|max:100',
                 'identifiant_fiscal' => 'nullable|string|max:50',
-                'id_ville' => 'nullable|exists:villes,id',
+                'id_magasin' => 'nullable|exists:magasins,id',
                 'actif' => 'nullable|boolean',
             ]);
 
@@ -194,7 +194,7 @@ class PartenaireController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $partenaire->load('ville'),
+                'data' => $partenaire->load('magasin'),
                 'message' => 'Partenaire mis à jour avec succès'
             ]);
 
@@ -293,7 +293,7 @@ class PartenaireController extends Controller
             $search = $request->input('search');
             $perPage = $request->input('per_page', 15);
 
-            $query = Partenaire::with('ville')
+            $query = Partenaire::with('magasin')
                 ->where(function($q) {
                     $q->where('type', 'fournisseur')
                       ->orWhere('type', 'both');
@@ -332,7 +332,7 @@ class PartenaireController extends Controller
             $typeClient = $request->input('type_client');
             $perPage = $request->input('per_page', 15);
 
-            $query = Partenaire::with('ville')
+            $query = Partenaire::with('magasin')
                 ->where(function($q) {
                     $q->where('type', 'client')
                       ->orWhere('type', 'both');
@@ -374,7 +374,7 @@ class PartenaireController extends Controller
             $search = $request->input('search');
             $perPage = $request->input('per_page', 15);
 
-            $query = Partenaire::with('ville')
+            $query = Partenaire::with('magasin')
                 ->where(function($q) {
                     $q->where('type', 'client')
                       ->orWhere('type', 'both');
@@ -416,7 +416,7 @@ class PartenaireController extends Controller
             $search = $request->input('search');
             $perPage = $request->input('per_page', 15);
 
-            $query = Partenaire::with('ville')
+            $query = Partenaire::with('magasin')
                 ->where(function($q) {
                     $q->where('type', 'client')
                       ->orWhere('type', 'both');

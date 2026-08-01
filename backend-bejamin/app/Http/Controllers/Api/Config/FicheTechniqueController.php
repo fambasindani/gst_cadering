@@ -21,20 +21,20 @@ class FicheTechniqueController extends Controller
         try {
             $perPage = $request->input('per_page', 15);
             $search = $request->input('search');
-            $villeId = $request->input('ville_id');
+            $magasinId = $request->input('magasin_id');
             $dateFrom = $request->input('date_from');
             $dateTo = $request->input('date_to');
             $sortBy = $request->input('sort_by', 'id');
             $sortOrder = $request->input('sort_order', 'desc');
 
-            $query = FicheTechnique::with(['produitFini', 'ville', 'lignes.ingredient', 'lignes.unite']);
+            $query = FicheTechnique::with(['magasin', 'lignes.ingredient', 'lignes.unite']);
 
             if ($search) {
                 $query->search($search);
             }
 
-            if ($villeId) {
-                $query->byVille($villeId);
+            if ($magasinId) {
+                $query->byMagasin($magasinId);
             }
 
             if ($dateFrom) {
@@ -72,14 +72,19 @@ class FicheTechniqueController extends Controller
                 'code' => 'nullable|string|max:50|unique:fiche_technique,code',
                 'nom' => 'required|string|max:200',
                 'description' => 'nullable|string',
-                'id_produit_fini' => 'required|exists:produits,id',
+                'id_produit_fini' => 'nullable|exists:produits,id',
                 'rendement' => 'required|integer|min:1',
-                'id_ville' => 'required|exists:villes,id',
+                'poids_portion' => 'nullable|numeric|min:0',
+                'unite_poids_portion' => 'nullable|string|in:mg,gm,kg',
+                'id_magasin' => 'required|exists:magasins,id',
                 'actif' => 'nullable|boolean',
                 'lignes' => 'required|array|min:1',
                 'lignes.*.id_produit_ingredient' => 'required|exists:produits,id',
-                'lignes.*.quantite_ingredient' => 'required|numeric|min:0.01',
                 'lignes.*.id_unite' => 'required|exists:unites,id',
+                'lignes.*.rendement' => 'nullable|numeric|min:0|max:100',
+                'lignes.*.poids_net' => 'required|numeric|min:0.001',
+                'lignes.*.poids_brut' => 'nullable|numeric|min:0',
+                'lignes.*.rendement_apres_cuisson' => 'nullable|boolean',
                 'lignes.*.commentaire' => 'nullable|string',
             ]);
 
@@ -96,9 +101,11 @@ class FicheTechniqueController extends Controller
                     'code' => $validated['code'],
                     'nom' => $validated['nom'],
                     'description' => $validated['description'] ?? null,
-                    'id_produit_fini' => $validated['id_produit_fini'],
+                    'id_produit_fini' => $validated['id_produit_fini'] ?? null,
                     'rendement' => $validated['rendement'],
-                    'id_ville' => $validated['id_ville'],
+                    'poids_portion' => $validated['poids_portion'] ?? 0,
+                    'unite_poids_portion' => $validated['unite_poids_portion'] ?? 'gm',
+                    'id_magasin' => $validated['id_magasin'],
                     'actif' => $validated['actif'] ?? true,
                 ]);
 
@@ -106,15 +113,18 @@ class FicheTechniqueController extends Controller
                 foreach ($validated['lignes'] as $ligne) {
                     $ingredient = Produit::find($ligne['id_produit_ingredient']);
                     $prixUnitaire = $ingredient->getDernierPrixAchat()->prix_achat_ht ?? 0;
-                    $coutTotal = $ligne['quantite_ingredient'] * $prixUnitaire;
+                    $coutTotal = $ligne['poids_net'] * $prixUnitaire;
 
                     LigneFicheTechnique::create([
                         'id_fiche_technique' => $fiche->id,
                         'id_produit_ingredient' => $ligne['id_produit_ingredient'],
-                        'quantite_ingredient' => $ligne['quantite_ingredient'],
                         'id_unite' => $ligne['id_unite'],
+                        'rendement' => $ligne['rendement'] ?? 100,
                         'prix_unitaire' => $prixUnitaire,
+                        'poids_net' => $ligne['poids_net'],
+                        'poids_brut' => $ligne['poids_brut'] ?? $ligne['poids_net'],
                         'cout_total' => $coutTotal,
+                        'rendement_apres_cuisson' => $ligne['rendement_apres_cuisson'] ?? false,
                         'commentaire' => $ligne['commentaire'] ?? null,
                     ]);
                 }
@@ -126,7 +136,7 @@ class FicheTechniqueController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'data' => $fiche->load(['produitFini', 'ville', 'lignes.ingredient', 'lignes.unite']),
+                    'data' => $fiche->load(['magasin', 'lignes.ingredient', 'lignes.unite']),
                     'message' => 'Fiche technique créée avec succès'
                 ], 201);
 
@@ -157,8 +167,7 @@ class FicheTechniqueController extends Controller
     {
         try {
             $fiche = FicheTechnique::with([
-                'produitFini',
-                'ville',
+                'magasin',
                 'lignes.ingredient',
                 'lignes.ingredient.unite',
                 'lignes.unite'
@@ -190,14 +199,19 @@ class FicheTechniqueController extends Controller
                 'code' => 'sometimes|required|string|max:50|unique:fiche_technique,code,' . $id,
                 'nom' => 'sometimes|required|string|max:200',
                 'description' => 'nullable|string',
-                'id_produit_fini' => 'sometimes|required|exists:produits,id',
+                'id_produit_fini' => 'nullable|exists:produits,id',
                 'rendement' => 'sometimes|required|integer|min:1',
-                'id_ville' => 'sometimes|required|exists:villes,id',
+                'poids_portion' => 'nullable|numeric|min:0',
+                'unite_poids_portion' => 'nullable|string|in:mg,gm,kg',
+                'id_magasin' => 'sometimes|required|exists:magasins,id',
                 'actif' => 'nullable|boolean',
                 'lignes' => 'nullable|array|min:1',
                 'lignes.*.id_produit_ingredient' => 'required_with:lignes|exists:produits,id',
-                'lignes.*.quantite_ingredient' => 'required_with:lignes|numeric|min:0.01',
                 'lignes.*.id_unite' => 'required_with:lignes|exists:unites,id',
+                'lignes.*.rendement' => 'nullable|numeric|min:0|max:100',
+                'lignes.*.poids_net' => 'required_with:lignes|numeric|min:0.001',
+                'lignes.*.poids_brut' => 'nullable|numeric|min:0',
+                'lignes.*.rendement_apres_cuisson' => 'nullable|boolean',
                 'lignes.*.commentaire' => 'nullable|string',
             ]);
 
@@ -208,9 +222,11 @@ class FicheTechniqueController extends Controller
                     'code' => $validated['code'] ?? $fiche->code,
                     'nom' => $validated['nom'] ?? $fiche->nom,
                     'description' => $validated['description'] ?? $fiche->description,
-                    'id_produit_fini' => $validated['id_produit_fini'] ?? $fiche->id_produit_fini,
+                    'id_produit_fini' => array_key_exists('id_produit_fini', $validated) ? ($validated['id_produit_fini'] ?? null) : $fiche->id_produit_fini,
                     'rendement' => $validated['rendement'] ?? $fiche->rendement,
-                    'id_ville' => $validated['id_ville'] ?? $fiche->id_ville,
+                    'poids_portion' => $validated['poids_portion'] ?? $fiche->poids_portion,
+                    'unite_poids_portion' => $validated['unite_poids_portion'] ?? $fiche->unite_poids_portion,
+                    'id_magasin' => $validated['id_magasin'] ?? $fiche->id_magasin,
                     'actif' => $validated['actif'] ?? $fiche->actif,
                 ]);
 
@@ -220,15 +236,18 @@ class FicheTechniqueController extends Controller
                     foreach ($validated['lignes'] as $ligne) {
                         $ingredient = Produit::find($ligne['id_produit_ingredient']);
                         $prixUnitaire = $ingredient->getDernierPrixAchat()->prix_achat_ht ?? 0;
-                        $coutTotal = $ligne['quantite_ingredient'] * $prixUnitaire;
+                        $coutTotal = $ligne['poids_net'] * $prixUnitaire;
 
                         LigneFicheTechnique::create([
                             'id_fiche_technique' => $fiche->id,
                             'id_produit_ingredient' => $ligne['id_produit_ingredient'],
-                            'quantite_ingredient' => $ligne['quantite_ingredient'],
                             'id_unite' => $ligne['id_unite'],
+                            'rendement' => $ligne['rendement'] ?? 100,
                             'prix_unitaire' => $prixUnitaire,
+                            'poids_net' => $ligne['poids_net'],
+                            'poids_brut' => $ligne['poids_brut'] ?? $ligne['poids_net'],
                             'cout_total' => $coutTotal,
+                            'rendement_apres_cuisson' => $ligne['rendement_apres_cuisson'] ?? false,
                             'commentaire' => $ligne['commentaire'] ?? null,
                         ]);
                     }
@@ -240,7 +259,7 @@ class FicheTechniqueController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'data' => $fiche->load(['produitFini', 'ville', 'lignes.ingredient', 'lignes.unite']),
+                    'data' => $fiche->load(['magasin', 'lignes.ingredient', 'lignes.unite']),
                     'message' => 'Fiche technique mise à jour avec succès'
                 ]);
 
@@ -350,7 +369,9 @@ class FicheTechniqueController extends Controller
                     'description' => $fiche->description,
                     'id_produit_fini' => $fiche->id_produit_fini,
                     'rendement' => $fiche->rendement,
-                    'id_ville' => $fiche->id_ville,
+                    'poids_portion' => $fiche->poids_portion,
+                    'unite_poids_portion' => $fiche->unite_poids_portion,
+                    'id_magasin' => $fiche->id_magasin,
                     'actif' => false,
                 ]);
 
@@ -359,10 +380,13 @@ class FicheTechniqueController extends Controller
                     LigneFicheTechnique::create([
                         'id_fiche_technique' => $newFiche->id,
                         'id_produit_ingredient' => $ligne->id_produit_ingredient,
-                        'quantite_ingredient' => $ligne->quantite_ingredient,
                         'id_unite' => $ligne->id_unite,
+                        'rendement' => $ligne->rendement,
                         'prix_unitaire' => $ligne->prix_unitaire,
+                        'poids_net' => $ligne->poids_net,
+                        'poids_brut' => $ligne->poids_brut,
                         'cout_total' => $ligne->cout_total,
+                        'rendement_apres_cuisson' => $ligne->rendement_apres_cuisson,
                         'commentaire' => $ligne->commentaire,
                     ]);
                 }
@@ -373,7 +397,7 @@ class FicheTechniqueController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'data' => $newFiche->load(['produitFini', 'ville', 'lignes.ingredient']),
+                    'data' => $newFiche->load(['magasin', 'lignes.ingredient']),
                     'message' => 'Fiche technique dupliquée avec succès'
                 ]);
 
@@ -411,6 +435,7 @@ class FicheTechniqueController extends Controller
                     'fiche' => $fiche,
                     'cout_total' => $fiche->cout_total,
                     'cout_unitaire' => $fiche->cout_unitaire,
+                    'prix_kg' => $fiche->prix_kg,
                 ],
                 'message' => 'Coût calculé avec succès'
             ]);

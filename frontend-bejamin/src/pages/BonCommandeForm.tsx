@@ -46,12 +46,12 @@ export function BonCommandeForm() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const [fournisseurs, setFournisseurs] = useState<SelectOption[]>([]);
-  const [villes, setVilles] = useState<SelectOption[]>([]);
+  const [magasins, setMagasins] = useState<SelectOption[]>([]);
   const [devises, setDevises] = useState<SelectOption[]>([]);
   const [produits, setProduits] = useState<SelectOption[]>([]);
 
   const [values, setValues] = useState({
-    numero_commande: '', id_partenaire: '', id_ville_destination: '',
+    numero_commande: '', id_partenaire: '', id_magasin_destination: '',
     date_commande: new Date().toISOString().slice(0, 10),
     date_livraison_prevue: '', id_devise: '', commentaire: '',
   });
@@ -60,7 +60,7 @@ export function BonCommandeForm() {
 
   useEffect(() => {
     bonCommandeService.getPartenaires({ type: 'fournisseur' }).then((res) => { if (res.success) setFournisseurs(res.data.data); });
-    bonCommandeService.getVilles().then((res) => { if (res.success) setVilles(res.data.data); });
+    bonCommandeService.getMagasins().then((res) => { if (res.success) setMagasins(res.data.data); });
     bonCommandeService.getDevises().then((res) => { if (res.success) setDevises(res.data.data); });
     bonCommandeService.getProduits().then((res) => { if (res.success) setProduits(res.data.data); });
   }, []);
@@ -74,7 +74,7 @@ export function BonCommandeForm() {
             const b = res.data;
             setValues({
               numero_commande: b.numero_commande, id_partenaire: String(b.id_partenaire),
-              id_ville_destination: String(b.id_ville_destination), date_commande: b.date_commande || '',
+              id_magasin_destination: String(b.id_magasin_destination), date_commande: b.date_commande || '',
               date_livraison_prevue: b.date_livraison_prevue || '', id_devise: b.id_devise ? String(b.id_devise) : '',
               commentaire: b.commentaire || '',
             });
@@ -209,14 +209,14 @@ export function BonCommandeForm() {
                     />
                   </div>
                   <div>
-                    <LabelIcon icon={MapPin} required error={fieldErrors.id_ville_destination}>Destination</LabelIcon>
+                    <LabelIcon icon={MapPin} required error={fieldErrors.id_magasin_destination}>Destination</LabelIcon>
                     <SearchableSelect
-                      options={villes.map(v => ({ id: v.id, nom: v.nom }))}
-                      value={values.id_ville_destination}
-                      onValueChange={v => set('id_ville_destination', v)}
-                      placeholder="Sélectionner une ville"
-                      searchPlaceholder="Rechercher une ville..."
-                      error={fieldErrors.id_ville_destination}
+                      options={magasins.map(v => ({ id: v.id, nom: v.nom }))}
+                      value={values.id_magasin_destination}
+                      onValueChange={v => set('id_magasin_destination', v)}
+                      placeholder="Sélectionner un magasin"
+                      searchPlaceholder="Rechercher un magasin..."
+                      error={fieldErrors.id_magasin_destination}
                     />
                   </div>
                 </div>

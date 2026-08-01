@@ -8,8 +8,8 @@ export interface Partenaire {
   telephone: string | null;
   email: string | null;
   identifiant_fiscal: string | null;
-  id_ville: number | null;
-  ville?: { id: number; nom: string } | null;
+  id_magasin: number | null;
+  magasin?: { id: number; nom: string } | null;
   actif: boolean;
   created_at?: string;
   updated_at?: string;
@@ -25,7 +25,7 @@ export interface PartenaireFormData {
   telephone: string;
   email: string;
   identifiant_fiscal: string;
-  id_ville: string;
+  id_magasin: string;
   actif: boolean;
 }
 
@@ -53,15 +53,15 @@ export interface PartenairePaginatedResponse {
   message: string;
 }
 
-export interface Ville {
+export interface Magasin {
   id: number;
   nom: string;
 }
 
-export interface VilleListResponse {
+export interface MagasinListResponse {
   success: boolean;
   data: {
-    data: Ville[];
+    data: Magasin[];
     current_page: number;
     last_page: number;
     per_page: number;

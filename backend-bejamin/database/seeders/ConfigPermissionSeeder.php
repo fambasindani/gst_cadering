@@ -16,29 +16,17 @@ class ConfigPermissionSeeder extends Seeder
             ['nom' => 'Modifier une unité', 'code' => 'config:unites:update'],
             ['nom' => 'Supprimer une unité', 'code' => 'config:unites:delete'],
 
-            // Villes
-            ['nom' => 'Voir les villes', 'code' => 'config:villes:view'],
-            ['nom' => 'Créer une ville', 'code' => 'config:villes:create'],
-            ['nom' => 'Modifier une ville', 'code' => 'config:villes:update'],
-            ['nom' => 'Supprimer une ville', 'code' => 'config:villes:delete'],
+            // Magasins
+            ['nom' => 'Voir les magasins', 'code' => 'config:magasins:view'],
+            ['nom' => 'Créer un magasin', 'code' => 'config:magasins:create'],
+            ['nom' => 'Modifier un magasin', 'code' => 'config:magasins:update'],
+            ['nom' => 'Supprimer un magasin', 'code' => 'config:magasins:delete'],
 
             // Départements
             ['nom' => 'Voir les départements', 'code' => 'config:departements:view'],
             ['nom' => 'Créer un département', 'code' => 'config:departements:create'],
             ['nom' => 'Modifier un département', 'code' => 'config:departements:update'],
             ['nom' => 'Supprimer un département', 'code' => 'config:departements:delete'],
-
-            // Zones
-            ['nom' => 'Voir les zones', 'code' => 'config:zones:view'],
-            ['nom' => 'Créer une zone', 'code' => 'config:zones:create'],
-            ['nom' => 'Modifier une zone', 'code' => 'config:zones:update'],
-            ['nom' => 'Supprimer une zone', 'code' => 'config:zones:delete'],
-
-            // Emplacements
-            ['nom' => 'Voir les emplacements', 'code' => 'config:emplacements:view'],
-            ['nom' => 'Créer un emplacement', 'code' => 'config:emplacements:create'],
-            ['nom' => 'Modifier un emplacement', 'code' => 'config:emplacements:update'],
-            ['nom' => 'Supprimer un emplacement', 'code' => 'config:emplacements:delete'],
 
             // Catégories
             ['nom' => 'Voir les catégories', 'code' => 'config:categories:view'],

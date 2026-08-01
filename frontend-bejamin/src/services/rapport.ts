@@ -4,8 +4,9 @@ import type {
   BonCommandeRapport,
   BonLivraisonRapport,
   RapportStockData,
+  RapportStockPhysiqueLogiqueData,
   VariationStockData,
-  ClientRapport,
+  RapportClientData,
   RapportSortieData,
   AchatFullData,
   FournisseurRapport,
@@ -25,11 +26,23 @@ export const rapportService = {
   rapportStock: (params?: Record<string, string>) =>
     api.get<RapportResponse<RapportStockData>>('/rapports/stock', { params }),
 
+  rapportStockPhysiqueLogique: (params?: Record<string, string>) =>
+    api.get<RapportResponse<RapportStockPhysiqueLogiqueData>>('/rapports/stock-logique-physique', { params }),
+
   variationStock: (params?: Record<string, string>) =>
     api.get<RapportResponse<VariationStockData>>('/rapports/variation-stock', { params }),
 
+  variationStockCalcul: (params?: Record<string, string>) =>
+    api.get<RapportResponse<{
+      stock_initial: number;
+      achats_food: number;
+      stock_initial_lessiviels: number;
+      achats_lessiviels: number;
+      conso_food: number;
+    }>>('/rapports/variation-stock/calcul', { params }),
+
   rapportClient: (params?: Record<string, string>) =>
-    api.get<RapportResponse<ClientRapport[]>>('/rapports/client', { params }),
+    api.get<RapportResponse<RapportClientData>>('/rapports/client', { params }),
 
   rapportSortie: (params?: Record<string, string>) =>
     api.get<RapportResponse<RapportSortieData>>('/rapports/sortie', { params }),

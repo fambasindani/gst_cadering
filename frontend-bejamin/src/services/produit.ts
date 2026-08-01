@@ -35,10 +35,10 @@ export const produitService = {
   getFournisseurs: (params?: Record<string, string>) =>
     api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/partenaires', { params: { ...params, type: 'fournisseur' } }),
 
-  addPrix: (data: { id_produit: number; prix_achat_ht: number; prix_vente_ht?: number | null; id_devise: number; date_application?: string; commentaire?: string }) =>
+  addPrix: (data: { id_produit: number; prix_achat_ht: number; id_devise: number; date_application?: string; commentaire?: string }) =>
     api.post<{ success: boolean; data: HistoriquePrix; message: string }>('/config/historique-prix', data),
 
-  updatePrix: (id: number, data: { prix_achat_ht?: number; prix_vente_ht?: number | null; id_devise?: number; date_application?: string; commentaire?: string }) =>
+  updatePrix: (id: number, data: { prix_achat_ht?: number; id_devise?: number; date_application?: string; commentaire?: string }) =>
     api.put<{ success: boolean; data: HistoriquePrix; message: string }>(`/config/historique-prix/${id}`, data),
 
   deletePrix: (id: number) =>

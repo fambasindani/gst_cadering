@@ -52,7 +52,7 @@ export function BonCommandeRapport() {
     { key: 'numero', label: 'N° commande', width: '18%', render: (r) => r.numero },
     { key: 'date', label: 'Date', width: '14%', render: (r) => r.date },
     { key: 'fournisseur', label: 'Fournisseur', width: '25%', render: (r) => r.fournisseur },
-    { key: 'ville', label: 'Ville', width: '15%', render: (r) => r.ville },
+    { key: 'magasin', label: 'Magasin', width: '15%', render: (r) => r.magasin },
     { key: 'nbLignes', label: 'Nb lignes', width: '12%', align: 'right', render: (r) => r.nbLignes },
     { key: 'montant', label: 'Montant HT', width: '16%', align: 'right', render: (r) => r.montant },
   ];
@@ -61,7 +61,7 @@ export function BonCommandeRapport() {
     numero: b.numero_commande,
     date: b.date_commande ? new Date(b.date_commande).toLocaleDateString('fr-FR') : '-',
     fournisseur: b.partenaire?.nom ?? '-',
-    ville: b.ville_destination?.nom ?? '-',
+    magasin: b.magasin_destination?.nom ?? '-',
     nbLignes: String(b.lignes?.length ?? 0),
     montant: formatCurrency(b.montant_total_ht),
   }));
@@ -194,7 +194,7 @@ export function BonCommandeRapport() {
                     <TableHead className="font-semibold text-gray-600">N° commande</TableHead>
                     <TableHead className="font-semibold text-gray-600">Date</TableHead>
                     <TableHead className="font-semibold text-gray-600">Fournisseur</TableHead>
-                    <TableHead className="font-semibold text-gray-600">Ville</TableHead>
+                    <TableHead className="font-semibold text-gray-600">Magasin</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Nb lignes</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Montant HT</TableHead>
                   </TableRow>
@@ -224,7 +224,7 @@ export function BonCommandeRapport() {
                     <TableHead className="font-semibold text-gray-600">N° commande</TableHead>
                     <TableHead className="font-semibold text-gray-600">Date</TableHead>
                     <TableHead className="font-semibold text-gray-600">Fournisseur</TableHead>
-                    <TableHead className="font-semibold text-gray-600">Ville</TableHead>
+                    <TableHead className="font-semibold text-gray-600">Magasin</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Nb lignes</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Montant HT</TableHead>
                   </TableRow>
@@ -235,7 +235,7 @@ export function BonCommandeRapport() {
                       <TableCell className="font-mono text-sm font-medium text-royal-700">{b.numero_commande}</TableCell>
                       <TableCell className="text-sm text-gray-600">{b.date_commande ? new Date(b.date_commande).toLocaleDateString('fr-FR') : '-'}</TableCell>
                       <TableCell className="font-medium text-gray-900">{b.partenaire?.nom ?? '-'}</TableCell>
-                      <TableCell className="text-sm text-gray-600">{b.ville_destination?.nom ?? '-'}</TableCell>
+                      <TableCell className="text-sm text-gray-600">{b.magasin_destination?.nom ?? '-'}</TableCell>
                       <TableCell className="text-right font-mono text-sm text-gray-600">{b.lignes?.length ?? 0}</TableCell>
                       <TableCell className="text-right font-mono text-sm font-semibold text-gray-900">{formatCurrency(b.montant_total_ht)}</TableCell>
                     </TableRow>

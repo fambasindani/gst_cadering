@@ -175,7 +175,7 @@ export function StockLotSerie() {
                   <TableRow>
                     <TableHead className="font-semibold text-gray-600">N° Lot</TableHead>
                     <TableHead className="font-semibold text-gray-600">Produit</TableHead>
-                    <TableHead className="font-semibold text-gray-600">Ville</TableHead>
+                    <TableHead className="font-semibold text-gray-600">Magasin</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Disponible</TableHead>
                     <TableHead className="font-semibold text-gray-600">Péremption</TableHead>
                     <TableHead className="text-center font-semibold text-gray-600">Statut</TableHead>
@@ -211,7 +211,7 @@ export function StockLotSerie() {
                     <TableRow>
                       <TableHead className="font-semibold text-gray-600">N° Lot</TableHead>
                       <TableHead className="font-semibold text-gray-600">Produit</TableHead>
-                      <TableHead className="font-semibold text-gray-600">Ville / Zone</TableHead>
+                      <TableHead className="font-semibold text-gray-600">Magasin</TableHead>
                       <TableHead className="text-right font-semibold text-gray-600">Disponible</TableHead>
                       <TableHead className="font-semibold text-gray-600">Péremption</TableHead>
                       <TableHead className="text-center font-semibold text-gray-600">Statut</TableHead>
@@ -226,7 +226,7 @@ export function StockLotSerie() {
                           <TableCell className="font-mono text-sm font-medium text-gray-900">{l.numero_lot}</TableCell>
                           <TableCell className="text-sm text-gray-900">{l.produit?.nom || '-'}</TableCell>
                           <TableCell className="text-sm text-gray-600">
-                            {l.ville?.nom || '-'}{l.zone ? ` / ${l.zone.nom}` : ''}
+                            {l.magasin?.nom || '-'}
                           </TableCell>
                           <TableCell className="text-right font-mono text-sm font-medium text-gray-900">
                             {l.quantite_disponible}
@@ -335,16 +335,8 @@ function LotViewSlide({ isOpen, onClose, lot }: { isOpen: boolean; onClose: () =
             <p className="font-medium mt-0.5">{lot.produit?.nom || '-'}</p>
           </div>
           <div>
-            <span className="text-white/60">Ville :</span>
-            <p className="font-medium mt-0.5">{lot.ville?.nom || '-'}</p>
-          </div>
-          <div>
-            <span className="text-white/60">Zone :</span>
-            <p className="font-medium mt-0.5">{lot.zone?.nom || '-'}</p>
-          </div>
-          <div>
-            <span className="text-white/60">Emplacement :</span>
-            <p className="font-medium mt-0.5">{lot.emplacement?.nom || '-'}</p>
+            <span className="text-white/60">Magasin :</span>
+            <p className="font-medium mt-0.5">{lot.magasin?.nom || '-'}</p>
           </div>
           <div>
             <span className="text-white/60">Quantité reçue :</span>

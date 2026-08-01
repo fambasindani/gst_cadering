@@ -16,15 +16,23 @@ class LigneFicheTechnique extends Model
         'id_produit_ingredient',
         'quantite_ingredient',
         'id_unite',
+        'rendement',
         'prix_unitaire',
+        'poids_net',
+        'poids_brut',
         'cout_total',
+        'rendement_apres_cuisson',
         'commentaire'
     ];
 
     protected $casts = [
         'quantite_ingredient' => 'decimal:2',
+        'rendement' => 'decimal:2',
         'prix_unitaire' => 'decimal:2',
+        'poids_net' => 'decimal:3',
+        'poids_brut' => 'decimal:3',
         'cout_total' => 'decimal:2',
+        'rendement_apres_cuisson' => 'boolean',
     ];
 
     public function ficheTechnique()
@@ -45,7 +53,7 @@ class LigneFicheTechnique extends Model
     public function calculateCout()
     {
         $this->prix_unitaire = $this->ingredient->getDernierPrixAchat()->prix_achat_ht ?? 0;
-        $this->cout_total = $this->quantite_ingredient * $this->prix_unitaire;
+        $this->cout_total = $this->poids_net * $this->prix_unitaire;
         $this->save();
         return $this->cout_total;
     }

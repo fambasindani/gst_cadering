@@ -86,10 +86,8 @@ class AuditMiddleware
     {
         $irregulars = [
             'unites' => 'unite',
-            'villes' => 'ville',
+            'magasins' => 'magasin',
             'departements' => 'departement',
-            'zones' => 'zone',
-            'emplacements' => 'emplacement',
             'categories' => 'categorie',
             'devises' => 'devise',
             'produits' => 'produit',
@@ -101,10 +99,7 @@ class AuditMiddleware
             'bons-commande' => 'bon_commande',
             'mouvements' => 'mouvement',
             'retours' => 'retour',
-            'factures' => 'facture',
-            'paiements' => 'paiement',
             'avoirs' => 'avoir',
-            'devis' => 'devis',
             'periodes-inventaire' => 'periode_inventaire',
             'inventaires' => 'inventaire',
         ];
@@ -169,10 +164,8 @@ class AuditMiddleware
     {
         $map = [
             'unite' => 'App\Models\Unite',
-            'ville' => 'App\Models\Ville',
+            'magasin' => 'App\Models\Magasin',
             'departement' => 'App\Models\Departement',
-            'zone' => 'App\Models\Zone',
-            'emplacement' => 'App\Models\Emplacement',
             'categorie' => 'App\Models\Categorie',
             'devise' => 'App\Models\Devise',
             'produit' => 'App\Models\Produit',
@@ -186,12 +179,7 @@ class AuditMiddleware
             'mouvement' => 'App\Models\MouvementStock',
             'retour' => 'App\Models\Retour',
             'ligne_retour' => 'App\Models\LigneRetour',
-            'facture' => 'App\Models\Facture',
-            'ligne_facture' => 'App\Models\LigneFacture',
-            'paiement' => 'App\Models\Paiement',
             'avoir' => 'App\Models\Avoir',
-            'devis' => 'App\Models\Devis',
-            'ligne_devis' => 'App\Models\LigneDevis',
             'periode_inventaire' => 'App\Models\PeriodeInventaire',
             'inventaire' => 'App\Models\Inventaire',
             'type_mouvement' => 'App\Models\TypeMouvement',

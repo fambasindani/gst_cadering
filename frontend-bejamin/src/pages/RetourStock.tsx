@@ -208,10 +208,10 @@ export function RetourStock() {
                           <TableCell>
                             <div className="flex items-center gap-1.5">
                               <Building2 className="w-3.5 h-3.5 text-gray-400" />
-                              <span className="text-sm text-gray-900">{r.partenaire_client?.nom || r.zone_provenance?.nom || '-'}</span>
+                              <span className="text-sm text-gray-900">{r.partenaire_client?.nom || '-'}</span>
                             </div>
                           </TableCell>
-                          <TableCell className="text-sm text-gray-600">{r.partenaire_dest?.nom || r.zone_dest?.nom || '-'}</TableCell>
+                          <TableCell className="text-sm text-gray-600">{r.partenaire_dest?.nom || '-'}</TableCell>
                           <TableCell className="text-sm text-gray-600">
                             {r.date_retour ? new Date(r.date_retour).toLocaleDateString('fr-FR') : '-'}
                           </TableCell>

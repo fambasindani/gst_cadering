@@ -135,9 +135,9 @@ export function FicheTechniqueDetails() {
             <CardContent className="p-6">
               <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
                 <DetailItem icon={<Hash className="w-4 h-4" />} label="Code" value={fiche.code} />
-                <DetailItem icon={<Package className="w-4 h-4" />} label="Produit fini" value={fiche.produitFini?.nom || '-'} />
-                <DetailItem icon={<MapPin className="w-4 h-4" />} label="Ville" value={fiche.ville?.nom || '-'} />
+                <DetailItem icon={<MapPin className="w-4 h-4" />} label="Magasin" value={fiche.magasin?.nom || '-'} />
                 <DetailItem icon={<Eye className="w-4 h-4" />} label="Rendement" value={`${fiche.rendement} portion(s)`} />
+                <DetailItem icon={<Package className="w-4 h-4" />} label="Poids d'une portion" value={`${Number(fiche.poids_portion) || 0} ${fiche.unite_poids_portion || 'gm'}`} />
                 {fiche.description ? (
                   <div className="md:col-span-2">
                     <dt className="text-sm text-gray-500 flex items-center gap-1.5 mb-1"><MessageSquare className="w-4 h-4" /> Description</dt>
@@ -162,9 +162,12 @@ export function FicheTechniqueDetails() {
                     <TableRow>
                       <TableHead className="font-semibold text-gray-600">Ingrédient</TableHead>
                       <TableHead className="text-center font-semibold text-gray-600">Unité</TableHead>
-                      <TableHead className="text-right font-semibold text-gray-600">Quantité</TableHead>
-                      <TableHead className="text-right font-semibold text-gray-600">Prix unit.</TableHead>
-                      <TableHead className="text-right font-semibold text-gray-600">Coût total</TableHead>
+                      <TableHead className="text-right font-semibold text-gray-600">Rend %</TableHead>
+                      <TableHead className="text-right font-semibold text-gray-600">Coût achat net</TableHead>
+                      <TableHead className="text-right font-semibold text-gray-600">Poids net</TableHead>
+                      <TableHead className="text-right font-semibold text-gray-600">Poids brut</TableHead>
+                      <TableHead className="text-right font-semibold text-gray-600">Coût matière</TableHead>
+                      <TableHead className="text-center font-semibold text-gray-600">Rend. cuisson</TableHead>
                       <TableHead className="font-semibold text-gray-600">Commentaire</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -176,9 +179,16 @@ export function FicheTechniqueDetails() {
                           <div className="text-xs text-gray-500 font-mono">{l.ingredient?.code_article || ''}</div>
                         </TableCell>
                         <TableCell className="text-center text-sm text-gray-700">{l.unite?.symbole || l.unite?.nom || '-'}</TableCell>
-                        <TableCell className="text-right font-mono text-sm text-gray-900">{Number(l.quantite_ingredient)}</TableCell>
+                        <TableCell className="text-right font-mono text-sm text-gray-900">{Number(l.rendement) || 0}</TableCell>
                         <TableCell className="text-right font-mono text-sm text-gray-700">{formatCurrency(Number(l.prix_unitaire))}</TableCell>
+                        <TableCell className="text-right font-mono text-sm text-gray-700">{Number(l.poids_net) || 0}</TableCell>
+                        <TableCell className="text-right font-mono text-sm text-gray-700">{Number(l.poids_brut) || 0}</TableCell>
                         <TableCell className="text-right font-mono text-sm font-medium text-gray-900">{formatCurrency(Number(l.cout_total))}</TableCell>
+                        <TableCell className="text-center text-sm">
+                          <Badge variant={l.rendement_apres_cuisson ? 'success' : 'secondary'} className="text-xs">
+                            {l.rendement_apres_cuisson ? 'Oui' : 'Non'}
+                          </Badge>
+                        </TableCell>
                         <TableCell className="text-sm text-gray-500 max-w-[150px] truncate">{l.commentaire || '-'}</TableCell>
                       </TableRow>
                     ))}
@@ -211,6 +221,10 @@ export function FicheTechniqueDetails() {
               <div>
                 <div className="text-sm text-gray-500">Coût unitaire</div>
                 <div className="text-lg font-semibold text-gray-900 font-mono">{formatCurrency(fiche.cout_unitaire)}</div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-500">Coût / kg</div>
+                <div className="text-lg font-semibold text-gray-900 font-mono">{formatCurrency(fiche.prix_kg)}</div>
               </div>
               <div className="border-t border-gray-100 pt-4">
                 <div className="text-sm text-gray-500">Rendement</div>

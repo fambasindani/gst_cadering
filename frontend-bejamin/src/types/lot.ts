@@ -2,12 +2,8 @@ export interface Lot {
   id: number;
   id_produit: number;
   produit?: { id: number; nom: string; code_article: string } | null;
-  id_ville: number;
-  ville?: { id: number; nom: string } | null;
-  id_zone: number;
-  zone?: { id: number; nom: string; type_zone: string } | null;
-  id_emplacement: number | null;
-  emplacement?: { id: number; nom: string } | null;
+  id_magasin: number;
+  magasin?: { id: number; nom: string } | null;
   numero_lot: string;
   code_qr: string | null;
   quantite_recue: number;

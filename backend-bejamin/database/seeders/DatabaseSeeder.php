@@ -11,7 +11,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             UniteSeeder::class,
             DeviseSeeder::class,
-            VilleSeeder::class,
+            MagasinSeeder::class,
+            DepartementSeeder::class,
             CategorieSeeder::class,
             RoleSeeder::class,
             PermissionSeeder::class,

@@ -1,265 +1,225 @@
-import { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from '../../components/ui/table';
+import { useState } from 'react';
+import { Card, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
+import { Input } from '../../components/ui/input';
 import { PDFDownloadLink } from '@react-pdf/renderer';
-import { RapportTablePDF } from '../../components/pdf/RapportTablePDF';
-import type { Column } from '../../components/pdf/RapportTablePDF';
+import { VariationStockPDF } from '../../components/pdf/VariationStockPDF';
 import { rapportService } from '../../services/rapport';
-import type { VariationStockData } from '../../types/rapport';
-import { RefreshCw, TrendingUp, Download, ArrowUpDown } from 'lucide-react';
+import { RefreshCw, Download, Calendar, Calculator } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { DataTablePagination } from '../../components/ui/DataTablePagination';
+
+function formatNumber(v: number): string {
+  return (v ?? 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+}
+
+function formatDateFr(iso: string): string {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+
+const moneyStyle = 'w-full h-9 border-gray-200 shadow-sm text-right font-mono';
 
 export function VariationStock() {
-  const [data, setData] = useState<VariationStockData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [dateFrom, setDateFrom] = useState('');
-  const [dateTo, setDateTo] = useState('');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const [dateDebut, setDateDebut] = useState('');
+  const [dateFin, setDateFin] = useState('');
+  const [values, setValues] = useState<Record<string, string>>({});
+  const [calculating, setCalculating] = useState(false);
 
-  const mouvements = data?.mouvements ?? [];
-  const stats = data?.statistiques;
-  const total = mouvements.length;
-  const lastPage = Math.ceil(total / pageSize);
-  const displayed = mouvements.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-  const handlePageSizeChange = (size: number) => { setPageSize(size); setCurrentPage(1); };
+  const set = (key: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
+    setValues((prev) => ({ ...prev, [key]: e.target.value }));
 
-  const fetchData = async () => {
-    setLoading(true);
+  const num = (key: string) => Number(values[key]) || 0;
+  const caTotal = num('caFood') + num('caHand');
+  const totalAchat = num('achatsFood') + num('achatsLessiviels');
+  const totalConso = num('consoFood');
+
+  const calculer = async () => {
+    setCalculating(true);
     try {
       const params: Record<string, string> = {};
-      if (dateFrom) params.date_debut = dateFrom;
-      if (dateTo) params.date_fin = dateTo;
-      const res = await rapportService.variationStock(params);
+      if (dateDebut) params.date_debut = dateDebut;
+      if (dateFin) params.date_fin = dateFin;
+      const res = await rapportService.variationStockCalcul(params);
       if (res.success) {
-        setData(res.data);
+        const d = res.data;
+        setValues((prev) => ({
+          ...prev,
+          stockInitial: String(d.stock_initial ?? 0),
+          achatsFood: String(d.achats_food ?? 0),
+          stockInitial2: String(d.stock_initial_lessiviels ?? 0),
+          achatsLessiviels: String(d.achats_lessiviels ?? 0),
+          consoFood: String(d.conso_food ?? 0),
+        }));
       }
     } catch {
       //
     } finally {
-      setLoading(false);
+      setCalculating(false);
     }
   };
 
-  useEffect(() => { fetchData(); }, [dateFrom, dateTo]);
+  const reset = () => {
+    setDateDebut('');
+    setDateFin('');
+    setValues({});
+  };
 
-  const pdfColumns: Column[] = [
-    { key: 'date', label: 'Date', width: '16%', render: (r) => r.date },
-    { key: 'produit', label: 'Produit', width: '28%', render: (r) => r.produit },
-    { key: 'type', label: 'Type', width: '18%', render: (r) => r.type },
-    { key: 'qte', label: 'Qté', width: '14%', align: 'right', render: (r) => r.qte },
-    { key: 'ville', label: 'Ville', width: '24%', render: (r) => r.ville },
-  ];
-
-  const pdfRows = mouvements.map((m) => ({
-    date: m.date_mouvement ? new Date(m.date_mouvement).toLocaleDateString('fr-FR') : '-',
-    produit: m.lot?.produit?.nom ?? '-',
-    type: m.type_mouvement?.libelle ?? '-',
-    qte: String(m.quantite),
-    ville: m.lot?.ville?.nom ?? '-',
-  }));
+  const pdfValues = { ...values };
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Variation de stock</h1>
-          <p className="text-sm text-gray-500 mt-1">{loading ? '...' : `${stats?.total_mouvements ?? 0} mouvement${(stats?.total_mouvements ?? 0) > 1 ? 's' : ''}`}</p>
+          <h1 className="text-2xl font-bold text-gray-900">Tableau de variation stock</h1>
+          <p className="text-sm text-gray-500 mt-1">Document comptable mensuel</p>
         </div>
         <div className="flex items-center gap-2">
-          {mouvements.length > 0 && (
-            <PDFDownloadLink
-              document={
-                <RapportTablePDF
-                  title="Variation de stock"
-                  subtitle={dateFrom || dateTo ? `Du ${dateFrom || '...'} au ${dateTo || '...'}` : undefined}
-                  columns={pdfColumns}
-                  rows={pdfRows}
-                  stats={stats ? [
-                    { label: 'Total mouvements', value: String(stats.total_mouvements) },
-                    { label: 'Total entrées', value: String(stats.total_entrees) },
-                    { label: 'Total sorties', value: String(stats.total_sorties) },
-                    { label: 'Variation', value: String(stats.variation) },
-                  ] : undefined}
-                  totals={[{ label: 'Variation nette', value: String(stats?.variation ?? 0) }]}
-                />
-              }
-              fileName="variation-stock.pdf"
-            >
-              {({ loading: pdfLoading }) => (
-                <Button variant="outline" disabled={pdfLoading} className="border-gray-300 text-gray-700 hover:bg-gray-50">
-                  <Download className="w-4 h-4 mr-1.5" />
-                  {pdfLoading ? 'Génération...' : 'PDF'}
-                </Button>
-              )}
-            </PDFDownloadLink>
-          )}
-          <Button variant="outline" onClick={() => { setDateFrom(''); setDateTo(''); }} className="border-gray-300 text-gray-700 hover:bg-gray-50" title="Actualiser">
-            <RefreshCw className={cn('h-4 w-4 mr-2', loading && 'animate-spin')} />
+          <PDFDownloadLink
+            document={
+              <VariationStockPDF
+                period={`Période : du ${formatDateFr(dateDebut)} au ${formatDateFr(dateFin)}`}
+                values={pdfValues}
+              />
+            }
+            fileName="tableau-variation-stock.pdf"
+          >
+            {({ loading: pdfLoading }) => (
+              <Button variant="outline" disabled={pdfLoading} className="border-gray-300 text-gray-700 hover:bg-gray-50">
+                <Download className="w-4 h-4 mr-1.5" />
+                {pdfLoading ? 'Génération...' : 'PDF'}
+              </Button>
+            )}
+          </PDFDownloadLink>
+          <Button variant="outline" onClick={reset} className="border-gray-300 text-gray-700 hover:bg-gray-50" title="Actualiser">
+            <RefreshCw className="h-4 w-4 mr-2" />
             Actualiser
           </Button>
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-600 font-medium whitespace-nowrap">Du :</label>
-            <input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-              className="px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:border-royal-500 focus:ring-royal-500"
-            />
+      <Card className="border-0 shadow-sm">
+        <CardContent className="p-5">
+          <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-1.5">
+            <Calendar className="w-4 h-4 text-gray-400" />
+            Periode
+          </label>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600 font-medium">du</span>
+              <Input type="date" value={dateDebut} onChange={(e) => setDateDebut(e.target.value)} className="h-10 border-gray-200 shadow-sm w-44" />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600 font-medium">au</span>
+              <Input type="date" value={dateFin} onChange={(e) => setDateFin(e.target.value)} className="h-10 border-gray-200 shadow-sm w-44" />
+            </div>
+            <Button onClick={calculer} disabled={calculating} className="h-10 px-5 bg-royal-700 hover:bg-royal-800 text-white shadow-sm font-medium">
+              <Calculator className="w-4 h-4 mr-2" />
+              {calculating ? 'Calcul...' : 'Calculer'}
+            </Button>
           </div>
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-600 font-medium whitespace-nowrap">Au :</label>
-            <input
-              type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-              className="px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:border-royal-500 focus:ring-royal-500"
-            />
-          </div>
-          {(dateFrom || dateTo) && (
-            <button
-              type="button"
-              onClick={() => { setDateFrom(''); setDateTo(''); }}
-              className="px-2 py-1.5 text-xs text-gray-500 hover:text-gray-700 border border-gray-200 rounded-md hover:bg-gray-50"
-            >
-              Effacer
-            </button>
-          )}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-lg bg-royal-50">
-                <ArrowUpDown className="w-5 h-5 text-royal-700" />
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 font-medium">Total mouvements</p>
-                <p className="text-xl font-bold text-gray-900">{stats?.total_mouvements ?? 0}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-lg bg-emerald-50">
-                <TrendingUp className="w-5 h-5 text-emerald-700" />
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 font-medium">Total entrées</p>
-                <p className="text-xl font-bold text-gray-900">{stats?.total_entrees ?? 0}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-lg bg-amber-50">
-                <TrendingUp className="w-5 h-5 text-amber-700" />
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 font-medium">Total sorties</p>
-                <p className="text-xl font-bold text-gray-900">{stats?.total_sorties ?? 0}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="border-0 shadow-sm">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-lg bg-violet-50">
-                <TrendingUp className="w-5 h-5 text-violet-700" />
-              </div>
-              <div>
-                <p className="text-xs text-gray-500 font-medium">Variation</p>
-                <p className="text-xl font-bold text-gray-900">{stats?.variation ?? 0}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+        </CardContent>
+      </Card>
 
       <Card className="border-0 shadow-sm">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-semibold">Mouvements de stock</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="overflow-x-auto rounded-lg border border-gray-200">
-              <Table>
-                <TableHeader className="bg-gray-50">
-                  <TableRow>
-                    <TableHead className="font-semibold text-gray-600">Date</TableHead>
-                    <TableHead className="font-semibold text-gray-600">Produit</TableHead>
-                    <TableHead className="font-semibold text-gray-600">Type</TableHead>
-                    <TableHead className="text-right font-semibold text-gray-600">Qté</TableHead>
-                    <TableHead className="font-semibold text-gray-600">Ville</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <TableRow key={i} className="animate-pulse">
-                      {Array.from({ length: 5 }).map((_, j) => (
-                        <TableCell key={j}><div className="h-5 bg-gray-200 rounded" style={{ width: `${60 + j * 15}px` }} /></TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          ) : mouvements.length === 0 ? (
-            <div className="text-center py-12 text-gray-500">
-              <TrendingUp className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-              <p className="text-lg font-medium text-gray-700">Aucune donnée</p>
-              <p className="text-sm mt-1">Aucun mouvement de stock trouvé pour cette période</p>
-            </div>
-          ) : (<>
-            <div className="overflow-x-auto rounded-lg border border-gray-200">
-              <Table>
-                <TableHeader className="bg-gray-50">
-                  <TableRow>
-                    <TableHead className="font-semibold text-gray-600">Date</TableHead>
-                    <TableHead className="font-semibold text-gray-600">Produit</TableHead>
-                    <TableHead className="font-semibold text-gray-600">Type</TableHead>
-                    <TableHead className="text-right font-semibold text-gray-600">Qté</TableHead>
-                    <TableHead className="font-semibold text-gray-600">Ville</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {displayed.map((m, i) => (
-                    <TableRow key={m.id} className={cn('hover:bg-royal-50/50 transition-colors', i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50')}>
-                      <TableCell className="text-sm text-gray-600">{m.date_mouvement ? new Date(m.date_mouvement).toLocaleDateString('fr-FR') : '-'}</TableCell>
-                      <TableCell className="font-medium text-gray-900">{m.lot?.produit?.nom ?? '-'}</TableCell>
-                      <TableCell className="text-sm text-gray-600">{m.type_mouvement?.libelle ?? '-'}</TableCell>
-                      <TableCell className="text-right font-mono text-sm font-semibold text-gray-900">{m.quantite}</TableCell>
-                      <TableCell className="text-sm text-gray-600">{m.lot?.ville?.nom ?? '-'}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-            <DataTablePagination
-              currentPage={currentPage}
-              lastPage={lastPage}
-              total={total}
-              pageSize={pageSize}
-              onPageChange={setCurrentPage}
-              onPageSizeChange={handlePageSizeChange}
-            />
-          </>)}
+        <CardContent className="p-0">
+          <div className="overflow-x-auto rounded-lg border border-gray-200">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-royal-700 text-white">
+                  <th className="px-4 py-2.5 text-left font-semibold">Désignation</th>
+                  <th className="px-4 py-2.5 text-right font-semibold w-48">Montant en $</th>
+                  <th className="px-4 py-2.5 text-left font-semibold w-72">Observation</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-royal-50/70">
+                  <td colSpan={3} className="px-4 py-2.5 font-bold text-gray-800 border-b border-gray-200">CHIFFRE D'AFFAIRES (CA)</td>
+                </tr>
+                <tr className="border-b border-gray-100">
+                  <td className="px-4 py-2 text-gray-800">Chiffre d'affaires réalisé* FOOD</td>
+                  <td className="px-4 py-2"><Input type="number" value={values.caFood ?? ''} onChange={set('caFood')} className={moneyStyle} placeholder="0.00" /></td>
+                  <td className="px-4 py-2 text-xs text-gray-500">CA hors redevance aéroportuaire</td>
+                </tr>
+                <tr className="border-b border-gray-100 bg-gray-50/50">
+                  <td className="px-4 py-2 text-gray-800">Chiffre d'affaires Hand + divers</td>
+                  <td className="px-4 py-2"><Input type="number" value={values.caHand ?? ''} onChange={set('caHand')} className={moneyStyle} placeholder="0.00" /></td>
+                  <td className="px-4 py-2 text-xs text-gray-500">CA hors redevance aéroportuaire</td>
+                </tr>
+                <tr className="bg-gray-200/70">
+                  <td className="px-4 py-2.5 font-bold text-gray-900 border-b border-gray-300">MONTANT CHIFFRE D'AFFAIRES REALISE</td>
+                  <td className="px-4 py-2.5 font-bold font-mono text-right text-gray-900 border-b border-gray-300">{formatNumber(caTotal)}</td>
+                  <td className="px-4 py-2.5 border-b border-gray-300" />
+                </tr>
+
+                <tr className="bg-royal-50/70">
+                  <td colSpan={3} className="px-4 py-2.5 font-bold text-gray-800 border-b border-gray-200">GESTION DES STOCKS ET ACHATS</td>
+                </tr>
+                <tr className="border-b border-gray-100">
+                  <td className="px-4 py-2 text-gray-800">Stock initial</td>
+                  <td className="px-4 py-2"><Input type="number" value={values.stockInitial ?? ''} onChange={set('stockInitial')} className={moneyStyle} placeholder="0.00" /></td>
+                  <td className="px-4 py-2" />
+                </tr>
+                <tr className="border-b border-gray-100 bg-gray-50/50">
+                  <td className="px-4 py-2 text-gray-800">Achats Matières FOOD du mois*</td>
+                  <td className="px-4 py-2"><Input type="number" value={values.achatsFood ?? ''} onChange={set('achatsFood')} className={moneyStyle} placeholder="0.00" /></td>
+                  <td className="px-4 py-2" />
+                </tr>
+                <tr className="border-b border-gray-100">
+                  <td className="px-4 py-2 text-gray-800">Stock initial</td>
+                  <td className="px-4 py-2"><Input type="number" value={values.stockInitial2 ?? ''} onChange={set('stockInitial2')} className={moneyStyle} placeholder="0.00" /></td>
+                  <td className="px-4 py-2" />
+                </tr>
+                <tr className="border-b border-gray-100 bg-gray-50/50">
+                  <td className="px-4 py-2 text-gray-800">Achats Matières et Lessiviels du mois*</td>
+                  <td className="px-4 py-2"><Input type="number" value={values.achatsLessiviels ?? ''} onChange={set('achatsLessiviels')} className={moneyStyle} placeholder="0.00" /></td>
+                  <td className="px-4 py-2" />
+                </tr>
+                <tr className="bg-gray-200/70">
+                  <td className="px-4 py-2.5 font-bold text-gray-900 border-b border-gray-300">TOTAL ACHAT MOIS</td>
+                  <td className="px-4 py-2.5 font-bold font-mono text-right text-gray-900 border-b border-gray-300">{formatNumber(totalAchat)}</td>
+                  <td className="px-4 py-2.5 border-b border-gray-300" />
+                </tr>
+                <tr className="border-b border-gray-100 bg-gray-50/50">
+                  <td className="px-4 py-2 text-gray-800">Valeur consommation matières FOOD du mois*</td>
+                  <td className="px-4 py-2"><Input type="number" value={values.consoFood ?? ''} onChange={set('consoFood')} className={moneyStyle} placeholder="0.00" /></td>
+                  <td className="px-4 py-2" />
+                </tr>
+                <tr className="bg-gray-200/70">
+                  <td className="px-4 py-2.5 font-bold text-gray-900 border-b border-gray-300">TOTAL CONSOMMATION MOIS</td>
+                  <td className="px-4 py-2.5 font-bold font-mono text-right text-gray-900 border-b border-gray-300">{formatNumber(totalConso)}</td>
+                  <td className="px-4 py-2.5 border-b border-gray-300" />
+                </tr>
+
+                <tr className="bg-royal-50/70">
+                  <td colSpan={3} className="px-4 py-2.5 font-bold text-gray-800 border-b border-gray-200">NOTES ET VENTILATION ANALYTIQUE</td>
+                </tr>
+                <tr className="bg-gray-200/70 border-b border-gray-300">
+                  <td className="px-4 py-2.5 font-bold text-gray-900">CONSOMMATION NON-AERIENNE</td>
+                  <td className="px-4 py-2.5 font-bold font-mono text-right text-gray-900"><Input type="number" value={values.consoNonAerienne ?? ''} onChange={set('consoNonAerienne')} className={cn(moneyStyle, 'bg-transparent border-gray-300')} placeholder="0.00" /></td>
+                  <td className="px-4 py-2.5" />
+                </tr>
+                <tr className="bg-gray-200/70 border-b border-gray-300">
+                  <td className="px-4 py-2.5 font-bold text-gray-900">CONSOMMATION AERIENNE</td>
+                  <td className="px-4 py-2.5 font-bold font-mono text-right text-gray-900"><Input type="number" value={values.consoAerienne ?? ''} onChange={set('consoAerienne')} className={cn(moneyStyle, 'bg-transparent border-gray-300')} placeholder="0.00" /></td>
+                  <td className="px-4 py-2.5" />
+                </tr>
+                <tr className="border-b border-gray-100">
+                  <td className="px-4 py-2 text-gray-800">RATIO ESTIME</td>
+                  <td className="px-4 py-2"><Input type="number" value={values.ratio ?? ''} onChange={set('ratio')} className={moneyStyle} placeholder="0.00" /></td>
+                  <td className="px-4 py-2" />
+                </tr>
+                <tr className="border-b border-gray-100 bg-gray-50/50">
+                  <td className="px-4 py-2 text-gray-800">CA FOOD ESTIME</td>
+                  <td className="px-4 py-2"><Input type="number" value={values.caFoodEstime ?? ''} onChange={set('caFoodEstime')} className={moneyStyle} placeholder="0.00" /></td>
+                  <td className="px-4 py-2" />
+                </tr>
+                <tr>
+                  <td colSpan={3} className="px-4 py-2.5 text-xs italic text-gray-500">* Prière annexer (liste des) factures</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </CardContent>
       </Card>
     </div>

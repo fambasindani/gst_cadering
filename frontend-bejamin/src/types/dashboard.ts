@@ -12,7 +12,6 @@ export interface DashboardStats {
   stock_total: number;
   valeur_stock: number;
   retours_en_attente: number;
-  factures_impayees: number;
   lots_peremption_proche: number;
 }
 
@@ -55,8 +54,7 @@ export interface AlertePeremption {
   quantite: number;
   date_peremption: string;
   jours_restants: number;
-  ville: string;
-  zone: string;
+  magasin: string;
 }
 
 export interface ActiviteRecente {

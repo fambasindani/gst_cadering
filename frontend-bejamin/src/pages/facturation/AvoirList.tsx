@@ -84,7 +84,7 @@ export function AvoirList() {
             <RefreshCw className={cn('h-4 w-4 mr-2', loading && 'animate-spin')} />
             Actualiser
           </Button>
-          <Button onClick={() => navigate('/facturation/avoirs/creer')} className="bg-royal-700 hover:bg-royal-800 text-white shadow-sm">
+          <Button onClick={() => navigate('/stock/avoir/creer')} className="bg-royal-700 hover:bg-royal-800 text-white shadow-sm">
             <Plus className="w-4 h-4 mr-1.5" />
             Nouvel avoir
           </Button>
@@ -124,7 +124,7 @@ export function AvoirList() {
                     <TableHead className="font-semibold text-gray-600">Numéro</TableHead>
                     <TableHead className="font-semibold text-gray-600">Client</TableHead>
                     <TableHead className="font-semibold text-gray-600">Date</TableHead>
-                    <TableHead className="font-semibold text-gray-600">Facture origine</TableHead>
+                    <TableHead className="font-semibold text-gray-600">Retour</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Montant</TableHead>
                     <TableHead className="text-center w-20 font-semibold text-gray-600">Actions</TableHead>
                   </TableRow>
@@ -158,22 +158,22 @@ export function AvoirList() {
                       <TableHead className="font-semibold text-gray-600">Numéro</TableHead>
                       <TableHead className="font-semibold text-gray-600">Client</TableHead>
                       <TableHead className="font-semibold text-gray-600">Date</TableHead>
-                      <TableHead className="font-semibold text-gray-600">Facture origine</TableHead>
+                      <TableHead className="font-semibold text-gray-600">Retour</TableHead>
                       <TableHead className="text-right font-semibold text-gray-600">Montant</TableHead>
                       <TableHead className="text-center w-20 font-semibold text-gray-600">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {data.map((a, i) => (
-                      <TableRow key={a.id} className={cn('hover:bg-royal-50/50 transition-colors cursor-pointer', i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50')} onClick={() => navigate(`/facturation/avoirs/${a.id}`)}>
+                      <TableRow key={a.id} className={cn('hover:bg-royal-50/50 transition-colors cursor-pointer', i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50')} onClick={() => navigate(`/stock/avoir/${a.id}`)}>
                         <TableCell className="font-mono text-sm font-medium text-royal-700">{a.numero_avoir}</TableCell>
                         <TableCell className="font-medium text-gray-900">{a.client?.nom || '-'}</TableCell>
                         <TableCell className="text-sm text-gray-600">{formatDate(a.date_avoir)}</TableCell>
-                        <TableCell className="text-sm text-gray-600">{a.facture_origine?.numero_facture || '-'}</TableCell>
+                        <TableCell className="text-sm text-gray-600">{a.retour?.numero_retour || '-'}</TableCell>
                         <TableCell className="text-right font-mono text-sm font-medium text-red-600">{formatCurrency(a.montant_ht, a.devise?.code)}</TableCell>
                         <TableCell>
                           <div className="flex items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
-                            <button onClick={() => navigate(`/facturation/avoirs/${a.id}`)} className="p-1.5 rounded text-gray-500 hover:text-blue-700 hover:bg-blue-50 transition-colors" title="Voir">
+                            <button onClick={() => navigate(`/stock/avoir/${a.id}`)} className="p-1.5 rounded text-gray-500 hover:text-blue-700 hover:bg-blue-50 transition-colors" title="Voir">
                               <Eye className="w-4 h-4" />
                             </button>
                             <button onClick={() => setDeleteTarget(a)} className="p-1.5 rounded text-gray-500 hover:text-red-700 hover:bg-red-50 transition-colors" title="Supprimer">

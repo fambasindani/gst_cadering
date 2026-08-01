@@ -13,7 +13,7 @@ import {
 import { cn } from '../lib/utils';
 import { partenaireService } from '../services/partenaire';
 import { useToast } from '../hooks/useToast';
-import type { Ville } from '../types/partenaire';
+import type { Magasin } from '../types/partenaire';
 
 interface FormData {
   type: string;
@@ -24,7 +24,7 @@ interface FormData {
   telephone: string;
   email: string;
   identifiant_fiscal: string;
-  id_ville: string;
+  id_magasin: string;
   actif: boolean;
 }
 
@@ -45,18 +45,18 @@ export function PartenaireForm() {
   const { toast } = useToast();
   const { id } = useParams();
   const isEditing = !!id;
-  const [villes, setVilles] = useState<Ville[]>([]);
+  const [magasins, setMagasins] = useState<Magasin[]>([]);
   const [loading, setLoading] = useState(isEditing);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [generalError, setGeneralError] = useState('');
   const [form, setForm] = useState<FormData>({
     type: 'client', type_client: 'aerien', code_iata: '', nom: '', adresse: '',
-    telephone: '', email: '', identifiant_fiscal: '', id_ville: '', actif: true,
+    telephone: '', email: '', identifiant_fiscal: '', id_magasin: '', actif: true,
   });
 
   useEffect(() => {
-    partenaireService.getVilles().then((res) => { if (res.success) setVilles(res.data.data); }).catch(() => {});
+    partenaireService.getMagasins().then((res) => { if (res.success) setMagasins(res.data.data); }).catch(() => {});
     if (isEditing) {
       partenaireService.get(Number(id)).then((res) => {
         if (res.success) {
@@ -65,7 +65,7 @@ export function PartenaireForm() {
             type: p.type, type_client: p.type_client || '', code_iata: p.code_iata || '',
             nom: p.nom, adresse: p.adresse || '', telephone: p.telephone || '',
             email: p.email || '', identifiant_fiscal: p.identifiant_fiscal || '',
-            id_ville: String(p.id_ville || ''), actif: p.actif,
+            id_magasin: String(p.id_magasin || ''), actif: p.actif,
           });
         }
       }).catch(() => {}).finally(() => setLoading(false));
@@ -244,16 +244,16 @@ export function PartenaireForm() {
                 </div>
               </div>
               <div>
-                <LabelIcon icon={MapPin}>Ville</LabelIcon>
+                <LabelIcon icon={MapPin}>Magasin</LabelIcon>
                 <div className="relative">
                   <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
                   <SearchableSelect
-                    options={villes.map(v => ({ id: v.id, nom: v.nom }))}
-                    value={form.id_ville}
-                    onValueChange={(value) => handleChange('id_ville', value)}
-                    placeholder="Sélectionner une ville"
-                    searchPlaceholder="Rechercher une ville..."
-                    error={errors.id_ville}
+                    options={magasins.map(v => ({ id: v.id, nom: v.nom }))}
+                    value={form.id_magasin}
+                    onValueChange={(value) => handleChange('id_magasin', value)}
+                    placeholder="Sélectionner un magasin"
+                    searchPlaceholder="Rechercher un magasin..."
+                    error={errors.id_magasin}
                   />
                 </div>
               </div>

@@ -122,7 +122,7 @@ export function Ajustement() {
                 <TableHeader className="bg-gray-50">
                   <TableRow>
                     <TableHead className="font-semibold text-gray-600">Libellé</TableHead>
-                    <TableHead className="font-semibold text-gray-600">Ville</TableHead>
+                    <TableHead className="font-semibold text-gray-600">Magasin</TableHead>
                     <TableHead className="font-semibold text-gray-600">Période</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Total écart</TableHead>
                     <TableHead className="text-center font-semibold text-gray-600">Actions</TableHead>
@@ -153,7 +153,7 @@ export function Ajustement() {
                 <TableHeader className="bg-gray-50">
                   <TableRow>
                     <TableHead className="font-semibold text-gray-600">Libellé</TableHead>
-                    <TableHead className="font-semibold text-gray-600">Ville</TableHead>
+                    <TableHead className="font-semibold text-gray-600">Magasin</TableHead>
                     <TableHead className="font-semibold text-gray-600">Période</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Total écart</TableHead>
                     <TableHead className="text-center font-semibold text-gray-600">Actions</TableHead>
@@ -163,7 +163,7 @@ export function Ajustement() {
                   {periodes.map((p, i) => (
                     <TableRow key={p.id} className={cn('hover:bg-royal-50/50 transition-colors', i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50')}>
                       <TableCell className="font-medium text-gray-900">{p.libelle}</TableCell>
-                      <TableCell className="text-sm text-gray-600">{p.ville?.nom || '-'}</TableCell>
+                      <TableCell className="text-sm text-gray-600">{p.magasin?.nom || '-'}</TableCell>
                       <TableCell className="text-sm text-gray-600">
                         {new Date(p.date_debut).toLocaleDateString('fr-FR')} - {new Date(p.date_fin).toLocaleDateString('fr-FR')}
                       </TableCell>

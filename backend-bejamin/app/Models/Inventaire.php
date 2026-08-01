@@ -14,7 +14,7 @@ class Inventaire extends Model
     protected $fillable = [
         'id_periode_inventaire',
         'id_produit',
-        'id_ville',
+        'id_magasin',
         'stock_theorique',
         'stock_physique_compte',
         'date_saisie',
@@ -40,9 +40,9 @@ class Inventaire extends Model
         return $this->belongsTo(Produit::class, 'id_produit');
     }
 
-    public function ville()
+    public function magasin()
     {
-        return $this->belongsTo(Ville::class, 'id_ville');
+        return $this->belongsTo(Magasin::class, 'id_magasin');
     }
 
     public function utilisateur()
@@ -61,8 +61,8 @@ class Inventaire extends Model
         return $query->where('id_produit', $produitId);
     }
 
-    public function scopeByVille($query, $villeId)
+    public function scopeByMagasin($query, $magasinId)
     {
-        return $query->where('id_ville', $villeId);
+        return $query->where('id_magasin', $magasinId);
     }
 }

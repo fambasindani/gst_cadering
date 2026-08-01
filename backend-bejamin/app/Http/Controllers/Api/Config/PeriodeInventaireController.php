@@ -18,19 +18,19 @@ class PeriodeInventaireController extends Controller
         try {
             $perPage = $request->input('per_page', 15);
             $search = $request->input('search');
-            $villeId = $request->input('ville_id');
+            $magasinId = $request->input('magasin_id');
             $statut = $request->input('statut');
             $sortBy = $request->input('sort_by', 'id');
             $sortOrder = $request->input('sort_order', 'desc');
 
-            $query = PeriodeInventaire::with('ville');
+            $query = PeriodeInventaire::with('magasin');
 
             if ($search) {
                 $query->where('libelle', 'LIKE', "%{$search}%");
             }
 
-            if ($villeId) {
-                $query->where('id_ville', $villeId);
+            if ($magasinId) {
+                $query->where('id_magasin', $magasinId);
             }
 
             if ($statut) {
@@ -64,7 +64,7 @@ class PeriodeInventaireController extends Controller
                 'libelle' => 'required|string|max:100',
                 'date_debut' => 'required|date|before:date_fin',
                 'date_fin' => 'required|date|after:date_debut',
-                'id_ville' => 'required|exists:villes,id',
+                'id_magasin' => 'required|exists:magasins,id',
                 'description' => 'nullable|string',
                 'statut' => 'nullable|in:PREVU,EN_COURS,CLOTURE,ANNULE',
             ]);
@@ -73,14 +73,14 @@ class PeriodeInventaireController extends Controller
                 'libelle' => $validated['libelle'],
                 'date_debut' => $validated['date_debut'],
                 'date_fin' => $validated['date_fin'],
-                'id_ville' => $validated['id_ville'],
+                'id_magasin' => $validated['id_magasin'],
                 'description' => $validated['description'] ?? null,
                 'statut' => $validated['statut'] ?? 'PREVU',
             ]);
 
             return response()->json([
                 'success' => true,
-                'data' => $periode->load('ville'),
+                'data' => $periode->load('magasin'),
                 'message' => 'Période d\'inventaire créée avec succès'
             ], 201);
 
@@ -105,7 +105,7 @@ class PeriodeInventaireController extends Controller
     public function show($id)
     {
         try {
-            $periode = PeriodeInventaire::with(['ville', 'inventaires.produit'])
+            $periode = PeriodeInventaire::with(['magasin', 'inventaires.produit'])
                 ->findOrFail($id);
 
             return response()->json([
@@ -134,7 +134,7 @@ class PeriodeInventaireController extends Controller
                 'libelle' => 'sometimes|required|string|max:100',
                 'date_debut' => 'sometimes|required|date|before:date_fin',
                 'date_fin' => 'sometimes|required|date|after:date_debut',
-                'id_ville' => 'sometimes|required|exists:villes,id',
+                'id_magasin' => 'sometimes|required|exists:magasins,id',
                 'description' => 'nullable|string',
                 'statut' => 'nullable|in:PREVU,EN_COURS,CLOTURE,ANNULE',
             ]);
@@ -143,7 +143,7 @@ class PeriodeInventaireController extends Controller
 
             return response()->json([
                 'success' => true,
-                'data' => $periode->load('ville'),
+                'data' => $periode->load('magasin'),
                 'message' => 'Période mise à jour avec succès'
             ]);
 

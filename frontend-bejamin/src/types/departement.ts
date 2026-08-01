@@ -2,8 +2,8 @@ export interface Departement {
   id: number;
   nom: string;
   code: string | null;
-  id_ville: number;
-  ville?: { id: number; nom: string } | null;
+  id_magasin: number;
+  magasin?: { id: number; nom: string } | null;
   actif: boolean;
   created_at?: string;
   updated_at?: string;
@@ -13,7 +13,7 @@ export interface Departement {
 export interface DepartementFormData {
   nom: string;
   code: string;
-  id_ville: string;
+  id_magasin: string;
   actif: boolean;
 }
 

@@ -17,16 +17,21 @@ class FicheTechnique extends Model
         'description',
         'id_produit_fini',
         'rendement',
-        'id_ville',
+        'poids_portion',
+        'unite_poids_portion',
+        'id_magasin',
         'cout_total',
         'cout_unitaire',
+        'prix_kg',
         'actif'
     ];
 
     protected $casts = [
         'rendement' => 'integer',
+        'poids_portion' => 'float',
         'cout_total' => 'decimal:2',
         'cout_unitaire' => 'decimal:2',
+        'prix_kg' => 'decimal:2',
         'actif' => 'boolean',
     ];
 
@@ -35,14 +40,19 @@ class FicheTechnique extends Model
         return $this->belongsTo(Produit::class, 'id_produit_fini');
     }
 
-    public function ville()
+    public function magasin()
     {
-        return $this->belongsTo(Ville::class, 'id_ville');
+        return $this->belongsTo(Magasin::class, 'id_magasin');
     }
 
     public function lignes()
     {
         return $this->hasMany(LigneFicheTechnique::class, 'id_fiche_technique');
+    }
+
+    public function entreeRecettes()
+    {
+        return $this->hasMany(EntreeRecette::class, 'id_fiche_technique');
     }
 
     public function scopeActif($query)
@@ -56,9 +66,9 @@ class FicheTechnique extends Model
                      ->orWhere('nom', 'LIKE', "%{$search}%");
     }
 
-    public function scopeByVille($query, $villeId)
+    public function scopeByMagasin($query, $magasinId)
     {
-        return $query->where('id_ville', $villeId);
+        return $query->where('id_magasin', $magasinId);
     }
 
     public function getCoutTotal()
@@ -74,10 +84,20 @@ class FicheTechnique extends Model
         return 0;
     }
 
+    public function getPrixKg()
+    {
+        $poidsTotal = $this->lignes->sum('poids_net');
+        if ($poidsTotal > 0) {
+            return $this->cout_total / $poidsTotal;
+        }
+        return 0;
+    }
+
     public function updateCouts()
     {
         $this->cout_total = $this->getCoutTotal();
         $this->cout_unitaire = $this->getCoutUnitaire();
+        $this->prix_kg = $this->getPrixKg();
         $this->save();
     }
 }

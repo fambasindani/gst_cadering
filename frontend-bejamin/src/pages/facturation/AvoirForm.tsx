@@ -8,7 +8,9 @@ import { Card, CardContent } from '../../components/ui/card';
 import { SearchableSelect } from '../../components/ui/SearchableSelect';
 import { useToast } from '../../hooks/useToast';
 import { avoirService } from '../../services/avoir';
-import { factureService } from '../../services/facture';
+import { partenaireService } from '../../services/partenaire';
+import { produitService } from '../../services/produit';
+import { retourService } from '../../services/retour';
 import { ArrowLeft, Save, Loader2, FileText, DollarSign } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
@@ -21,23 +23,23 @@ export function AvoirForm() {
 
   const [clients, setClients] = useState<{ id: number; nom: string }[]>([]);
   const [devises, setDevises] = useState<{ id: number; code: string; nom: string; symbole: string }[]>([]);
-  const [factures, setFactures] = useState<{ id: number; numero_facture: string }[]>([]);
+  const [retours, setRetours] = useState<{ id: number; numero_retour: string }[]>([]);
 
   const [values, setValues] = useState({
     date_avoir: new Date().toISOString().split('T')[0],
-    id_partenaire_client: '', id_facture_origine: '', id_retour: '',
+    id_partenaire_client: '', id_retour: '',
     id_devise: '', montant_ht: '', commentaire: '',
   });
 
   useEffect(() => {
     Promise.allSettled([
-      factureService.getClients(),
-      factureService.getDevises(),
-      factureService.list({ per_page: '200' }),
-    ]).then(([c, d, f]) => {
+      partenaireService.getClients(),
+      produitService.getDevises(),
+      retourService.list({ per_page: '200' }),
+    ]).then(([c, d, r]) => {
       if (c.status === 'fulfilled' && c.value.success) setClients(c.value.data.data);
       if (d.status === 'fulfilled' && d.value.success) setDevises(d.value.data.data);
-      if (f.status === 'fulfilled' && f.value.success) setFactures(f.value.data.data.map(fac => ({ id: fac.id, numero_facture: fac.numero_facture })));
+      if (r.status === 'fulfilled' && r.value.success) setRetours(r.value.data.data.map(ret => ({ id: ret.id, numero_retour: ret.numero_retour })));
     });
   }, []);
 
@@ -51,13 +53,12 @@ export function AvoirForm() {
     setSaving(true); setFieldErrors({});
     const payload = {
       ...values,
-      id_facture_origine: values.id_facture_origine || undefined,
       id_retour: values.id_retour || undefined,
     };
     try {
       await avoirService.create(payload as never);
       toast('Avoir créé', 'success');
-      navigate('/facturation/avoirs');
+      navigate('/stock/avoir');
     } catch (err: unknown) {
       const error = err as { errors?: Record<string, string[]>; message?: string };
       if (error.errors) {
@@ -82,7 +83,7 @@ export function AvoirForm() {
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
       <div className="flex items-center gap-4">
-        <button onClick={() => navigate('/facturation/avoirs')}
+        <button onClick={() => navigate('/stock/avoir')}
           className="w-9 h-9 flex items-center justify-center rounded-lg border border-gray-200 text-gray-500 hover:text-gray-700 hover:border-gray-300 transition-colors">
           <ArrowLeft className="w-4 h-4" />
         </button>
@@ -122,30 +123,30 @@ export function AvoirForm() {
               {fieldErrors.id_partenaire_client && <p className="text-xs text-red-500 mt-1">{fieldErrors.id_partenaire_client}</p>}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <LabelIcon error={fieldErrors.id_facture_origine}>Facture d'origine</LabelIcon>
-                <SearchableSelect
-                  options={factures.map(f => ({ id: f.id, nom: f.numero_facture }))}
-                  value={values.id_facture_origine}
-                  onValueChange={(v) => set('id_facture_origine', v)}
-                  placeholder="Optionnelle (aucune)"
-                  searchPlaceholder="Rechercher une facture..."
-                  error={fieldErrors.id_facture_origine}
-                />
-              </div>
-              <div>
-                <LabelIcon icon={DollarSign} required error={fieldErrors.id_devise}>Devise</LabelIcon>
-                <SearchableSelect
-                  options={devises.map(d => ({ id: d.id, nom: `${d.code} - ${d.nom}` }))}
-                  value={values.id_devise}
-                  onValueChange={(v) => set('id_devise', v)}
-                  placeholder="Sélectionner"
-                  searchPlaceholder="Rechercher une devise..."
-                  error={fieldErrors.id_devise}
-                />
-                {fieldErrors.id_devise && <p className="text-xs text-red-500 mt-1">{fieldErrors.id_devise}</p>}
-              </div>
+            <div>
+              <LabelIcon required error={fieldErrors.id_retour}>Retour lié</LabelIcon>
+              <SearchableSelect
+                options={retours.map(r => ({ id: r.id, nom: r.numero_retour }))}
+                value={values.id_retour}
+                onValueChange={(v) => set('id_retour', v)}
+                placeholder="Sélectionner un retour"
+                searchPlaceholder="Rechercher un retour..."
+                error={fieldErrors.id_retour}
+              />
+              {fieldErrors.id_retour && <p className="text-xs text-red-500 mt-1">{fieldErrors.id_retour}</p>}
+            </div>
+
+            <div>
+              <LabelIcon icon={DollarSign} required error={fieldErrors.id_devise}>Devise</LabelIcon>
+              <SearchableSelect
+                options={devises.map(d => ({ id: d.id, nom: `${d.code} - ${d.nom}` }))}
+                value={values.id_devise}
+                onValueChange={(v) => set('id_devise', v)}
+                placeholder="Sélectionner"
+                searchPlaceholder="Rechercher une devise..."
+                error={fieldErrors.id_devise}
+              />
+              {fieldErrors.id_devise && <p className="text-xs text-red-500 mt-1">{fieldErrors.id_devise}</p>}
             </div>
 
             <div>
@@ -165,7 +166,7 @@ export function AvoirForm() {
         </Card>
 
         <div className="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
-          <Button type="button" variant="outline" onClick={() => navigate('/facturation/avoirs')}
+          <Button type="button" variant="outline" onClick={() => navigate('/stock/avoir')}
             className="h-11 px-6 border-gray-300 text-gray-700 hover:bg-gray-50 font-medium rounded-xl">
             Annuler
           </Button>

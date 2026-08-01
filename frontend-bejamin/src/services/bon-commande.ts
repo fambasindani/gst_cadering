@@ -29,8 +29,8 @@ export const bonCommandeService = {
   getPartenaires: (params?: Record<string, string>) =>
     api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/partenaires', { params: { ...params, per_page: '200' } }),
 
-  getVilles: (params?: Record<string, string>) =>
-    api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/villes', { params: { ...params, per_page: '200' } }),
+  getMagasins: (params?: Record<string, string>) =>
+    api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/magasins', { params: { ...params, per_page: '200' } }),
 
   getDevises: (params?: Record<string, string>) =>
     api.get<{ success: boolean; data: { data: { id: number; code: string; nom: string; symbole: string }[] } }>('/config/devises', { params: { ...params, per_page: '200' } }),
@@ -40,12 +40,6 @@ export const bonCommandeService = {
 
   receive: (id: number, data: { receptions: ReceptionItem[] }) =>
     api.patch<BonCommandeResponse>(`/config/bons-commande/${id}/recevoir`, data),
-
-  getZonesByVille: (villeId: number) =>
-    api.get<{ success: boolean; data: { id: number; nom: string; type_zone: string }[] }>(`/config/zones/by-ville/${villeId}`),
-
-  getEmplacementsByZone: (zoneId: number) =>
-    api.get<{ success: boolean; data: { id: number; nom: string }[] }>(`/config/emplacements/by-zone/${zoneId}`),
 };
 
 export interface ReceptionItem {
@@ -53,7 +47,5 @@ export interface ReceptionItem {
   quantite_recue: number;
   numero_lot: string;
   date_peremption: string;
-  id_zone: number;
-  id_emplacement?: number | null;
   prix_achat_ht_unitaire?: number;
 }

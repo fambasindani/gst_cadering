@@ -235,7 +235,7 @@ export function BonCommande() {
                         <TableRow key={b.id} className={cn('hover:bg-royal-50/50 transition-colors', i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50')}>
                           <TableCell className="font-mono text-sm font-medium text-gray-900">{b.numero_commande}</TableCell>
                           <TableCell className="font-medium text-gray-900">{b.partenaire?.nom || '-'}</TableCell>
-                          <TableCell className="hidden md:table-cell text-sm text-gray-600">{b.ville_destination?.nom || '-'}</TableCell>
+                          <TableCell className="hidden md:table-cell text-sm text-gray-600">{b.magasin_destination?.nom || '-'}</TableCell>
                           <TableCell className="hidden lg:table-cell text-sm text-gray-600">{b.date_commande ? new Date(b.date_commande).toLocaleDateString('fr-FR') : '-'}</TableCell>
                           <TableCell className="text-right font-mono text-sm font-medium text-gray-900">
                             {formatCurrency(totalMt, b.devise?.code)}

@@ -27,11 +27,9 @@ import { RetourDetail } from './pages/RetourDetail';
 import { Partenaires } from './pages/Partenaires';
 import { PartenaireForm } from './pages/PartenaireForm';
 import { PartenaireDetails } from './pages/PartenaireDetails';
-import { ConfigurationZone } from './pages/ConfigurationZone';
-import { ConfigurationVille } from './pages/ConfigurationVille';
+import { ConfigurationMagasin } from './pages/ConfigurationMagasin';
 import { ConfigurationDepartement } from './pages/ConfigurationDepartement';
 import { ConfigurationDevise } from './pages/ConfigurationDevise';
-import { ConfigurationEmplacement } from './pages/ConfigurationEmplacement';
 import { ConfigurationCategorie } from './pages/ConfigurationCategorie';
 import { ConfigurationUtilisateurs } from './pages/ConfigurationUtilisateurs';
 import { ConfigurationUtilisateurForm } from './pages/ConfigurationUtilisateurForm';
@@ -59,14 +57,6 @@ import { InventaireTheorique } from './pages/rapports/InventaireTheorique';
 import { ConsommationsClients } from './pages/rapports/ConsommationsClients';
 import { RuptureStock } from './pages/rapports/RuptureStock';
 import { StockBas } from './pages/rapports/StockBas';
-import { DevisList } from './pages/facturation/DevisList';
-import { DevisForm } from './pages/facturation/DevisForm';
-import { DevisDetails } from './pages/facturation/DevisDetails';
-import { FactureList } from './pages/facturation/FactureList';
-import { FactureForm } from './pages/facturation/FactureForm';
-import { FactureDetails } from './pages/facturation/FactureDetails';
-import { PaiementList } from './pages/facturation/PaiementList';
-import { PaiementForm } from './pages/facturation/PaiementForm';
 import { AvoirList } from './pages/facturation/AvoirList';
 import { AvoirForm } from './pages/facturation/AvoirForm';
 import { AvoirDetails } from './pages/facturation/AvoirDetails';
@@ -106,11 +96,9 @@ function App() {
           <Route path="validation/saisie-inventaire" element={<SaisieInventaire />} />
           <Route path="validation/ajustement" element={<Ajustement />} />
           <Route path="validation/ajustement-produit" element={<AjustementProduit />} />
-          <Route path="configuration/zone" element={<ConfigurationZone />} />
-          <Route path="configuration/ville" element={<ConfigurationVille />} />
+          <Route path="configuration/magasin" element={<ConfigurationMagasin />} />
           <Route path="configuration/departement" element={<ConfigurationDepartement />} />
           <Route path="configuration/devise" element={<ConfigurationDevise />} />
-          <Route path="configuration/emplacement" element={<ConfigurationEmplacement />} />
           <Route path="configuration/categorie" element={<ConfigurationCategorie />} />
           <Route path="partenaire" element={<Partenaires />} />
           <Route path="partenaire/creer" element={<PartenaireForm />} />
@@ -125,25 +113,15 @@ function App() {
           <Route path="stock/retour/creer" element={<RetourForm />} />
           <Route path="stock/retour/:id/modifier" element={<RetourForm />} />
           <Route path="stock/retour/:id" element={<RetourDetail />} />
+          <Route path="stock/avoir" element={<AvoirList />} />
+          <Route path="stock/avoir/creer" element={<AvoirForm />} />
+          <Route path="stock/avoir/:id" element={<AvoirDetails />} />
           <Route path="recettes/creation" element={<FicheTechniqueList />} />
           <Route path="recettes/creation/nouveau" element={<FicheTechniqueForm />} />
           <Route path="recettes/creation/:id/:action" element={<FicheTechniqueForm />} />
           <Route path="recettes/creation/:id" element={<FicheTechniqueDetails />} />
           <Route path="recettes/entree" element={<EntreeRecette />} />
           <Route path="recettes/rapport" element={<RapportRecette />} />
-          <Route path="facturation/devis" element={<DevisList />} />
-          <Route path="facturation/devis/creer" element={<DevisForm />} />
-          <Route path="facturation/devis/:id/modifier" element={<DevisForm />} />
-          <Route path="facturation/devis/:id" element={<DevisDetails />} />
-          <Route path="facturation/factures" element={<FactureList />} />
-          <Route path="facturation/factures/creer" element={<FactureForm />} />
-          <Route path="facturation/factures/:id/modifier" element={<FactureForm />} />
-          <Route path="facturation/factures/:id" element={<FactureDetails />} />
-          <Route path="facturation/paiements" element={<PaiementList />} />
-          <Route path="facturation/paiements/creer" element={<PaiementForm />} />
-          <Route path="facturation/avoirs" element={<AvoirList />} />
-          <Route path="facturation/avoirs/creer" element={<AvoirForm />} />
-          <Route path="facturation/avoirs/:id" element={<AvoirDetails />} />
           <Route path="rapports/bon-commande" element={<BonCommandeRapport />} />
           <Route path="rapports/bon-livraison" element={<BonLivraisonRapport />} />
           <Route path="rapports/stock" element={<RapportStock />} />

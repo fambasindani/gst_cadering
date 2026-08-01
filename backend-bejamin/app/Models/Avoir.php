@@ -15,7 +15,6 @@ class Avoir extends Model
         'numero_avoir',
         'date_avoir',
         'id_partenaire_client',
-        'id_facture_origine',
         'id_retour',
         'id_devise',
         'montant_ht',
@@ -31,11 +30,6 @@ class Avoir extends Model
     public function client()
     {
         return $this->belongsTo(Partenaire::class, 'id_partenaire_client');
-    }
-
-    public function factureOrigine()
-    {
-        return $this->belongsTo(Facture::class, 'id_facture_origine');
     }
 
     public function retour()

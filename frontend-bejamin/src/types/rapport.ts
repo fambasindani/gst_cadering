@@ -27,18 +27,67 @@ export interface BonLivraisonRapport {
   };
 }
 
-export interface StockParProduit {
-  produit: Produit;
-  quantite_totale: number;
-  lots: Lot[];
+export interface RapportStockLigne {
+  numero: number;
+  designation: string;
+  code_article: string;
+  unite: string;
+  prix_unitaire: number;
+  devise: string;
+  qte_initiale: number;
+  valeur_initiale: number;
+  qte_entree: number;
+  valeur_entree: number;
+  qte_sortie: number;
+  valeur_sortie: number;
+  qte_finale: number;
+  valeur_finale: number;
+}
+
+export interface RapportStockPhysiqueLogiqueLigne {
+  numero: number;
+  designation: string;
+  code_article: string;
+  unite: string;
+  prix_unitaire: number;
+  devise: string;
+  qte_logique: number;
+  valeur_logique: number;
+  qte_physique: number;
+  valeur_physique: number;
+  ecart: number;
+  valeur_ecart: number;
+}
+
+export interface RapportStockPhysiqueLogiqueData {
+  lignes: RapportStockPhysiqueLogiqueLigne[];
+  statistiques: {
+    total_produits: number;
+    total_qte_logique: number;
+    total_valeur_logique: number;
+    total_qte_physique: number;
+    total_valeur_physique: number;
+    total_ecart: number;
+    total_valeur_ecart: number;
+  };
 }
 
 export interface RapportStockData {
-  stock_par_produit: StockParProduit[];
+  lignes: RapportStockLigne[];
+  periode: {
+    debut: string;
+    fin: string;
+  };
   statistiques: {
     total_produits: number;
-    total_lots: number;
-    total_quantite: number;
+    total_qte_initiale: number;
+    total_qte_entree: number;
+    total_qte_sortie: number;
+    total_qte_finale: number;
+    total_valeur_initiale: number;
+    total_valeur_entree: number;
+    total_valeur_sortie: number;
+    total_valeur_finale: number;
   };
 }
 
@@ -66,17 +115,56 @@ export interface ClientRapport {
   };
 }
 
+export interface RapportClientLigne {
+  numero: number;
+  id_client: number;
+  client: string;
+  numero_commande: string;
+  date_commande: string;
+  designation: string;
+  article: string;
+  unite: string;
+  prix_unitaire: number;
+  devise: string;
+  quantite: number;
+  valeur: number;
+}
+
+export interface RapportClientData {
+  lignes: RapportClientLigne[];
+  statistiques: {
+    total_lignes: number;
+    total_quantite: number;
+    total_valeur: number;
+  };
+}
+
 export interface SortieParProduit {
   produit: Produit;
   quantite_totale: number;
   sorties: MouvementStock[];
 }
 
+export interface RapportSortieLigne {
+  numero: number;
+  date: string;
+  article: string;
+  code_article: string;
+  unite: string;
+  prix_unitaire: number;
+  devise: string;
+  quantite: number;
+  valeur: number;
+  local: string;
+  numero_lot: string;
+}
+
 export interface RapportSortieData {
-  sorties_par_produit: SortieParProduit[];
+  lignes: RapportSortieLigne[];
   statistiques: {
-    total_sorties: number;
+    total_lignes: number;
     total_quantite: number;
+    total_valeur: number;
   };
 }
 

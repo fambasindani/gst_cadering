@@ -104,7 +104,7 @@ export function BonCommandePDF({ bon }: Props) {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Informations</Text>
           <View style={styles.row}><Text style={styles.label}>Fournisseur:</Text><Text style={styles.value}>{bon.partenaire?.nom || '-'}</Text></View>
-          <View style={styles.row}><Text style={styles.label}>Destination:</Text><Text style={styles.value}>{bon.ville_destination?.nom || '-'}</Text></View>
+          <View style={styles.row}><Text style={styles.label}>Destination:</Text><Text style={styles.value}>{bon.magasin_destination?.nom || '-'}</Text></View>
           {bon.commentaire ? (
             <View style={styles.row}><Text style={styles.label}>Commentaire:</Text><Text style={styles.value}>{bon.commentaire}</Text></View>
           ) : null}

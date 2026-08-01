@@ -80,23 +80,15 @@ class Produit extends Model
                     ->first();
     }
 
-    public function getDernierPrixVente()
-    {
-        return $this->historiquePrix()
-                    ->whereNotNull('prix_vente_ht')
-                    ->orderBy('date_application', 'desc')
-                    ->first();
-    }
-
     public function getStockTotal()
     {
         return $this->lots()->sum('quantite_disponible');
     }
 
-    public function getStockParVille($villeId)
+    public function getStockParMagasin($magasinId)
     {
         return $this->lots()
-                    ->where('id_ville', $villeId)
+                    ->where('id_magasin', $magasinId)
                     ->sum('quantite_disponible');
     }
 }

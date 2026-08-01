@@ -5,22 +5,12 @@ export interface Role {
   actif: boolean;
 }
 
-export interface Ville {
+export interface Magasin {
   id: number;
   nom: string;
 }
 
 export interface Departement {
-  id: number;
-  nom: string;
-}
-
-export interface Zone {
-  id: number;
-  nom: string;
-}
-
-export interface Emplacement {
   id: number;
   nom: string;
 }
@@ -32,15 +22,12 @@ export interface Utilisateur {
   email: string;
   full_name: string;
   role: Role;
-  ville: Ville;
+  magasin: Magasin;
   departement: Departement;
-  zone: Zone | null;
-  emplacement: Emplacement | null;
   permissions: string[];
   actif: boolean;
   derniere_connexion?: string | null;
 }
-
 export interface LoginRequest {
   email: string;
   mot_de_passe: string;
@@ -80,10 +67,8 @@ export interface UtilisateurFormData {
   mot_de_passe?: string;
   mot_de_passe_confirmation?: string;
   id_role: string;
-  id_ville: string;
+  id_magasin: string;
   id_departement: string;
-  id_zone: string;
-  id_emplacement: string;
   actif: boolean;
 }
 

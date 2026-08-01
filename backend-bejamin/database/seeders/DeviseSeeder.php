@@ -10,9 +10,7 @@ class DeviseSeeder extends Seeder
     public function run(): void
     {
         $devises = [
-            
             ['code' => 'USD', 'nom' => 'Dollar US', 'symbole' => '$', 'actif' => true],
-            ['code' => 'EUR', 'nom' => 'Euro', 'symbole' => '€', 'actif' => true],
         ];
 
         foreach ($devises as $devise) {

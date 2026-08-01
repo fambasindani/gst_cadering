@@ -51,7 +51,7 @@ export function BonLivraisonRapport() {
     { key: 'numero', label: 'N° commande', width: '20%', render: (r) => r.numero },
     { key: 'date', label: 'Date', width: '16%', render: (r) => r.date },
     { key: 'fournisseur', label: 'Fournisseur', width: '28%', render: (r) => r.fournisseur },
-    { key: 'ville', label: 'Ville', width: '16%', render: (r) => r.ville },
+    { key: 'magasin', label: 'Magasin', width: '16%', render: (r) => r.magasin },
     { key: 'qte', label: 'Qté reçue', width: '20%', align: 'right', render: (r) => r.qte },
   ];
 
@@ -61,7 +61,7 @@ export function BonLivraisonRapport() {
       numero: b.numero_commande,
       date: b.date_commande ? new Date(b.date_commande).toLocaleDateString('fr-FR') : '-',
       fournisseur: b.partenaire?.nom ?? '-',
-      ville: b.ville_destination?.nom ?? '-',
+      magasin: b.magasin_destination?.nom ?? '-',
       qte: String(totalQte),
     };
   });
@@ -179,7 +179,7 @@ export function BonLivraisonRapport() {
                     <TableHead className="font-semibold text-gray-600">N° commande</TableHead>
                     <TableHead className="font-semibold text-gray-600">Date</TableHead>
                     <TableHead className="font-semibold text-gray-600">Fournisseur</TableHead>
-                    <TableHead className="font-semibold text-gray-600">Ville</TableHead>
+                    <TableHead className="font-semibold text-gray-600">Magasin</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Qté reçue</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -208,7 +208,7 @@ export function BonLivraisonRapport() {
                     <TableHead className="font-semibold text-gray-600">N° commande</TableHead>
                     <TableHead className="font-semibold text-gray-600">Date</TableHead>
                     <TableHead className="font-semibold text-gray-600">Fournisseur</TableHead>
-                    <TableHead className="font-semibold text-gray-600">Ville</TableHead>
+                    <TableHead className="font-semibold text-gray-600">Magasin</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Qté reçue</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -220,7 +220,7 @@ export function BonLivraisonRapport() {
                         <TableCell className="font-mono text-sm font-medium text-royal-700">{b.numero_commande}</TableCell>
                         <TableCell className="text-sm text-gray-600">{b.date_commande ? new Date(b.date_commande).toLocaleDateString('fr-FR') : '-'}</TableCell>
                         <TableCell className="font-medium text-gray-900">{b.partenaire?.nom ?? '-'}</TableCell>
-                        <TableCell className="text-sm text-gray-600">{b.ville_destination?.nom ?? '-'}</TableCell>
+                        <TableCell className="text-sm text-gray-600">{b.magasin_destination?.nom ?? '-'}</TableCell>
                         <TableCell className="text-right font-mono text-sm font-semibold text-gray-900">{totalQte}</TableCell>
                       </TableRow>
                     );

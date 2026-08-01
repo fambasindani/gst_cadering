@@ -83,7 +83,6 @@ export function ProduitDetails() {
 
   const [prixForm, setPrixForm] = useState({
     prix_achat_ht: '',
-    prix_vente_ht: '',
     id_devise: '',
     date_application: new Date().toISOString().slice(0, 10),
     commentaire: '',
@@ -99,7 +98,6 @@ export function ProduitDetails() {
       if (editingPrix) {
         await produitService.updatePrix(editingPrix.id, {
           prix_achat_ht: Number(prixForm.prix_achat_ht),
-          prix_vente_ht: prixForm.prix_vente_ht ? Number(prixForm.prix_vente_ht) : null,
           id_devise: Number(prixForm.id_devise),
           date_application: prixForm.date_application || undefined,
           commentaire: prixForm.commentaire || undefined,
@@ -109,7 +107,6 @@ export function ProduitDetails() {
         await produitService.addPrix({
           id_produit: Number(id),
           prix_achat_ht: Number(prixForm.prix_achat_ht),
-          prix_vente_ht: prixForm.prix_vente_ht ? Number(prixForm.prix_vente_ht) : null,
           id_devise: Number(prixForm.id_devise),
           date_application: prixForm.date_application || undefined,
           commentaire: prixForm.commentaire || undefined,
@@ -120,7 +117,6 @@ export function ProduitDetails() {
       setEditingPrix(null);
       setPrixForm({
         prix_achat_ht: '',
-        prix_vente_ht: '',
         id_devise: '',
         date_application: new Date().toISOString().slice(0, 10),
         commentaire: '',
@@ -157,7 +153,6 @@ export function ProduitDetails() {
     setEditingPrix(h);
     setPrixForm({
       prix_achat_ht: String(h.prix_achat_ht),
-      prix_vente_ht: h.prix_vente_ht != null ? String(h.prix_vente_ht) : '',
       id_devise: String(h.id_devise),
       date_application: h.date_application || new Date().toISOString().slice(0, 10),
       commentaire: h.commentaire || '',
@@ -169,7 +164,6 @@ export function ProduitDetails() {
     setEditingPrix(null);
     setPrixForm({
       prix_achat_ht: '',
-      prix_vente_ht: '',
       id_devise: '',
       date_application: new Date().toISOString().slice(0, 10),
       commentaire: '',
@@ -281,14 +275,6 @@ export function ProduitDetails() {
                       label="Prix d'achat HT"
                       value={formatCurrency(latestPrice.prix_achat_ht, latestPrice.devise?.code)}
                     />
-                    <DetailItem
-                      icon={<TrendingUp className="w-4 h-4" />}
-                      label="Prix de vente HT"
-                      value={latestPrice.prix_vente_ht != null
-                        ? formatCurrency(latestPrice.prix_vente_ht, latestPrice.devise?.code)
-                        : '-'
-                      }
-                    />
                   </>
                 ) : null}
                 <div className="md:col-span-2">
@@ -328,7 +314,6 @@ export function ProduitDetails() {
                       <TableRow>
                         <TableHead className="font-semibold text-gray-600">Date</TableHead>
                         <TableHead className="text-right font-semibold text-gray-600">Prix achat HT</TableHead>
-                        <TableHead className="text-right font-semibold text-gray-600">Prix vente HT</TableHead>
                         <TableHead className="font-semibold text-gray-600">Devise</TableHead>
                         <TableHead className="hidden md:table-cell font-semibold text-gray-600">Commentaire</TableHead>
                         <TableHead className="text-center font-semibold text-gray-600">Actions</TableHead>
@@ -342,12 +327,6 @@ export function ProduitDetails() {
                           </TableCell>
                           <TableCell className="text-right font-mono text-sm font-medium text-gray-900">
                             {formatCurrency(h.prix_achat_ht)}
-                          </TableCell>
-                          <TableCell className="text-right font-mono text-sm text-gray-700">
-                            {h.prix_vente_ht != null
-                              ? formatCurrency(h.prix_vente_ht)
-                              : '-'
-                            }
                           </TableCell>
                           <TableCell className="text-sm text-gray-700">{h.devise?.code || '-'}</TableCell>
                           <TableCell className="hidden md:table-cell text-sm text-gray-500">{h.commentaire || '-'}</TableCell>
@@ -428,12 +407,12 @@ export function ProduitDetails() {
                     )}
                   </div>
 
-                  {stock.stock_par_ville.length > 0 ? (
+                  {stock.stock_par_magasin.length > 0 ? (
                     <div className="space-y-2 pt-2 border-t border-gray-100">
-                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Répartition par ville</p>
-                      {stock.stock_par_ville.map((sv) => (
-                        <div key={sv.ville_id} className="flex items-center justify-between py-1.5">
-                          <span className="text-sm text-gray-700">{sv.ville}</span>
+                      <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Répartition par magasin</p>
+                      {stock.stock_par_magasin.map((sv) => (
+                        <div key={sv.magasin_id} className="flex items-center justify-between py-1.5">
+                          <span className="text-sm text-gray-700">{sv.magasin}</span>
                           <span
                             className={cn(
                               'text-sm font-mono font-semibold',
@@ -467,15 +446,6 @@ export function ProduitDetails() {
                   <div className="text-2xl font-bold text-gray-900 font-mono">
                     {formatCurrency(latestPrice.prix_achat_ht)}
                     <span className="text-sm font-medium text-gray-500 ml-1">{latestPrice.devise?.code || ''}</span>
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-500">Prix de vente HT</div>
-                  <div className="text-xl font-semibold text-gray-800 font-mono">
-                    {latestPrice.prix_vente_ht != null
-                      ? formatCurrency(latestPrice.prix_vente_ht, latestPrice.devise?.code)
-                      : '-'
-                    }
                   </div>
                 </div>
                 <div className="text-xs text-gray-400 pt-2 border-t border-gray-100">
@@ -551,22 +521,6 @@ export function ProduitDetails() {
               />
               {prixErrors.prix_achat_ht ? (
                 <p className="text-xs text-red-400 mt-1">{prixErrors.prix_achat_ht}</p>
-              ) : null}
-            </div>
-
-            <div className="space-y-1.5">
-              <Label className={cn('text-sm font-medium', prixErrors.prix_vente_ht ? 'text-red-400' : 'text-white/80')}>
-                Prix de vente HT
-              </Label>
-              <Input
-                type="number" step="0.01" min="0"
-                value={prixForm.prix_vente_ht}
-                onChange={(e) => setPrixForm((p) => ({ ...p, prix_vente_ht: e.target.value }))}
-                className={cn('bg-royal-700 text-white placeholder:text-white/40 border-royal-600 focus:border-royal-500 focus:ring-royal-500', prixErrors.prix_vente_ht && 'border-red-400')}
-                placeholder="0.00"
-              />
-              {prixErrors.prix_vente_ht ? (
-                <p className="text-xs text-red-400 mt-1">{prixErrors.prix_vente_ht}</p>
               ) : null}
             </div>
 

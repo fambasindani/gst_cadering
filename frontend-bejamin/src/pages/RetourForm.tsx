@@ -25,20 +25,20 @@ export function RetourForm() {
   const [submitting, setSubmitting] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [retourType, setRetourType] = useState<'client' | 'fournisseur' | null>(null);
-  const [villes, setVilles] = useState<{ id: number; nom: string }[]>([]);
+  const [magasins, setMagasins] = useState<{ id: number; nom: string }[]>([]);
   const [clients, setClients] = useState<{ id: number; nom: string }[]>([]);
   const [fournisseurs, setFournisseurs] = useState<{ id: number; nom: string }[]>([]);
   const [lots, setLots] = useState<{ id: number; numero_lot: string; quantite_disponible: number; produit?: { id: number; nom: string } | null }[]>([]);
   const [form, setForm] = useState({
     date_retour: '', id_partenaire_client: '',
-    id_partenaire_dest: '', id_ville: '', commentaire: '',
+    id_partenaire_dest: '', id_magasin: '', commentaire: '',
     lignes: [{ id_lot: '', quantite_retournee: '', motif: '' }],
   });
 
   const errClass = (field: string) => fieldErrors[field] && 'border-red-400 focus-visible:border-red-400 focus-visible:ring-red-400/30';
 
   useEffect(() => {
-    bonCommandeService.getVilles().then(r => { if (r.success) setVilles(r.data.data); }).catch(() => {});
+    bonCommandeService.getMagasins().then(r => { if (r.success) setMagasins(r.data.data); }).catch(() => {});
     partenaireService.getClients().then(r => { if (r.success) setClients(r.data.data); }).catch(() => {});
     partenaireService.getFournisseurs().then(r => { if (r.success) setFournisseurs(r.data.data); }).catch(() => {});
     lotService.list({ per_page: '500', statut: 'VALIDÉ' }).then(r => { if (r.success) setLots(r.data.data); }).catch(() => {});
@@ -54,7 +54,7 @@ export function RetourForm() {
               date_retour: r.date_retour.split('T')[0],
               id_partenaire_client: r.id_partenaire_client ? String(r.id_partenaire_client) : '',
               id_partenaire_dest: r.id_partenaire_dest ? String(r.id_partenaire_dest) : '',
-              id_ville: String(r.id_ville),
+              id_magasin: String(r.id_magasin),
               commentaire: r.commentaire || '',
               lignes: r.lignes?.map(l => ({
                 id_lot: String(l.id_lot),
@@ -103,7 +103,7 @@ export function RetourForm() {
     const errors: Record<string, string> = {};
 
     if (!form.date_retour) errors.date_retour = 'La date est requise';
-    if (!form.id_ville) errors.id_ville = 'La ville est requise';
+    if (!form.id_magasin) errors.id_magasin = 'Le magasin est requis';
     if (!retourType) {
       errors.retourType = 'Sélectionnez le type de retour';
     } else if (retourType === 'client' && !form.id_partenaire_client) {
@@ -124,7 +124,7 @@ export function RetourForm() {
     try {
       const payload: Record<string, unknown> = {
         date_retour: form.date_retour,
-        id_ville: Number(form.id_ville),
+        id_magasin: Number(form.id_magasin),
         lignes: form.lignes
           .filter(l => l.id_lot && l.quantite_retournee)
           .map(l => ({ id_lot: Number(l.id_lot), quantite_retournee: Number(l.quantite_retournee), motif: l.motif || undefined })),
@@ -243,14 +243,14 @@ export function RetourForm() {
                 )}
 
                 <div className="space-y-1.5">
-                  <LabelIcon icon={MapPin} required error={fieldErrors.id_ville}>Ville</LabelIcon>
+                  <LabelIcon icon={MapPin} required error={fieldErrors.id_magasin}>Magasin</LabelIcon>
                   <SearchableSelect
-                    options={villes}
-                    value={form.id_ville}
-                    onValueChange={v => set('id_ville', v)}
-                    placeholder="Sélectionner une ville"
-                    searchPlaceholder="Rechercher une ville..."
-                    error={fieldErrors.id_ville}
+                    options={magasins}
+                    value={form.id_magasin}
+                    onValueChange={v => set('id_magasin', v)}
+                    placeholder="Sélectionner un magasin"
+                    searchPlaceholder="Rechercher un magasin..."
+                    error={fieldErrors.id_magasin}
                   />
                 </div>
               </CardContent>

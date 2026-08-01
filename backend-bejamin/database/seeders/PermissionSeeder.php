@@ -19,12 +19,12 @@ class PermissionSeeder extends Seeder
             ['nom' => 'Supprimer une unité', 'code' => 'config:unites:delete'],
 
             // ============================================================
-            // CONFIG - Villes
+            // CONFIG - Magasins
             // ============================================================
-            ['nom' => 'Voir les villes', 'code' => 'config:villes:view'],
-            ['nom' => 'Créer une ville', 'code' => 'config:villes:create'],
-            ['nom' => 'Modifier une ville', 'code' => 'config:villes:update'],
-            ['nom' => 'Supprimer une ville', 'code' => 'config:villes:delete'],
+            ['nom' => 'Voir les magasins', 'code' => 'config:magasins:view'],
+            ['nom' => 'Créer un magasin', 'code' => 'config:magasins:create'],
+            ['nom' => 'Modifier un magasin', 'code' => 'config:magasins:update'],
+            ['nom' => 'Supprimer un magasin', 'code' => 'config:magasins:delete'],
 
             // ============================================================
             // CONFIG - Départements
@@ -33,22 +33,6 @@ class PermissionSeeder extends Seeder
             ['nom' => 'Créer un département', 'code' => 'config:departements:create'],
             ['nom' => 'Modifier un département', 'code' => 'config:departements:update'],
             ['nom' => 'Supprimer un département', 'code' => 'config:departements:delete'],
-
-            // ============================================================
-            // CONFIG - Zones
-            // ============================================================
-            ['nom' => 'Voir les zones', 'code' => 'config:zones:view'],
-            ['nom' => 'Créer une zone', 'code' => 'config:zones:create'],
-            ['nom' => 'Modifier une zone', 'code' => 'config:zones:update'],
-            ['nom' => 'Supprimer une zone', 'code' => 'config:zones:delete'],
-
-            // ============================================================
-            // CONFIG - Emplacements
-            // ============================================================
-            ['nom' => 'Voir les emplacements', 'code' => 'config:emplacements:view'],
-            ['nom' => 'Créer un emplacement', 'code' => 'config:emplacements:create'],
-            ['nom' => 'Modifier un emplacement', 'code' => 'config:emplacements:update'],
-            ['nom' => 'Supprimer un emplacement', 'code' => 'config:emplacements:delete'],
 
             // ============================================================
             // CONFIG - Catégories
@@ -176,29 +160,6 @@ class PermissionSeeder extends Seeder
             ['nom' => 'Valider un retour', 'code' => 'config:retours:validate'],
 
             // ============================================================
-            // FACTURATION - Devis
-            // ============================================================
-            ['nom' => 'Voir les devis', 'code' => 'facturation:devis:view'],
-            ['nom' => 'Créer un devis', 'code' => 'facturation:devis:create'],
-            ['nom' => 'Modifier un devis', 'code' => 'facturation:devis:update'],
-            ['nom' => 'Supprimer un devis', 'code' => 'facturation:devis:delete'],
-
-            // ============================================================
-            // FACTURATION - Factures
-            // ============================================================
-            ['nom' => 'Voir les factures', 'code' => 'facturation:facture:view'],
-            ['nom' => 'Créer une facture', 'code' => 'facturation:facture:create'],
-            ['nom' => 'Modifier une facture', 'code' => 'facturation:facture:update'],
-            ['nom' => 'Supprimer une facture', 'code' => 'facturation:facture:delete'],
-
-            // ============================================================
-            // FACTURATION - Paiements
-            // ============================================================
-            ['nom' => 'Voir les paiements', 'code' => 'facturation:paiement:view'],
-            ['nom' => 'Créer un paiement', 'code' => 'facturation:paiement:create'],
-            ['nom' => 'Supprimer un paiement', 'code' => 'facturation:paiement:delete'],
-
-            // ============================================================
             // FACTURATION - Avoirs
             // ============================================================
             ['nom' => 'Voir les avoirs', 'code' => 'facturation:avoir:view'],
@@ -231,7 +192,9 @@ class PermissionSeeder extends Seeder
             ['nom' => 'Supprimer une fiche technique', 'code' => 'config:fiche_technique:delete'],
 
             // Recettes (Production)
+            ['nom' => 'Voir les entrées recette', 'code' => 'config:recette:view'],
             ['nom' => 'Produire à partir d\'une recette', 'code' => 'config:recette:create'],
+            ['nom' => 'Supprimer une entrée recette', 'code' => 'config:recette:delete'],
 
             // Notifications
             ['nom' => 'Voir les notifications', 'code' => 'config:notifications:view'],
@@ -248,6 +211,12 @@ class PermissionSeeder extends Seeder
                 ]
             );
         }
+
+        Permission::whereIn('code', [
+            'config:villes:view', 'config:villes:create', 'config:villes:update', 'config:villes:delete',
+            'config:zones:view', 'config:zones:create', 'config:zones:update', 'config:zones:delete',
+            'config:emplacements:view', 'config:emplacements:create', 'config:emplacements:update', 'config:emplacements:delete',
+        ])->delete();
 
         $this->command->info('✅ ' . count($permissions) . ' permissions créées avec succès !');
     }

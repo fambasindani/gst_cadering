@@ -5,7 +5,11 @@ import { Input } from '../components/ui/input';
 import { Textarea } from '../components/ui/textarea';
 import { Label } from '../components/ui/label';
 import { Card, CardContent } from '../components/ui/card';
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from '../components/ui/select';
 import { SearchableSelect } from '../components/ui/SearchableSelect';
+import { Checkbox } from '../components/ui/checkbox';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '../components/ui/table';
@@ -15,14 +19,19 @@ import { useToast } from '../hooks/useToast';
 import { api } from '../services/api';
 import { ficheTechniqueService } from '../services/fiche-technique';
 import { produitService } from '../services/produit';
-import { ArrowLeft, Save, Loader2, Plus, Trash2, FileText, MapPin, Hash, DollarSign, Package, Download } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Plus, Trash2, FileText, MapPin, Hash, DollarSign, Package, Download, Scale } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { formatCurrency } from '../lib/format';
 
 interface IngredientRow {
   key: string;
   id_produit_ingredient: string;
-  quantite_ingredient: string;
   id_unite: string;
+  rendement: string;
+  prix_unitaire: number;
+  poids_net: string;
+  poids_brut: string;
+  rendement_apres_cuisson: boolean;
   commentaire: string;
 }
 
@@ -30,10 +39,24 @@ let rowKeyCounter = 0;
 const newRow = (): IngredientRow => ({
   key: `ing_${++rowKeyCounter}`,
   id_produit_ingredient: '',
-  quantite_ingredient: '',
   id_unite: '',
+  rendement: '100',
+  prix_unitaire: 0,
+  poids_net: '',
+  poids_brut: '',
+  rendement_apres_cuisson: false,
   commentaire: '',
 });
+
+const getDernierPrix = async (produitId: number): Promise<number> => {
+  try {
+    const res = await produitService.get(produitId);
+    if (res.success && res.data.historiquePrix && res.data.historiquePrix.length > 0) {
+      return Number(res.data.historiquePrix[0].prix_achat_ht) || 0;
+    }
+  } catch { /* */ }
+  return 0;
+};
 
 export function FicheTechniqueForm() {
   const { id, action } = useParams<{ id: string; action: string }>();
@@ -47,11 +70,11 @@ export function FicheTechniqueForm() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const [produits, setProduits] = useState<{ id: number; nom: string; code_article: string }[]>([]);
-  const [villes, setVilles] = useState<{ id: number; nom: string }[]>([]);
+  const [magasins, setMagasins] = useState<{ id: number; nom: string }[]>([]);
   const [unites, setUnites] = useState<{ id: number; nom: string; symbole: string }[]>([]);
 
   const [values, setValues] = useState({
-    code: '', nom: '', description: '', id_produit_fini: '', rendement: '1', id_ville: '',
+    code: '', nom: '', description: '', rendement: '1', poids_portion: '', unite_poids_portion: 'gm', id_magasin: '',
   });
 
   const [ingredients, setIngredients] = useState<IngredientRow[]>([newRow()]);
@@ -62,10 +85,10 @@ export function FicheTechniqueForm() {
     (async () => {
       try {
         const [v, u] = await Promise.all([
-          api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/villes'),
+          api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/magasins'),
           api.get<{ success: boolean; data: { data: { id: number; nom: string; symbole: string }[] } }>('/config/unites'),
         ]);
-        if (v.success) setVilles(v.data.data);
+        if (v.success) setMagasins(v.data.data);
         if (u.success) setUnites(u.data.data);
       } catch { /* */ }
     })();
@@ -81,13 +104,16 @@ export function FicheTechniqueForm() {
             setFicheData(f);
             setValues({
               code: f.code, nom: f.nom, description: f.description || '',
-              id_produit_fini: String(f.id_produit_fini), rendement: String(f.rendement),
-              id_ville: String(f.id_ville),
+              rendement: String(f.rendement), poids_portion: f.poids_portion ? String(Number(f.poids_portion)) : '',
+              unite_poids_portion: f.unite_poids_portion || 'gm',
+              id_magasin: String(f.id_magasin),
             });
             if (f.lignes && f.lignes.length > 0) {
               setIngredients(f.lignes.map((l) => ({
                 key: `ing_${++rowKeyCounter}`, id_produit_ingredient: String(l.id_produit_ingredient),
-                quantite_ingredient: String(l.quantite_ingredient), id_unite: String(l.id_unite),
+                id_unite: String(l.id_unite), rendement: String(l.rendement ?? 100),
+                prix_unitaire: Number(l.prix_unitaire) || 0, poids_net: String(l.poids_net),
+                poids_brut: String(l.poids_brut ?? l.poids_net), rendement_apres_cuisson: Boolean(l.rendement_apres_cuisson),
                 commentaire: l.commentaire || '',
               })));
             }
@@ -103,23 +129,46 @@ export function FicheTechniqueForm() {
     if (fieldErrors[field]) setFieldErrors(prev => { const n = { ...prev }; delete n[field]; return n; });
   };
 
-  const updateIngredient = (key: string, field: string, value: string) => {
+  const updateIngredient = (key: string, field: string, value: string | boolean) => {
     setIngredients(prev => prev.map(r => r.key === key ? { ...r, [field]: value } : r));
+  };
+
+  const handleIngredientChange = async (key: string, produitId: string) => {
+    updateIngredient(key, 'id_produit_ingredient', produitId);
+    const prix = await getDernierPrix(Number(produitId));
+    setIngredients(prev => prev.map(r => r.key === key ? { ...r, prix_unitaire: prix } : r));
   };
 
   const removeIngredient = (key: string) => { if (ingredients.length > 1) setIngredients(prev => prev.filter(r => r.key !== key)); };
   const addIngredient = () => setIngredients(prev => [...prev, newRow()]);
+
+  const coutMatiereTotal = ingredients.reduce((sum, r) => {
+    const poidsNet = Number(r.poids_net) || 0;
+    return sum + poidsNet * r.prix_unitaire;
+  }, 0);
+  const coutUnitaire = values.rendement && Number(values.rendement) > 0 ? coutMatiereTotal / Number(values.rendement) : 0;
+  const poidsTotal = ingredients.reduce((sum, r) => sum + (Number(r.poids_net) || 0), 0);
+  const prixKg = poidsTotal > 0 ? coutMatiereTotal / poidsTotal : 0;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true); setFieldErrors({});
     const payload = {
       ...values, rendement: Number(values.rendement),
-      lignes: ingredients.map(({ key, ...r }) => ({ ...r, quantite_ingredient: Number(r.quantite_ingredient) })),
+      poids_portion: values.poids_portion ? Number(values.poids_portion) : undefined,
+      lignes: ingredients.map((r) => ({
+        id_produit_ingredient: r.id_produit_ingredient,
+        id_unite: r.id_unite,
+        rendement: Number(r.rendement) || 100,
+        poids_net: Number(r.poids_net),
+        poids_brut: Number(r.poids_brut) || Number(r.poids_net),
+        rendement_apres_cuisson: r.rendement_apres_cuisson,
+        commentaire: r.commentaire,
+      })),
     };
     try {
       if (isEdit && id) {
-        await ficheTechniqueService.update(Number(id), payload);
+        await ficheTechniqueService.update(Number(id), payload as never);
         toast('Fiche technique modifiée', 'success');
         navigate(`/recettes/creation/${id}`);
       } else {
@@ -196,7 +245,7 @@ export function FicheTechniqueForm() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <LabelIcon icon={Hash} required error={fieldErrors.code}>Code</LabelIcon>
+                    <LabelIcon icon={Hash} error={fieldErrors.code}>Code</LabelIcon>
                     <Input value={values.code} onChange={(e) => set('code', e.target.value)}
                       placeholder="Auto-généré si vide" readOnly={isView}
                       className={cn('h-11 border-gray-200 shadow-sm', errorClass(fieldErrors.code))} />
@@ -211,41 +260,45 @@ export function FicheTechniqueForm() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <LabelIcon icon={Package} required error={fieldErrors.id_produit_fini}>Produit fini</LabelIcon>
-                    <SearchableSelect
-                      options={produits.map(p => ({ id: p.id, nom: p.nom, sousTitre: p.code_article ? `[${p.code_article}]` : undefined }))}
-                      value={values.id_produit_fini}
-                      onValueChange={(v) => set('id_produit_fini', v)}
-                      placeholder="Sélectionner"
-                      searchPlaceholder="Rechercher un produit..."
-                      error={fieldErrors.id_produit_fini}
-                      disabled={isView}
-                      className={cn('w-full', errorClass(fieldErrors.id_produit_fini))}
-                    />
-                  </div>
-                  <div>
-                    <LabelIcon icon={MapPin} required error={fieldErrors.id_ville}>Ville</LabelIcon>
-                    <SearchableSelect
-                      options={villes.map(v => ({ id: v.id, nom: v.nom }))}
-                      value={values.id_ville}
-                      onValueChange={(v) => set('id_ville', v)}
-                      placeholder="Sélectionner"
-                      searchPlaceholder="Rechercher une ville..."
-                      error={fieldErrors.id_ville}
-                      disabled={isView}
-                      className={cn('w-full', errorClass(fieldErrors.id_ville))}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <LabelIcon required error={fieldErrors.rendement}>Rendement (nombre de portions)</LabelIcon>
+                    <LabelIcon required error={fieldErrors.rendement}>Rendement (portions)</LabelIcon>
                     <Input type="number" min="1" value={values.rendement} onChange={(e) => set('rendement', e.target.value)}
                       readOnly={isView} className={cn('h-11 border-gray-200 shadow-sm', errorClass(fieldErrors.rendement))} />
                     {fieldErrors.rendement && <p className="text-xs text-red-500 mt-1">{fieldErrors.rendement}</p>}
+                  </div>
+                  <div>
+                    <LabelIcon icon={Scale} error={fieldErrors.poids_portion}>Poids d'une portion</LabelIcon>
+                    <div className="flex gap-2">
+                      <Input type="number" min="0" step="any" value={values.poids_portion}
+                        onChange={(e) => set('poids_portion', e.target.value)} readOnly={isView}
+                        placeholder="Ex : 50"
+                        className={cn('h-11 border-gray-200 shadow-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none', errorClass(fieldErrors.poids_portion))} />
+                      <Select value={values.unite_poids_portion} onValueChange={(v) => set('unite_poids_portion', v)} disabled={isView}>
+                        <SelectTrigger className="w-24 h-11 border-gray-200 shadow-sm">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="mg">mg</SelectItem>
+                          <SelectItem value="gm">gm</SelectItem>
+                          <SelectItem value="kg">kg</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {fieldErrors.poids_portion && <p className="text-xs text-red-500 mt-1">{fieldErrors.poids_portion}</p>}
+                  </div>
+                  <div>
+                    <LabelIcon icon={MapPin} required error={fieldErrors.id_magasin}>Magasin</LabelIcon>
+                    <SearchableSelect
+                      options={magasins.map(v => ({ id: v.id, nom: v.nom }))}
+                      value={values.id_magasin}
+                      onValueChange={(v) => set('id_magasin', v)}
+                      placeholder="Sélectionner"
+                      searchPlaceholder="Rechercher un magasin..."
+                      error={fieldErrors.id_magasin}
+                      disabled={isView}
+                      className={cn('w-full', errorClass(fieldErrors.id_magasin))}
+                    />
                   </div>
                 </div>
 
@@ -274,6 +327,18 @@ export function FicheTechniqueForm() {
                   <div className="text-sm text-gray-500">Rendement</div>
                   <div className="text-xl font-semibold text-gray-900">{values.rendement || 0} portion(s)</div>
                 </div>
+                <div>
+                  <div className="text-sm text-gray-500">Coût matière total (estimé)</div>
+                  <div className="text-xl font-bold text-gray-900 font-mono">{formatCurrency(coutMatiereTotal)}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500">Coût unitaire (estimé)</div>
+                  <div className="text-xl font-bold text-gray-900 font-mono">{formatCurrency(coutUnitaire)}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-500">Coût / kg (estimé)</div>
+                  <div className="text-xl font-bold text-royal-700 font-mono">{formatCurrency(prixKg)}</div>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -295,59 +360,106 @@ export function FicheTechniqueForm() {
               )}
             </div>
 
-            <div className="rounded-lg border border-gray-200">
-              <Table>
+            <div className="rounded-lg border border-gray-200 overflow-x-auto">
+              <Table className="min-w-[1000px]">
                 <TableHeader className="bg-gray-50">
                   <TableRow>
-                    <TableHead className="font-semibold text-gray-600">Ingrédient *</TableHead>
+                    <TableHead className="font-semibold text-gray-600">Désignation *</TableHead>
                     <TableHead className="font-semibold text-gray-600">Unité *</TableHead>
-                    <TableHead className="text-right font-semibold text-gray-600">Quantité *</TableHead>
+                    <TableHead className="text-right font-semibold text-gray-600">Rend (%)</TableHead>
+                    <TableHead className="text-right font-semibold text-gray-600">Coût achat net</TableHead>
+                    <TableHead className="text-right font-semibold text-gray-600">Poids net *</TableHead>
+                    <TableHead className="text-right font-semibold text-gray-600">Poids brut</TableHead>
+                    <TableHead className="text-right font-semibold text-gray-600">Coût matière</TableHead>
+                    <TableHead className="text-center font-semibold text-gray-600">Rend. après cuisson</TableHead>
                     <TableHead className="font-semibold text-gray-600">Commentaire</TableHead>
                     {!isView && <TableHead className="text-center w-12" />}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {ingredients.map((r, i) => (
-                    <TableRow key={r.key} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
-                      <TableCell className="min-w-[200px]">
-                        <SearchableSelect
-                          options={produits.map(p => ({ id: p.id, nom: p.nom, sousTitre: p.code_article ? `[${p.code_article}]` : undefined }))}
-                          value={r.id_produit_ingredient}
-                          onValueChange={(v) => updateIngredient(r.key, 'id_produit_ingredient', v)}
-                          placeholder="Ingrédient"
-                          searchPlaceholder="Rechercher un ingrédient..."
-                          disabled={isView}
-                        />
-                      </TableCell>
-                      <TableCell className="w-28">
-                        <SearchableSelect
-                          options={unites.map(u => ({ id: u.id, nom: u.symbole || u.nom }))}
-                          value={r.id_unite}
-                          onValueChange={(v) => updateIngredient(r.key, 'id_unite', v)}
-                          placeholder="Unité"
-                          searchPlaceholder="Rechercher une unité..."
-                          disabled={isView}
-                        />
-                      </TableCell>
-                      <TableCell className="w-24">
-                        <Input type="number" step="0.01" min="0" value={r.quantite_ingredient}
-                          onChange={(e) => updateIngredient(r.key, 'quantite_ingredient', e.target.value)}
-                          readOnly={isView} className="text-right h-10 border-gray-200 shadow-sm" />
-                      </TableCell>
-                      <TableCell>
-                        <Input value={r.commentaire} onChange={(e) => updateIngredient(r.key, 'commentaire', e.target.value)}
-                          readOnly={isView} className="h-10 border-gray-200 shadow-sm" placeholder="Optionnel" />
-                      </TableCell>
-                      {!isView && (
-                        <TableCell className="text-center w-12">
-                          <button type="button" onClick={() => removeIngredient(r.key)} disabled={ingredients.length <= 1}
-                            className="p-1.5 rounded text-red-500 hover:text-red-700 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                  {ingredients.map((r, i) => {
+                    const coutMatiere = (Number(r.poids_net) || 0) * r.prix_unitaire;
+                    return (
+                      <TableRow key={r.key} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
+                        <TableCell className="min-w-[200px]">
+                          <SearchableSelect
+                            options={produits.map(p => ({ id: p.id, nom: p.nom, sousTitre: p.code_article ? `[${p.code_article}]` : undefined }))}
+                            value={r.id_produit_ingredient}
+                            onValueChange={(v) => handleIngredientChange(r.key, v)}
+                            placeholder="Ingrédient"
+                            searchPlaceholder="Rechercher un ingrédient..."
+                            disabled={isView}
+                          />
                         </TableCell>
-                      )}
-                    </TableRow>
-                  ))}
+                        <TableCell className="w-28">
+                          <SearchableSelect
+                            options={unites.map(u => ({ id: u.id, nom: u.symbole || u.nom }))}
+                            value={r.id_unite}
+                            onValueChange={(v) => updateIngredient(r.key, 'id_unite', v)}
+                            placeholder="Unité"
+                            searchPlaceholder="Rechercher une unité..."
+                            disabled={isView}
+                          />
+                        </TableCell>
+                        <TableCell className="w-28">
+                          <div className="relative">
+                            <Input type="number" min="0" max="100" step="0.01" value={r.rendement}
+                              onChange={(e) => updateIngredient(r.key, 'rendement', e.target.value)}
+                              readOnly={isView}
+                              className="text-right h-10 pr-7 border-gray-200 shadow-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                            <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs">%</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="w-28">
+                          <div className="text-right text-sm font-medium text-gray-700 tabular-nums h-10 flex items-center justify-end">
+                            {formatCurrency(r.prix_unitaire)}
+                          </div>
+                        </TableCell>
+                        <TableCell className="w-24">
+                          <Input type="number" step="any" min="0" value={r.poids_net}
+                            onChange={(e) => updateIngredient(r.key, 'poids_net', e.target.value)}
+                            readOnly={isView} className="text-right h-10 border-gray-200 shadow-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                        </TableCell>
+                        <TableCell className="w-24">
+                          <Input type="number" step="any" min="0" value={r.poids_brut}
+                            onChange={(e) => updateIngredient(r.key, 'poids_brut', e.target.value)}
+                            readOnly={isView} className="text-right h-10 border-gray-200 shadow-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
+                        </TableCell>
+                        <TableCell className="w-28">
+                          <div className="text-right text-sm font-semibold text-gray-800 tabular-nums h-10 flex items-center justify-end">
+                            {formatCurrency(coutMatiere)}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {isView ? (
+                            <span className={cn('text-xs font-medium', r.rendement_apres_cuisson ? 'text-emerald-600' : 'text-gray-400')}>
+                              {r.rendement_apres_cuisson ? 'Oui' : 'Non'}
+                            </span>
+                          ) : (
+                            <div className="flex items-center justify-center gap-1.5 h-10">
+                              <Checkbox
+                                checked={r.rendement_apres_cuisson}
+                                onCheckedChange={(v) => updateIngredient(r.key, 'rendement_apres_cuisson', Boolean(v))}
+                              />
+                              <span className="text-xs text-gray-500">Oui</span>
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Input value={r.commentaire} onChange={(e) => updateIngredient(r.key, 'commentaire', e.target.value)}
+                            readOnly={isView} className="h-10 border-gray-200 shadow-sm" placeholder="Optionnel" />
+                        </TableCell>
+                        {!isView && (
+                          <TableCell className="text-center w-12">
+                            <button type="button" onClick={() => removeIngredient(r.key)} disabled={ingredients.length <= 1}
+                              className="p-1.5 rounded text-red-500 hover:text-red-700 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>

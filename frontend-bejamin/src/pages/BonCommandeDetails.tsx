@@ -151,7 +151,7 @@ export function BonCommandeDetails() {
             <CardContent className="p-6">
               <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
                 <DetailItem icon={<Building2 className="w-4 h-4" />} label="Fournisseur" value={bon.partenaire?.nom || '-'} />
-                <DetailItem icon={<MapPin className="w-4 h-4" />} label="Destination" value={bon.ville_destination?.nom || '-'} />
+                <DetailItem icon={<MapPin className="w-4 h-4" />} label="Destination" value={bon.magasin_destination?.nom || '-'} />
                 <DetailItem icon={<Calendar className="w-4 h-4" />} label="Date commande" value={bon.date_commande ? new Date(bon.date_commande).toLocaleDateString('fr-FR') : '-'} />
                 <DetailItem icon={<Calendar className="w-4 h-4" />} label="Livraison prévue" value={bon.date_livraison_prevue ? new Date(bon.date_livraison_prevue).toLocaleDateString('fr-FR') : '-'} />
                 <DetailItem icon={<DollarSign className="w-4 h-4" />} label="Devise" value={bon.devise?.code || '-'} />

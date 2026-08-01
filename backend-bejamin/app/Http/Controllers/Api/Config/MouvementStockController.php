@@ -23,7 +23,7 @@ class MouvementStockController extends Controller
             $search = $request->input('search');
             $lotId = $request->input('lot_id');
             $typeId = $request->input('type_id');
-            $villeId = $request->input('ville_id');
+            $magasinId = $request->input('magasin_id');
             $statut = $request->input('statut');
             $dateDebut = $request->input('date_debut');
             $dateFin = $request->input('date_fin');
@@ -33,11 +33,10 @@ class MouvementStockController extends Controller
 
             $query = MouvementStock::with([
                 'lot.produit',
-                'lot.ville',
+                'lot.magasin',
                 'typeMouvement',
                 'utilisateur',
-                'validePar',
-                'facture'
+                'validePar'
             ]);
 
             if ($search) {
@@ -55,9 +54,9 @@ class MouvementStockController extends Controller
                 $query->where('id_type_mouvement', $typeId);
             }
 
-            if ($villeId) {
-                $query->whereHas('lot', function($q) use ($villeId) {
-                    $q->where('id_ville', $villeId);
+            if ($magasinId) {
+                $query->whereHas('lot', function($q) use ($magasinId) {
+                    $q->where('id_magasin', $magasinId);
                 });
             }
 
@@ -105,7 +104,6 @@ class MouvementStockController extends Controller
             $validated = $request->validate([
                 'id_lot' => 'required|exists:lots,id',
                 'id_type_mouvement' => 'required|exists:type_mouvement,id',
-                'id_facture' => 'nullable|exists:facture,id',
                 'quantite' => 'required|integer|min:1',
                 'date_mouvement' => 'nullable|date',
                 'reference_document' => 'nullable|string|max:100',
@@ -136,7 +134,6 @@ class MouvementStockController extends Controller
                 $mouvement = MouvementStock::create([
                     'id_lot' => $validated['id_lot'],
                     'id_type_mouvement' => $validated['id_type_mouvement'],
-                    'id_facture' => $validated['id_facture'] ?? null,
                     'quantite' => $validated['quantite'],
                     'date_mouvement' => $validated['date_mouvement'] ?? now(),
                     'id_utilisateur' => Auth::id(),
@@ -155,7 +152,7 @@ class MouvementStockController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'data' => $mouvement->load(['lot.produit', 'typeMouvement', 'utilisateur', 'facture']),
+                    'data' => $mouvement->load(['lot.produit', 'typeMouvement', 'utilisateur']),
                     'message' => 'Mouvement de stock créé avec succès'
                 ], 201);
 
@@ -185,8 +182,7 @@ public function show($id)
     try {
         $mouvement = MouvementStock::with([
             'lot.produit',
-            'lot.ville',
-            'lot.zone',
+            'lot.magasin',
             'typeMouvement',
             'utilisateur',
             'validePar',
@@ -227,7 +223,6 @@ public function show($id)
             $validated = $request->validate([
                 'id_lot' => 'sometimes|required|exists:lots,id',
                 'id_type_mouvement' => 'sometimes|required|exists:type_mouvement,id',
-                'id_facture' => 'nullable|exists:facture,id',
                 'quantite' => 'sometimes|required|integer|min:1',
                 'date_mouvement' => 'nullable|date',
                 'reference_document' => 'nullable|string|max:100',
@@ -238,7 +233,7 @@ public function show($id)
 
             return response()->json([
                 'success' => true,
-                'data' => $mouvement->load(['lot.produit', 'typeMouvement', 'facture']),
+                'data' => $mouvement->load(['lot.produit', 'typeMouvement']),
                 'message' => 'Mouvement mis à jour avec succès'
             ]);
 
@@ -439,15 +434,15 @@ public function show($id)
     public function statistiques(Request $request)
     {
         try {
-            $villeId = $request->input('ville_id');
+            $magasinId = $request->input('magasin_id');
             $dateDebut = $request->input('date_debut', now()->startOfMonth());
             $dateFin = $request->input('date_fin', now());
 
             $query = MouvementStock::with('typeMouvement', 'lot');
 
-            if ($villeId) {
-                $query->whereHas('lot', function($q) use ($villeId) {
-                    $q->where('id_ville', $villeId);
+            if ($magasinId) {
+                $query->whereHas('lot', function($q) use ($magasinId) {
+                    $q->where('id_magasin', $magasinId);
                 });
             }
 

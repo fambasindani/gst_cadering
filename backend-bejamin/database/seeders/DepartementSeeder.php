@@ -4,48 +4,36 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Departement;
-use App\Models\Ville;
+use App\Models\Magasin;
 
 class DepartementSeeder extends Seeder
 {
     public function run(): void
     {
-        $kinshasa = Ville::where('code', 'KIN')->first();
-        
-        if (!$kinshasa) {
-            $this->command->error('❌ Ville Kinshasa non trouvée !');
+        $departements = [
+            ['nom' => 'Cuisine chaude', 'code' => 'CUIS-CH'],
+            ['nom' => 'Cuisine froide', 'code' => 'CUIS-FR'],
+            ['nom' => 'Laverie', 'code' => 'LAV'],
+            ['nom' => 'Pâtisserie', 'code' => 'PAT'],
+        ];
+
+        $magasins = Magasin::all();
+
+        if ($magasins->isEmpty()) {
+            $this->command->error('❌ Aucun magasin trouvé !');
             return;
         }
 
-        $departements = [
-            [
-                'nom' => 'Kinshasa Centre',
-                'code' => 'KIN-C',
-                'id_ville' => $kinshasa->id,
-                'actif' => true
-            ],
-            [
-                'nom' => 'Kinshasa Est',
-                'code' => 'KIN-E',
-                'id_ville' => $kinshasa->id,
-                'actif' => true
-            ],
-            [
-                'nom' => 'Kinshasa Ouest',
-                'code' => 'KIN-O',
-                'id_ville' => $kinshasa->id,
-                'actif' => true
-            ],
-            [
-                'nom' => 'Kinshasa Sud',
-                'code' => 'KIN-S',
-                'id_ville' => $kinshasa->id,
-                'actif' => true
-            ],
-        ];
-
-        foreach ($departements as $departement) {
-            Departement::create($departement);
+        foreach ($magasins as $magasin) {
+            foreach ($departements as $departement) {
+                Departement::firstOrCreate([
+                    'id_magasin' => $magasin->id,
+                    'nom' => $departement['nom'],
+                ], [
+                    'code' => $departement['code'],
+                    'actif' => true,
+                ]);
+            }
         }
 
         $this->command->info('✅ Départements créés avec succès !');
