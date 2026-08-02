@@ -14,6 +14,9 @@ class MouvementStock extends Model
     protected $fillable = [
         'id_lot',
         'id_type_mouvement',
+        'id_partenaire',
+        'id_magasin',
+        'id_departement',
         'quantite',
         'date_mouvement',
         'id_utilisateur',
@@ -40,6 +43,21 @@ class MouvementStock extends Model
     public function typeMouvement()
     {
         return $this->belongsTo(TypeMouvement::class, 'id_type_mouvement');
+    }
+
+    public function partenaire()
+    {
+        return $this->belongsTo(Partenaire::class, 'id_partenaire');
+    }
+
+    public function magasin()
+    {
+        return $this->belongsTo(Magasin::class, 'id_magasin');
+    }
+
+    public function departement()
+    {
+        return $this->belongsTo(Departement::class, 'id_departement');
     }
 
     public function utilisateur()

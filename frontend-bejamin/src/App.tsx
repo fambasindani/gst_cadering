@@ -21,6 +21,9 @@ import { StockLotSerie } from './pages/StockLotSerie';
 import { StockLotSerieForm } from './pages/StockLotSerieForm';
 import { EntreeStockForm } from './pages/EntreeStockForm';
 import { SortieStockForm } from './pages/SortieStockForm';
+import { SortieForm } from './pages/SortieForm';
+import { StockMouvementProduit } from './pages/StockMouvementProduit';
+import { StockMouvementProduitDetails } from './pages/StockMouvementProduitDetails';
 import { RetourStock } from './pages/RetourStock';
 import { RetourForm } from './pages/RetourForm';
 import { RetourDetail } from './pages/RetourDetail';
@@ -109,10 +112,14 @@ function App() {
           <Route path="stock/lot-serie/:id/modifier" element={<StockLotSerieForm />} />
           <Route path="stock/entree" element={<EntreeStockForm />} />
           <Route path="stock/sortie" element={<SortieStockForm />} />
+          <Route path="stock/sortie/creer" element={<SortieForm />} />
+          <Route path="stock/sortie/:id/modifier" element={<SortieForm />} />
           <Route path="stock/retour" element={<RetourStock />} />
           <Route path="stock/retour/creer" element={<RetourForm />} />
           <Route path="stock/retour/:id/modifier" element={<RetourForm />} />
           <Route path="stock/retour/:id" element={<RetourDetail />} />
+          <Route path="stock/mouvement-produit" element={<StockMouvementProduit />} />
+          <Route path="stock/mouvement-produit/:id" element={<StockMouvementProduitDetails />} />
           <Route path="stock/avoir" element={<AvoirList />} />
           <Route path="stock/avoir/creer" element={<AvoirForm />} />
           <Route path="stock/avoir/:id" element={<AvoirDetails />} />

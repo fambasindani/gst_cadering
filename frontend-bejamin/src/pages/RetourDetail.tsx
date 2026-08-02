@@ -6,6 +6,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '../components/ui/table';
 import { retourService } from '../services/retour';
+import { useIsAdmin } from '../hooks/useIsAdmin';
 import type { Retour } from '../types/retour';
 import { ArrowLeft, RotateCcw, Building2, MapPin, Shield, User, Calendar, Tag, MessageSquare, Package, CheckCircle, Edit3 } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -21,6 +22,7 @@ const validationConfig: Record<string, { label: string; color: string }> = {
 export function RetourDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const isAdmin = useIsAdmin();
   const [retour, setRetour] = useState<Retour | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -71,12 +73,12 @@ export function RetourDetail() {
           </div>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          {retour.statut_validation === 'EN ATTENTE' && (
+          {retour.statut_validation === 'EN ATTENTE' || isAdmin ? (
             <Button variant="outline" onClick={() => navigate(`/stock/retour/${retour.id}/modifier`)}
               className="border-royal-200 text-royal-700 hover:bg-royal-50">
               <Edit3 className="w-4 h-4 mr-1.5" /> Modifier
             </Button>
-          )}
+          ) : null}
           <span className={cn('inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium', vc.color)}>
             {vc.label}
           </span>

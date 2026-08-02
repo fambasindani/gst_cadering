@@ -213,11 +213,13 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
         // ---------- Inventaires ----------
         Route::get('inventaires', [InventaireController::class, 'index'])->middleware('permission:config:inventaire:view');
         Route::post('inventaires', [InventaireController::class, 'store'])->middleware('permission:config:inventaire:create');
+        Route::post('inventaires/bulk', [InventaireController::class, 'storeMultiple'])->middleware('permission:config:inventaire:create');
         Route::get('inventaires/{id}', [InventaireController::class, 'show'])->middleware('permission:config:inventaire:view');
         Route::put('inventaires/{id}', [InventaireController::class, 'update'])->middleware('permission:config:inventaire:update');
         Route::delete('inventaires/{id}', [InventaireController::class, 'destroy'])->middleware('permission:config:inventaire:delete');
         Route::get('inventaires/periodes/{periodeId}/resume', [InventaireController::class, 'resume'])->middleware('permission:config:inventaire:view');
         Route::post('inventaires/periodes/{periodeId}/generer-ajustements', [InventaireController::class, 'genererAjustements'])->middleware('permission:config:inventaire:update');
+        Route::post('inventaires/periodes/{periodeId}/mettre-a-jour-stock', [InventaireController::class, 'mettreAJourStock'])->middleware('permission:config:inventaire:update');
 
         // ---------- Bons de Commande ----------
         Route::get('bons-commande', [BonCommandeController::class, 'index'])->middleware('permission:config:bon_commande:view');

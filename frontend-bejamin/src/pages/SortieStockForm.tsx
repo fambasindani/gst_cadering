@@ -1,19 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
-import { SearchableSelect } from '../components/ui/SearchableSelect';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '../components/ui/table';
-import { SlidePanel } from '../components/ui/SlidePanel';
 import { ConfirmModal } from '../components/ui/confirm-modal';
 import { DataTablePagination } from '../components/ui/DataTablePagination';
 import { useToast } from '../hooks/useToast';
+import { useIsAdmin } from '../hooks/useIsAdmin';
 import { mouvementStockService } from '../services/mouvement-stock';
-import { typeMouvementService } from '../services/type-mouvement';
-import type { TypeMouvement } from '../services/type-mouvement';
-import { lotService } from '../services/lot';
 import type { MouvementStock } from '../types/validation';
 import {
   Search, RefreshCw, Plus, Package, ArrowUp, Loader2, Pencil, Trash2, CheckCircle, XCircle,
@@ -21,7 +18,9 @@ import {
 import { cn } from '../lib/utils';
 
 export function SortieStockForm() {
+  const navigate = useNavigate();
   const { toast } = useToast();
+  const isAdmin = useIsAdmin();
 
   const [data, setData] = useState<MouvementStock[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,9 +30,9 @@ export function SortieStockForm() {
   const [lastPage, setLastPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [pageSize, setPageSize] = useState(20);
-  const [slideOpen, setSlideOpen] = useState(false);
-  const [editingMvt, setEditingMvt] = useState<MouvementStock | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<MouvementStock | null>(null);
+  const [validateTarget, setValidateTarget] = useState<MouvementStock | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<MouvementStock | null>(null);
   const [validatingId, setValidatingId] = useState<number | null>(null);
   const [rejectingId, setRejectingId] = useState<number | null>(null);
 
@@ -66,8 +65,9 @@ export function SortieStockForm() {
         setDeleteTarget(null);
         fetchData();
       }
-    } catch {
-      toast('Erreur lors de la suppression', 'error');
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      toast(error.message || 'Erreur lors de la suppression', 'error');
     }
   };
 
@@ -99,6 +99,18 @@ export function SortieStockForm() {
     }
   };
 
+  const handleConfirmValidate = async () => {
+    if (!validateTarget) return;
+    await handleValidate(validateTarget.id);
+    setValidateTarget(null);
+  };
+
+  const handleConfirmReject = async () => {
+    if (!rejectTarget) return;
+    await handleReject(rejectTarget.id);
+    setRejectTarget(null);
+  };
+
   const handlePageSizeChange = (size: number) => {
     setPageSize(size);
     setCurrentPage(1);
@@ -116,7 +128,7 @@ export function SortieStockForm() {
             <RefreshCw className={cn('h-4 w-4 mr-2', loading && 'animate-spin')} />
             Actualiser
           </Button>
-          <Button onClick={() => { setEditingMvt(null); setSlideOpen(true); }} className="bg-amber-700 hover:bg-amber-800 text-white shadow-sm">
+          <Button onClick={() => navigate('/stock/sortie/creer')} className="bg-amber-700 hover:bg-amber-800 text-white shadow-sm">
             <Plus className="w-4 h-4 mr-1.5" />
             Nouvelle sortie
           </Button>
@@ -155,10 +167,11 @@ export function SortieStockForm() {
                   <TableRow>
                     <TableHead className="font-semibold text-gray-600">Produit</TableHead>
                     <TableHead className="font-semibold text-gray-600">Lot</TableHead>
+                    <TableHead className="font-semibold text-gray-600">Client</TableHead>
+                    <TableHead className="font-semibold text-gray-600">Département</TableHead>
                     <TableHead className="font-semibold text-gray-600">Type</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Qté</TableHead>
                     <TableHead className="font-semibold text-gray-600">Date</TableHead>
-                    <TableHead className="font-semibold text-gray-600">Réf.</TableHead>
                     <TableHead className="text-center w-20 font-semibold text-gray-600">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -168,9 +181,10 @@ export function SortieStockForm() {
                       <TableCell><div className="h-5 w-36 bg-gray-200 rounded" /></TableCell>
                       <TableCell><div className="h-5 w-24 bg-gray-200 rounded" /></TableCell>
                       <TableCell><div className="h-5 w-28 bg-gray-200 rounded" /></TableCell>
+                      <TableCell><div className="h-5 w-24 bg-gray-200 rounded" /></TableCell>
+                      <TableCell><div className="h-5 w-28 bg-gray-200 rounded" /></TableCell>
                       <TableCell className="text-right"><div className="h-5 w-16 bg-gray-200 rounded ml-auto" /></TableCell>
                       <TableCell><div className="h-5 w-20 bg-gray-200 rounded" /></TableCell>
-                      <TableCell><div className="h-5 w-24 bg-gray-200 rounded" /></TableCell>
                       <TableCell><div className="h-5 w-16 bg-gray-200 rounded mx-auto" /></TableCell>
                     </TableRow>
                   ))}
@@ -191,6 +205,8 @@ export function SortieStockForm() {
                     <TableRow>
                       <TableHead className="font-semibold text-gray-600">Produit</TableHead>
                       <TableHead className="font-semibold text-gray-600">Lot</TableHead>
+                      <TableHead className="font-semibold text-gray-600">Client</TableHead>
+                      <TableHead className="font-semibold text-gray-600">Département</TableHead>
                       <TableHead className="font-semibold text-gray-600">Type</TableHead>
                       <TableHead className="text-right font-semibold text-gray-600">Qté</TableHead>
                       <TableHead className="font-semibold text-gray-600">Date</TableHead>
@@ -202,6 +218,8 @@ export function SortieStockForm() {
                       <TableRow key={m.id} className={cn('hover:bg-royal-50/50 transition-colors', i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50')}>
                         <TableCell className="font-medium text-gray-900">{m.lot?.produit?.nom || '-'}</TableCell>
                         <TableCell className="text-sm text-gray-600">{m.lot?.numero_lot || '-'}</TableCell>
+                        <TableCell className="text-sm text-gray-600">{m.partenaire?.nom || '-'}</TableCell>
+                        <TableCell className="text-sm text-gray-600">{m.departement?.nom || '-'}</TableCell>
                         <TableCell>
                           <div className="flex items-center gap-1.5">
                             <ArrowUp className="w-3.5 h-3.5 text-red-600" />
@@ -217,7 +235,7 @@ export function SortieStockForm() {
                             {m.statut_validation === 'EN ATTENTE' ? (
                               <>
                                 <button
-                                  onClick={() => handleValidate(m.id)}
+                                  onClick={() => setValidateTarget(m)}
                                   disabled={validatingId === m.id || rejectingId === m.id}
                                   className="p-1.5 rounded text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors disabled:opacity-40"
                                   title="Valider"
@@ -225,15 +243,19 @@ export function SortieStockForm() {
                                   {validatingId === m.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                                 </button>
                                 <button
-                                  onClick={() => handleReject(m.id)}
+                                  onClick={() => setRejectTarget(m)}
                                   disabled={rejectingId === m.id || validatingId === m.id}
                                   className="p-1.5 rounded text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors disabled:opacity-40"
                                   title="Rejeter"
                                 >
                                   {rejectingId === m.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
                                 </button>
+                              </>
+                            ) : null}
+                            {(isAdmin || m.statut_validation === 'EN ATTENTE') && (
+                              <>
                                 <button
-                                  onClick={() => { setEditingMvt(m); setSlideOpen(true); }}
+                                  onClick={() => navigate(`/stock/sortie/${m.id}/modifier`)}
                                   className="p-1.5 rounded text-gray-500 hover:text-royal-700 hover:bg-royal-50 transition-colors"
                                   title="Modifier"
                                 >
@@ -247,7 +269,7 @@ export function SortieStockForm() {
                                   <Trash2 className="w-4 h-4" />
                                 </button>
                               </>
-                            ) : null}
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -268,11 +290,26 @@ export function SortieStockForm() {
         </CardContent>
       </Card>
 
-      <SortieFormSlide
-        isOpen={slideOpen}
-        editingMvt={editingMvt}
-        onClose={() => { setSlideOpen(false); setEditingMvt(null); }}
-        onSuccess={() => { setSlideOpen(false); setEditingMvt(null); fetchData(); }}
+      <ConfirmModal
+        isOpen={Boolean(validateTarget)}
+        onClose={() => setValidateTarget(null)}
+        onConfirm={handleConfirmValidate}
+        title="Valider la sortie"
+        message={`Confirmer la validation de la sortie du lot "${validateTarget?.lot?.numero_lot || '-'}" ?`}
+        variant="warning"
+        confirmLabel="Valider"
+        loading={validatingId !== null}
+      />
+
+      <ConfirmModal
+        isOpen={Boolean(rejectTarget)}
+        onClose={() => setRejectTarget(null)}
+        onConfirm={handleConfirmReject}
+        title="Rejeter la sortie"
+        message={`Confirmer le rejet de la sortie du lot "${rejectTarget?.lot?.numero_lot || '-'}" ?`}
+        variant="danger"
+        confirmLabel="Rejeter"
+        loading={rejectingId !== null}
       />
 
       <ConfirmModal
@@ -285,118 +322,5 @@ export function SortieStockForm() {
         confirmLabel="Supprimer"
       />
     </div>
-  );
-}
-
-function SortieFormSlide({ isOpen, editingMvt, onClose, onSuccess }: { isOpen: boolean; editingMvt: MouvementStock | null; onClose: () => void; onSuccess: () => void }) {
-  const { toast } = useToast();
-  const [submitting, setSubmitting] = useState(false);
-  const [types, setTypes] = useState<TypeMouvement[]>([]);
-  const [lots, setLots] = useState<{ id: number; numero_lot: string; quantite_disponible: number; produit?: { nom: string } | null }[]>([]);
-  const [form, setForm] = useState({ id_lot: '', id_type_mouvement: '', quantite: '', date_mouvement: '', reference_document: '', commentaire: '' });
-
-  const isEdit = Boolean(editingMvt);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    if (editingMvt) {
-      setForm({
-        id_lot: String(editingMvt.id_lot),
-        id_type_mouvement: String(editingMvt.id_type_mouvement),
-        quantite: String(editingMvt.quantite),
-        date_mouvement: editingMvt.date_mouvement || '',
-        reference_document: editingMvt.reference_document || '',
-        commentaire: editingMvt.commentaire || '',
-      });
-    } else {
-      setForm({ id_lot: '', id_type_mouvement: '', quantite: '', date_mouvement: new Date().toISOString().split('T')[0], reference_document: '', commentaire: '' });
-    }
-    typeMouvementService.getSortie().then(r => { if (r.success) setTypes(r.data); }).catch(() => {});
-    lotService.list({ per_page: '500', statut: 'VALIDÉ' }).then(r => { if (r.success) setLots(r.data.data); }).catch(() => {});
-  }, [isOpen, editingMvt]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitting(true);
-    try {
-      const payload: Record<string, string | number> = {
-        id_lot: Number(form.id_lot),
-        id_type_mouvement: Number(form.id_type_mouvement),
-        quantite: Number(form.quantite),
-      };
-      if (form.date_mouvement) payload.date_mouvement = form.date_mouvement;
-      if (form.reference_document) payload.reference_document = form.reference_document;
-      if (form.commentaire) payload.commentaire = form.commentaire;
-
-      if (isEdit && editingMvt) {
-        const res = await mouvementStockService.update(editingMvt.id, payload);
-        if (res.success) {
-          toast('Sortie modifiée avec succès', 'success');
-          onSuccess();
-        }
-      } else {
-        const res = await mouvementStockService.create(payload);
-        if (res.success) {
-          toast('Sortie stock créée avec succès', 'success');
-          onSuccess();
-        }
-      }
-    } catch (err: unknown) {
-      const error = err as { message?: string };
-      toast(error.message || 'Erreur lors de l\'enregistrement', 'error');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  return (
-    <SlidePanel isOpen={isOpen} onClose={onClose} title={isEdit ? 'Modifier la sortie stock' : 'Nouvelle sortie stock'}>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-white/80 mb-1">Type de sortie *</label>
-          <SearchableSelect
-            options={types.map(t => ({ id: t.id, nom: t.libelle }))}
-            value={form.id_type_mouvement}
-            onValueChange={v => setForm(f => ({ ...f, id_type_mouvement: v }))}
-            placeholder="Type de mouvement"
-            searchPlaceholder="Rechercher un type..."
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-white/80 mb-1">Lot *</label>
-          <SearchableSelect
-            options={lots.map(l => ({ id: l.id, nom: `${l.numero_lot}${l.produit ? ` - ${l.produit.nom}` : ''}`, sousTitre: `dispo: ${l.quantite_disponible}` }))}
-            value={form.id_lot}
-            onValueChange={v => setForm(f => ({ ...f, id_lot: v }))}
-            placeholder="Sélectionner un lot"
-            searchPlaceholder="Rechercher un lot..."
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-white/80 mb-1">Quantité *</label>
-          <Input type="number" min="1" value={form.quantite} onChange={e => setForm(f => ({ ...f, quantite: e.target.value }))} className="bg-white/10 border-white/20 text-white" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-white/80 mb-1">Date mouvement</label>
-          <Input type="date" value={form.date_mouvement} onChange={e => setForm(f => ({ ...f, date_mouvement: e.target.value }))} className="bg-white/10 border-white/20 text-white" />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-white/80 mb-1">Référence document</label>
-          <Input value={form.reference_document} onChange={e => setForm(f => ({ ...f, reference_document: e.target.value }))} className="bg-white/10 border-white/20 text-white" placeholder="N° bon, facture..." />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-white/80 mb-1">Commentaire</label>
-          <textarea value={form.commentaire} onChange={e => setForm(f => ({ ...f, commentaire: e.target.value }))}
-            className="w-full rounded-lg bg-white/10 border border-white/20 text-white placeholder:text-white/40 px-3 py-2 text-sm min-h-[80px]" placeholder="Optionnel" />
-        </div>
-        <div className="flex items-center gap-3 pt-2">
-          <Button type="button" variant="secondary" onClick={onClose} disabled={submitting} className="flex-1">Annuler</Button>
-          <Button type="submit" disabled={submitting || !form.id_lot || !form.id_type_mouvement || !form.quantite}
-            className="flex-1 bg-amber-600 hover:bg-amber-700 text-white shadow-sm">
-            {submitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> {isEdit ? 'Modification...' : 'Création...'}</> : isEdit ? 'Modifier' : 'Créer la sortie'}
-          </Button>
-        </div>
-      </form>
-    </SlidePanel>
   );
 }

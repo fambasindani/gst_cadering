@@ -1,5 +1,5 @@
 import { api } from './api';
-import type { DepartementListResponse, DepartementResponse, DepartementFormData } from '../types/departement';
+import type { Departement, DepartementListResponse, DepartementResponse, DepartementFormData } from '../types/departement';
 
 export const departementService = {
   list: (params?: Record<string, string>) =>
@@ -19,6 +19,9 @@ export const departementService = {
 
   toggle: (id: number) =>
     api.patch<DepartementResponse>(`/config/departements/${id}/toggle`),
+
+  getByMagasin: (magasinId: number) =>
+    api.get<{ success: boolean; data: Departement[] }>(`/config/departements/by-magasin/${magasinId}`),
 
   getMagasins: (params?: Record<string, string>) =>
     api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/magasins', { params }),

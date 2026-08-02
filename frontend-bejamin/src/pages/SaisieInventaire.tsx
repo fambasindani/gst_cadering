@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback } from 'react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
-import { Textarea } from '../components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import {
@@ -31,6 +30,16 @@ const STATUT_STYLES: Record<string, { variant: 'info' | 'warning' | 'success' | 
   ANNULE: { variant: 'destructive', label: 'Annulé' },
 };
 
+interface SaisieLigne {
+  key: string;
+  id_produit: string;
+  stock_physique_compte: string;
+  commentaire: string;
+}
+
+let ligneKeyCounter = 0;
+const newLigne = (): SaisieLigne => ({ key: `ligne_${++ligneKeyCounter}`, id_produit: '', stock_physique_compte: '', commentaire: '' });
+
 export function SaisieInventaire() {
   const { toast } = useToast();
 
@@ -41,12 +50,8 @@ export function SaisieInventaire() {
   const [produits, setProduits] = useState<{ id: number; nom: string; code_article: string }[]>([]);
   const [magasins, setMagasins] = useState<{ id: number; nom: string }[]>([]);
 
-  const [form, setForm] = useState({
-    id_produit: '',
-    id_magasin: '',
-    stock_physique_compte: '',
-    commentaire: '',
-  });
+  const [lignes, setLignes] = useState<SaisieLigne[]>([newLigne()]);
+  const [idMagasin, setIdMagasin] = useState('');
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -131,7 +136,8 @@ export function SaisieInventaire() {
 
   const resetForm = () => {
     setEditingId(null);
-    setForm({ id_produit: '', id_magasin: String(selectedPeriode?.id_magasin ?? ''), stock_physique_compte: '', commentaire: '' });
+    setLignes([newLigne()]);
+    setIdMagasin(String(selectedPeriode?.id_magasin ?? ''));
     setFieldErrors({});
   };
 
@@ -142,60 +148,93 @@ export function SaisieInventaire() {
     setSelectedPeriode(periode ?? null);
     resetForm();
     if (periode) {
-      setForm((f) => ({ ...f, id_magasin: String(periode.id_magasin) }));
+      setIdMagasin(String(periode.id_magasin));
     }
   };
 
   const openEdit = (inv: Inventaire) => {
     setEditingId(inv.id);
-    setForm({
-      id_produit: String(inv.id_produit),
-      id_magasin: String(inv.id_magasin),
-      stock_physique_compte: String(inv.stock_physique_compte),
-      commentaire: inv.commentaire || '',
-    });
+    setIdMagasin(String(inv.id_magasin));
+    setLignes([{ key: newLigne().key, id_produit: String(inv.id_produit), stock_physique_compte: String(inv.stock_physique_compte), commentaire: inv.commentaire || '' }]);
     setFieldErrors({});
   };
+
+  const updateLigne = (key: string, field: string, value: string) => {
+    setLignes(prev => prev.map(l => l.key === key ? { ...l, [field]: value } : l));
+    setFieldErrors(prev => {
+      const n = { ...prev };
+      for (const k of Object.keys(n)) {
+        if (k.startsWith('lignes.') && k.endsWith(`.${field}`)) delete n[k];
+      }
+      return n;
+    });
+  };
+
+  const removeLigne = (key: string) => { if (lignes.length > 1) setLignes(prev => prev.filter(l => l.key !== key)); };
+  const addLigne = () => setLignes(prev => [...prev, newLigne()]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFieldErrors({});
 
+    const errors: Record<string, string> = {};
     if (!selectedPeriodeId) {
-      setFieldErrors({ id_periode: 'Sélectionnez une période' });
+      errors.id_periode = 'Sélectionnez une période';
+    }
+    if (!idMagasin) {
+      errors.id_magasin = 'Sélectionnez un magasin';
+    }
+
+    const lignesValides: SaisieLigne[] = [];
+    const produitsVus = new Set<string>();
+    lignes.forEach((l, i) => {
+      if (!l.id_produit && !l.stock_physique_compte && !l.commentaire) return;
+      if (!l.id_produit) {
+        errors[`lignes.${i}.id_produit`] = 'Sélectionnez un produit';
+        return;
+      }
+      if (produitsVus.has(l.id_produit)) {
+        errors[`lignes.${i}.id_produit`] = 'Produit déjà ajouté';
+        return;
+      }
+      if (!l.stock_physique_compte || parseInt(l.stock_physique_compte) < 0) {
+        errors[`lignes.${i}.stock_physique_compte`] = 'Stock physique invalide';
+        return;
+      }
+      produitsVus.add(l.id_produit);
+      lignesValides.push(l);
+    });
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
-    if (!form.id_produit) {
-      setFieldErrors((f) => ({ ...f, id_produit: 'Sélectionnez un produit' }));
-      return;
-    }
-    if (!form.id_magasin) {
-      setFieldErrors((f) => ({ ...f, id_magasin: 'Sélectionnez un magasin' }));
-      return;
-    }
-    if (!form.stock_physique_compte || parseInt(form.stock_physique_compte) < 0) {
-      setFieldErrors((f) => ({ ...f, stock_physique_compte: 'Saisissez un stock physique valide' }));
+    if (lignesValides.length === 0) {
+      setFieldErrors({ ligne: 'Ajoutez au moins un produit' });
       return;
     }
 
     setSaving(true);
     try {
       if (editingId) {
+        const l = lignesValides[0];
         await inventaireService.update(editingId, {
-          stock_physique_compte: parseInt(form.stock_physique_compte),
-          commentaire: form.commentaire,
+          stock_physique_compte: parseInt(l.stock_physique_compte),
+          commentaire: l.commentaire,
         });
         toast('Inventaire modifié avec succès', 'success');
       } else {
-        const res = await inventaireService.create({
+        const res = await inventaireService.createMultiple({
           id_periode_inventaire: Number(selectedPeriodeId),
-          id_produit: Number(form.id_produit),
-          id_magasin: Number(form.id_magasin),
-          stock_physique_compte: parseInt(form.stock_physique_compte),
-          commentaire: form.commentaire,
+          id_magasin: Number(idMagasin),
+          lignes: lignesValides.map((l) => ({
+            id_produit: Number(l.id_produit),
+            stock_physique_compte: parseInt(l.stock_physique_compte),
+            commentaire: l.commentaire || undefined,
+          })),
         });
         if (res.success) {
-          toast('Inventaire créé avec succès', 'success');
+          toast(res.message || 'Inventaires créés avec succès', 'success');
         }
       }
       resetForm();
@@ -390,69 +429,106 @@ export function SaisieInventaire() {
           </CardHeader>
           <CardContent className="p-6">
             <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">Produit *</Label>
-                  <SearchableSelect
-                    options={produits.map((p) => ({ id: p.id, nom: `${p.nom} (${p.code_article})` }))}
-                    value={form.id_produit}
-                    onValueChange={(value) => { setForm((f) => ({ ...f, id_produit: value })); setFieldErrors((f) => ({ ...f, id_produit: '' })); }}
-                    placeholder="Sélectionner un produit"
-                    searchPlaceholder="Rechercher un produit..."
-                    error={fieldErrors.id_produit}
-                    disabled={!!editingId}
-                  />
-                  {fieldErrors.id_produit && <p className="text-red-500 text-xs mt-1">{fieldErrors.id_produit}</p>}
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">
-                    <MapPin className="w-3.5 h-3.5 inline mr-1" />
-                    Magasin *
-                  </Label>
-                  <Select
-                    value={form.id_magasin}
-                    onValueChange={(value) => { setForm((f) => ({ ...f, id_magasin: value })); setFieldErrors((f) => ({ ...f, id_magasin: '' })); }}
-                    disabled={!!editingId}
-                  >
-                    <SelectTrigger className={cn("mt-1.5 bg-white text-gray-900 border-gray-300 focus:border-royal-500 focus:ring-royal-500 h-11",
-                      fieldErrors.id_magasin ? 'border-red-400' : '')}>
-                      <SelectValue placeholder="Sélectionner un magasin" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {magasins.map((v) => (
-                        <SelectItem key={v.id} value={String(v.id)}>{v.nom}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {fieldErrors.id_magasin && <p className="text-red-500 text-xs mt-1">{fieldErrors.id_magasin}</p>}
-                </div>
+              <div className="max-w-sm">
+                <Label className="text-sm font-medium text-gray-700">
+                  <MapPin className="w-3.5 h-3.5 inline mr-1" />
+                  Magasin *
+                </Label>
+                <Select
+                  value={idMagasin}
+                  onValueChange={(value) => { setIdMagasin(value); setFieldErrors((f) => ({ ...f, id_magasin: '' })); }}
+                  disabled={!!editingId}
+                >
+                  <SelectTrigger className={cn("mt-1.5 bg-white text-gray-900 border-gray-300 focus:border-royal-500 focus:ring-royal-500 h-11",
+                    fieldErrors.id_magasin ? 'border-red-400' : '')}>
+                    <SelectValue placeholder="Sélectionner un magasin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {magasins.map((v) => (
+                      <SelectItem key={v.id} value={String(v.id)}>{v.nom}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {fieldErrors.id_magasin && <p className="text-red-500 text-xs mt-1">{fieldErrors.id_magasin}</p>}
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">Stock physique *</Label>
-                  <Input
-                    type="number" min="0"
-                    value={form.stock_physique_compte}
-                    onChange={(e) => { setForm((f) => ({ ...f, stock_physique_compte: e.target.value })); setFieldErrors((f) => ({ ...f, stock_physique_compte: '' })); }}
-                    placeholder="Quantité comptée"
-                    className={cn("mt-1.5 bg-white text-gray-900 border-gray-300 focus:border-royal-500 focus:ring-royal-500 h-11",
-                      fieldErrors.stock_physique_compte ? 'border-red-400' : '')}
-                  />
-                  {fieldErrors.stock_physique_compte && <p className="text-red-500 text-xs mt-1">{fieldErrors.stock_physique_compte}</p>}
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-700">Commentaire</Label>
-                  <Textarea
-                    value={form.commentaire}
-                    onChange={(e) => setForm((f) => ({ ...f, commentaire: e.target.value }))}
-                    placeholder="Commentaire (optionnel)"
-                    className="mt-1.5 bg-white text-gray-900 border-gray-300 focus:border-royal-500 focus:ring-royal-500"
-                  />
-                </div>
+
+              <div className="overflow-x-auto rounded-lg border border-gray-200">
+                <Table>
+                  <TableHeader className="bg-gray-50">
+                    <TableRow>
+                      <TableHead className="font-semibold text-gray-600">Produit *</TableHead>
+                      <TableHead className="font-semibold text-gray-600 w-36">Stock physique *</TableHead>
+                      <TableHead className="font-semibold text-gray-600 min-w-[200px]">Commentaire</TableHead>
+                      {!editingId && <TableHead className="text-center w-12" />}
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {lignes.map((l, i) => (
+                      <TableRow key={l.key} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
+                        <TableCell className="min-w-[280px]">
+                          <SearchableSelect
+                            options={produits.map((p) => ({ id: p.id, nom: `${p.nom} (${p.code_article})` }))}
+                            value={l.id_produit}
+                            onValueChange={(value) => updateLigne(l.key, 'id_produit', value)}
+                            placeholder="Sélectionner un produit"
+                            searchPlaceholder="Rechercher un produit..."
+                            error={fieldErrors[`lignes.${i}.id_produit`]}
+                            disabled={!!editingId}
+                          />
+                          {fieldErrors[`lignes.${i}.id_produit`] && <p className="text-red-500 text-xs mt-1">{fieldErrors[`lignes.${i}.id_produit`]}</p>}
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            type="number" min="0"
+                            value={l.stock_physique_compte}
+                            onChange={(e) => updateLigne(l.key, 'stock_physique_compte', e.target.value)}
+                            placeholder="Quantité comptée"
+                            className={cn('text-right h-10 border-gray-200 shadow-sm', fieldErrors[`lignes.${i}.stock_physique_compte`] && 'border-red-400')}
+                          />
+                          {fieldErrors[`lignes.${i}.stock_physique_compte`] && <p className="text-red-500 text-xs mt-1">{fieldErrors[`lignes.${i}.stock_physique_compte`]}</p>}
+                        </TableCell>
+                        <TableCell>
+                          <Input
+                            value={l.commentaire}
+                            onChange={(e) => updateLigne(l.key, 'commentaire', e.target.value)}
+                            placeholder="Optionnel"
+                            className="h-10 border-gray-200 shadow-sm"
+                          />
+                        </TableCell>
+                        {!editingId && (
+                          <TableCell className="text-center w-12">
+                            <button
+                              type="button"
+                              onClick={() => removeLigne(l.key)}
+                              disabled={lignes.length <= 1}
+                              className="p-1.5 rounded text-red-500 hover:text-red-700 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                              title="Supprimer la ligne"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </TableCell>
+                        )}
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
+
+              {fieldErrors.ligne && <p className="text-red-500 text-xs">{fieldErrors.ligne}</p>}
               {fieldErrors.general && (
                 <p className="text-red-500 text-xs">{fieldErrors.general}</p>
               )}
+
+              {!editingId && (
+                <Button
+                  type="button" size="sm"
+                  onClick={addLigne}
+                  className="bg-royal-100 text-royal-700 hover:bg-royal-200 border-0 shadow-sm text-xs rounded-lg"
+                >
+                  <Plus className="w-3.5 h-3.5 mr-1" /> Ajouter un produit
+                </Button>
+              )}
+
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
                 {editingId && (
                   <Button
@@ -468,7 +544,7 @@ export function SaisieInventaire() {
                   className="bg-royal-700 hover:bg-royal-800 text-white h-11 px-6 shadow-sm"
                 >
                   {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-                  {saving ? 'Enregistrement...' : editingId ? 'Modifier' : 'Enregistrer'}
+                  {saving ? 'Enregistrement...' : editingId ? 'Modifier' : 'Enregistrer tout'}
                 </Button>
               </div>
             </form>

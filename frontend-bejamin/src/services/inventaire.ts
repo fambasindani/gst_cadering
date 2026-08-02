@@ -1,5 +1,5 @@
 import { api } from './api';
-import type { InventaireListResponse, InventaireResponse, InventaireResumeResponse, AjustementResponse } from '../types/validation';
+import type { InventaireListResponse, InventaireResponse, InventaireResumeResponse, AjustementResponse, MiseAJourStockResponse, InventaireCreateMultipleResponse } from '../types/validation';
 
 export const inventaireService = {
   list: (params?: Record<string, string>) =>
@@ -10,6 +10,9 @@ export const inventaireService = {
 
   create: (data: Record<string, string | number>) =>
     api.post<InventaireResponse>('/config/inventaires', data),
+
+  createMultiple: (data: Record<string, unknown>) =>
+    api.post<InventaireCreateMultipleResponse>('/config/inventaires/bulk', data),
 
   update: (id: number, data: Record<string, string | number>) =>
     api.put<InventaireResponse>(`/config/inventaires/${id}`, data),
@@ -22,4 +25,7 @@ export const inventaireService = {
 
   generateAjustements: (periodeId: number) =>
     api.post<AjustementResponse>(`/config/inventaires/periodes/${periodeId}/generer-ajustements`),
+
+  mettreAJourStock: (periodeId: number) =>
+    api.post<MiseAJourStockResponse>(`/config/inventaires/periodes/${periodeId}/mettre-a-jour-stock`),
 };

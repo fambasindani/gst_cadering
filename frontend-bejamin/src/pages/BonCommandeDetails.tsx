@@ -8,12 +8,14 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '../components/ui/table';
 import { useToast } from '../hooks/useToast';
+import { useIsAdmin } from '../hooks/useIsAdmin';
+import { ConfirmModal } from '../components/ui/confirm-modal';
 import { bonCommandeService } from '../services/bon-commande';
 import { BonCommandePDF } from '../components/pdf/BonCommandePDF';
 import type { BonCommande } from '../types/bon-commande';
 import {
-  ArrowLeft, Pencil, FileText, Truck, CheckCircle, XCircle, Ban, Printer,
-  Building2, MapPin, Calendar, DollarSign, MessageSquare, User, Clock, Loader2, PackagePlus,
+  ArrowLeft, Pencil, FileText, Truck, CheckCircle, XCircle, Ban, Printer, PackagePlus,
+  Building2, MapPin, Calendar, DollarSign, MessageSquare, User, Clock, Loader2,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { formatCurrency } from '../lib/format';
@@ -30,10 +32,14 @@ export function BonCommandeDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isAdmin = useIsAdmin();
 
   const [bon, setBon] = useState<BonCommande | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [confirmValidate, setConfirmValidate] = useState(false);
+  const [confirmReject, setConfirmReject] = useState(false);
+  const [confirmCancel, setConfirmCancel] = useState(false);
 
 
 
@@ -52,17 +58,20 @@ export function BonCommandeDetails() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
-  const doAction = async (action: string, fn: () => Promise<{ success: boolean; message: string }>, successMsg: string) => {
+  const doAction = async (action: string, fn: () => Promise<{ success: boolean; message: string }>, successMsg: string): Promise<boolean> => {
     setActionLoading(true);
     try {
       const res = await fn();
       if (res.success) {
         toast(successMsg, 'success');
         fetchData();
+        return true;
       }
+      return false;
     } catch (err: unknown) {
       const error = err as { message?: string };
       toast(error.message || `Erreur lors de ${action}`, 'error');
+      return false;
     } finally {
       setActionLoading(false);
     }
@@ -131,7 +140,7 @@ export function BonCommandeDetails() {
               </Button>
             )}
           </PDFDownloadLink>
-          {bon.statut === 'BROUILLON' ? (
+          {bon.statut === 'BROUILLON' || isAdmin ? (
             <Button onClick={() => navigate(`/bon-commande/${id}/modifier`)} className="bg-royal-700 hover:bg-royal-800 text-white shadow-sm">
               <Pencil className="w-4 h-4 mr-2" /> Modifier
             </Button>
@@ -232,12 +241,12 @@ export function BonCommandeDetails() {
             <CardContent className="p-4 space-y-2">
               {bon.statut === 'BROUILLON' ? (
                 <>
-                  <Button onClick={() => doAction('validation', () => bonCommandeService.validate(Number(id)), 'Bon validé avec succès')}
+                  <Button onClick={() => setConfirmValidate(true)}
                     disabled={actionLoading} className="w-full justify-start bg-emerald-600 hover:bg-emerald-700 text-white">
                     {actionLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-2" />}
                     Valider
                   </Button>
-                  <Button onClick={() => doAction('rejet', () => bonCommandeService.reject(Number(id)), 'Bon rejeté')}
+                  <Button onClick={() => setConfirmReject(true)}
                     disabled={actionLoading} className="w-full justify-start bg-red-600 hover:bg-red-700 text-white">
                     {actionLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <XCircle className="w-4 h-4 mr-2" />}
                     Rejeter
@@ -249,19 +258,20 @@ export function BonCommandeDetails() {
                 </>
               ) : null}
 
+              {bon.statut === 'ENVOYÉ' || bon.statut === 'REÇU PARTIELLEMENT' || (isAdmin && bon.statut === 'REÇU') ? (
+                <Button onClick={() => navigate(`/reception/${id}`)}
+                  disabled={actionLoading} className="w-full justify-start bg-royal-600 hover:bg-royal-700 text-white">
+                  <PackagePlus className="w-4 h-4 mr-2" />
+                  {bon.statut === 'REÇU' ? 'Corriger la réception' : 'Réceptionner'}
+                </Button>
+              ) : null}
+
               {bon.statut === 'ENVOYÉ' || bon.statut === 'REÇU PARTIELLEMENT' ? (
-                <>
-                  <Button onClick={() => navigate(`/reception/${id}`)}
-                    className="w-full justify-start bg-emerald-600 hover:bg-emerald-700 text-white">
-                    <PackagePlus className="w-4 h-4 mr-2" />
-                    Réceptionner
-                  </Button>
-                  <Button onClick={() => doAction('annulation', () => bonCommandeService.cancel(Number(id)), 'Bon annulé')}
-                    disabled={actionLoading} variant="outline" className="w-full justify-start border-red-200 text-red-700 hover:bg-red-50">
-                    {actionLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Ban className="w-4 h-4 mr-2" />}
-                    Annuler
-                  </Button>
-                </>
+                <Button onClick={() => setConfirmCancel(true)}
+                  disabled={actionLoading} variant="outline" className="w-full justify-start border-red-200 text-red-700 hover:bg-red-50">
+                  {actionLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Ban className="w-4 h-4 mr-2" />}
+                  Annuler
+                </Button>
               ) : null}
 
               <PDFDownloadLink document={<BonCommandePDF bon={bon} />} fileName={`BC-${bon.numero_commande}.pdf`}>
@@ -280,6 +290,49 @@ export function BonCommandeDetails() {
           </Card>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={confirmValidate}
+        onClose={() => setConfirmValidate(false)}
+        onConfirm={async () => {
+          setConfirmValidate(false);
+          const ok = await doAction('validation', () => bonCommandeService.validate(Number(id)), 'Bon validé avec succès');
+          if (ok) navigate(`/reception/${id}`);
+        }}
+        title="Valider le bon"
+        message={`Confirmer la validation du bon "${bon?.numero_commande || ''}" ?`}
+        variant="warning"
+        confirmLabel="Valider"
+        loading={actionLoading}
+      />
+
+      <ConfirmModal
+        isOpen={confirmReject}
+        onClose={() => setConfirmReject(false)}
+        onConfirm={async () => {
+          setConfirmReject(false);
+          await doAction('rejet', () => bonCommandeService.reject(Number(id)), 'Bon rejeté');
+        }}
+        title="Rejeter le bon"
+        message={`Confirmer le rejet du bon "${bon?.numero_commande || ''}" ?`}
+        variant="danger"
+        confirmLabel="Rejeter"
+        loading={actionLoading}
+      />
+
+      <ConfirmModal
+        isOpen={confirmCancel}
+        onClose={() => setConfirmCancel(false)}
+        onConfirm={async () => {
+          setConfirmCancel(false);
+          await doAction('annulation', () => bonCommandeService.cancel(Number(id)), 'Bon annulé');
+        }}
+        title="Annuler le bon"
+        message={`Confirmer l'annulation du bon "${bon?.numero_commande || ''}" ?`}
+        variant="danger"
+        confirmLabel="Annuler"
+        loading={actionLoading}
+      />
     </div>
   );
 }

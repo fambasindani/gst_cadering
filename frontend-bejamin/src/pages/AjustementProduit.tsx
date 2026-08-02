@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Badge } from '../components/ui/badge';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '../components/ui/table';
@@ -10,10 +11,11 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '../components/ui/select';
 import { useToast } from '../hooks/useToast';
+import { ConfirmModal } from '../components/ui/confirm-modal';
 import { inventaireService } from '../services/inventaire';
 import { periodeInventaireService } from '../services/periode-inventaire';
 import type { PeriodeInventaire, Inventaire } from '../types/validation';
-import { Search, RefreshCw, FileText, TrendingUp, TrendingDown, Minus, Loader2 } from 'lucide-react';
+import { Search, RefreshCw, FileText, TrendingUp, TrendingDown, Minus, Loader2, PackageCheck } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export function AjustementProduit() {
@@ -28,6 +30,9 @@ export function AjustementProduit() {
   const [total, setTotal] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [generating, setGenerating] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [confirmUpdateOpen, setConfirmUpdateOpen] = useState(false);
+  const [stockMisAJour, setStockMisAJour] = useState(false);
   const [searchInput, setSearchInput] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -88,6 +93,40 @@ export function AjustementProduit() {
     }
   };
 
+  const handlePeriodeChange = (value: string) => {
+    setSelectedPeriodeId(value);
+    setCurrentPage(1);
+    setSearchInput('');
+    setSearchTerm('');
+    setStockMisAJour(false);
+    if (!value) return;
+    inventaireService.resume(Number(value))
+      .then((res) => { if (res.success) setStockMisAJour(Boolean(res.data?.stock_mis_a_jour)); })
+      .catch(() => setStockMisAJour(false));
+  };
+
+  const handleMettreAJourStock = async () => {
+    if (!selectedPeriodeId) return;
+    setConfirmUpdateOpen(false);
+    setUpdating(true);
+    try {
+      const res = await inventaireService.mettreAJourStock(Number(selectedPeriodeId));
+      if (res.success) {
+        setStockMisAJour(true);
+        toast(res.message || 'Stock mis à jour avec succès', 'success');
+        fetchData();
+      }
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      if (error.message && error.message.includes('déjà été appliquée')) {
+        setStockMisAJour(true);
+      }
+      toast(error.message || 'Erreur lors de la mise à jour du stock', 'error');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
   const getEcartDisplay = (ecart: number) => {
     if (ecart > 0) {
       return (
@@ -119,7 +158,7 @@ export function AjustementProduit() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Ajustement par produit</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Ajustement inventaire</h1>
           <p className="text-sm text-gray-500 mt-1">{selectedPeriodeId ? `${total} produit${total > 1 ? 's' : ''}` : 'Sélectionnez une période'}</p>
         </div>
         <div className="flex items-center gap-2">
@@ -139,6 +178,28 @@ export function AjustementProduit() {
               Générer ajustements
             </Button>
           )}
+          {selectedPeriodeId && stockMisAJour && (
+            <Badge variant="success" className="h-9 px-3">
+              <PackageCheck className="w-4 h-4 mr-1.5" />
+              Stock déjà mis à jour
+            </Badge>
+          )}
+          {selectedPeriodeId && !stockMisAJour && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setConfirmUpdateOpen(true)}
+              disabled={updating}
+              className="border-amber-300 text-amber-700 hover:bg-amber-50"
+            >
+              {updating ? (
+                <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+              ) : (
+                <PackageCheck className="w-4 h-4 mr-1.5" />
+              )}
+              Mise à jour stock
+            </Button>
+          )}
           <Button variant="outline" onClick={fetchData} className="border-gray-300 text-gray-700 hover:bg-gray-50" title="Actualiser">
             <RefreshCw className={cn('h-4 w-4 mr-2', loading && 'animate-spin')} />
             Actualiser
@@ -151,7 +212,7 @@ export function AjustementProduit() {
           <FileText className="w-4 h-4 text-gray-400" />
           <Select
             value={selectedPeriodeId}
-            onValueChange={(v) => { setSelectedPeriodeId(v); setCurrentPage(1); setSearchInput(''); setSearchTerm(''); }}
+            onValueChange={handlePeriodeChange}
           >
             <SelectTrigger className="w-72 h-9 bg-white border-gray-200">
               <SelectValue placeholder="Sélectionnez une période clôturée" />
@@ -271,6 +332,17 @@ export function AjustementProduit() {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmModal
+        isOpen={confirmUpdateOpen}
+        onClose={() => setConfirmUpdateOpen(false)}
+        onConfirm={handleMettreAJourStock}
+        title="Mettre à jour le stock"
+        message="Cette action applique les écarts d'inventaire au stock réel (création ou retrait sur les lots) pour la période sélectionnée. Elle est irréversible. Continuer ?"
+        confirmLabel="Appliquer"
+        variant="warning"
+        loading={updating}
+      />
     </div>
   );
 }

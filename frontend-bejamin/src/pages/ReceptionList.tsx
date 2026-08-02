@@ -42,7 +42,7 @@ export function ReceptionList() {
       const params: Record<string, string> = {
         per_page: String(pageSize),
         page: String(currentPage),
-        statut: 'ENVOYÉ',
+        statut: 'ENVOYÉ,REÇU PARTIELLEMENT',
       };
       if (searchTerm) params.search = searchTerm;
       const res = await bonCommandeService.list(params);

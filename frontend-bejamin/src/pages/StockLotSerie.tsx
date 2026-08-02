@@ -11,6 +11,7 @@ import { Badge } from '../components/ui/badge';
 import { SlidePanel } from '../components/ui/SlidePanel';
 import { ConfirmModal } from '../components/ui/confirm-modal';
 import { useToast } from '../hooks/useToast';
+import { useIsAdmin } from '../hooks/useIsAdmin';
 import { lotService } from '../services/lot';
 import type { Lot } from '../types/lot';
 import {
@@ -38,6 +39,7 @@ function isPerime(datePeremption: string): boolean {
 export function StockLotSerie() {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const isAdmin = useIsAdmin();
 
   const [data, setData] = useState<Lot[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,6 +53,8 @@ export function StockLotSerie() {
   const [dateFin, setDateFin] = useState('');
   const [viewLot, setViewLot] = useState<Lot | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Lot | null>(null);
+  const [validateTarget, setValidateTarget] = useState<Lot | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<Lot | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
   const handlePageSizeChange = (size: number) => { setPageSize(size); setCurrentPage(1); };
@@ -93,25 +97,35 @@ export function StockLotSerie() {
     }
   };
 
-  const handleValidate = async (id: number) => {
+  const handleConfirmValidate = async () => {
+    if (!validateTarget) return;
+    setActionLoading(true);
     try {
-      await lotService.validate(id);
+      await lotService.validate(validateTarget.id);
       toast('Lot validé avec succès', 'success');
+      setValidateTarget(null);
       fetchData();
     } catch (err: unknown) {
       const error = err as { message?: string };
       toast(error.message || 'Erreur lors de la validation', 'error');
+    } finally {
+      setActionLoading(false);
     }
   };
 
-  const handleReject = async (id: number) => {
+  const handleConfirmReject = async () => {
+    if (!rejectTarget) return;
+    setActionLoading(true);
     try {
-      await lotService.reject(id);
+      await lotService.reject(rejectTarget.id);
       toast('Lot rejeté', 'success');
+      setRejectTarget(null);
       fetchData();
     } catch (err: unknown) {
       const error = err as { message?: string };
       toast(error.message || 'Erreur lors du rejet', 'error');
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -264,7 +278,7 @@ export function StockLotSerie() {
                                   <Barcode className="w-4 h-4" />
                                 </Button>
                               )}
-                              {l.statut_validation !== 'VALIDÉ' && (
+                              {(isAdmin || l.statut_validation !== 'VALIDÉ') && (
                                 <Button variant="ghost" size="sm" onClick={() => navigate(`/stock/lot-serie/${l.id}/modifier`)}
                                   className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg" title="Modifier">
                                   <Edit3 className="w-4 h-4" />
@@ -272,17 +286,17 @@ export function StockLotSerie() {
                               )}
                               {l.statut_validation === 'EN ATTENTE' && (
                                 <>
-                                  <Button variant="ghost" size="sm" onClick={() => handleValidate(l.id)}
+                                  <Button variant="ghost" size="sm" onClick={() => setValidateTarget(l)}
                                     className="h-8 w-8 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg" title="Valider">
                                     <CheckCircle className="w-4 h-4" />
                                   </Button>
-                                  <Button variant="ghost" size="sm" onClick={() => handleReject(l.id)}
+                                  <Button variant="ghost" size="sm" onClick={() => setRejectTarget(l)}
                                     className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg" title="Rejeter">
                                     <XCircle className="w-4 h-4" />
                                   </Button>
                                 </>
                               )}
-                              {l.statut_validation !== 'VALIDÉ' && (
+                              {(isAdmin || l.statut_validation !== 'VALIDÉ') && (
                                 <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(l)}
                                   className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg" title="Supprimer">
                                   <Trash2 className="w-4 h-4" />
@@ -304,6 +318,28 @@ export function StockLotSerie() {
       </Card>
 
       <LotViewSlide isOpen={!!viewLot} onClose={() => setViewLot(null)} lot={viewLot} />
+
+      <ConfirmModal
+        isOpen={!!validateTarget}
+        onClose={() => setValidateTarget(null)}
+        onConfirm={handleConfirmValidate}
+        title="Valider le lot"
+        message={`Confirmer la validation du lot "${validateTarget?.numero_lot}" ?`}
+        variant="warning"
+        confirmLabel="Valider"
+        loading={actionLoading}
+      />
+
+      <ConfirmModal
+        isOpen={!!rejectTarget}
+        onClose={() => setRejectTarget(null)}
+        onConfirm={handleConfirmReject}
+        title="Rejeter le lot"
+        message={`Confirmer le rejet du lot "${rejectTarget?.numero_lot}" ?`}
+        variant="danger"
+        confirmLabel="Rejeter"
+        loading={actionLoading}
+      />
 
       <ConfirmModal
         isOpen={!!deleteTarget}

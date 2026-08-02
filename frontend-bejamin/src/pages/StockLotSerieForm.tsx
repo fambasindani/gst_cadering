@@ -5,6 +5,7 @@ import { Input } from '../components/ui/input';
 import { SearchableSelect } from '../components/ui/SearchableSelect';
 import { Card, CardContent } from '../components/ui/card';
 import { useToast } from '../hooks/useToast';
+import { useIsAdmin } from '../hooks/useIsAdmin';
 import { lotService } from '../services/lot';
 import { bonCommandeService } from '../services/bon-commande';
 import {
@@ -19,12 +20,13 @@ export function StockLotSerieForm() {
   const isEdit = Boolean(id);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isAdmin = useIsAdmin();
 
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [lotStatut, setLotStatut] = useState<string | null>(null);
-  const estVerrouille = isEdit && lotStatut === 'VALIDÉ';
+  const estVerrouille = isEdit && lotStatut === 'VALIDÉ' && !isAdmin;
   const [produits, setProduits] = useState<SelectOption[]>([]);
   const [magasins, setMagasins] = useState<SelectOption[]>([]);
   const [partenaires, setPartenaires] = useState<SelectOption[]>([]);

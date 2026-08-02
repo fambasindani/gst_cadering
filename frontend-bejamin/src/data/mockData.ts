@@ -48,7 +48,7 @@ export const menuItems: MenuItem[] = [
       { title: 'Période inventaire', path: '/validation/periode-inventaire', permission: 'config:periode_inventaire:view' },
       { title: 'Saisie inventaire', path: '/validation/saisie-inventaire', permission: 'config:inventaire:create' },
       { title: 'Ajustement', path: '/validation/ajustement', permission: 'config:inventaire:view' },
-      { title: 'Ajustement produit', path: '/validation/ajustement-produit', permission: 'config:inventaire:view' },
+      { title: 'Ajustement inventaire', path: '/validation/ajustement-produit', permission: 'config:inventaire:view' },
     ]
   },
   { 
@@ -60,6 +60,7 @@ export const menuItems: MenuItem[] = [
       { title: 'Sortie stock', path: '/stock/sortie', permission: 'config:mouvements:create' },
       { title: 'Entrée stock', path: '/stock/entree', permission: 'config:mouvements:create' },
       { title: 'Bon de réception', path: '/reception', permission: 'config:bon_commande:receive' },
+      { title: 'Mouvement produit', path: '/stock/mouvement-produit', permission: 'config:mouvements:view' },
       { title: 'Retour stock', path: '/stock/retour', permission: 'config:retours:view' },
       { title: 'Avoirs', path: '/stock/avoir', permission: 'facturation:avoir:view' },
     ]
@@ -125,7 +126,6 @@ export const menuItems: MenuItem[] = [
       { title: 'Rapport Achat', path: '/rapports/achat', permission: 'rapport:stock' },
       { title: 'Rapport Fournisseur', path: '/rapports/fournisseur', permission: 'rapport:stock' },
       { title: 'Inventaire Théorique', path: '/rapports/inventaire-theorique', permission: 'rapport:inventaire' },
-      { title: 'Consommations Clients', path: '/rapports/consommations', permission: 'rapport:client' },
       { title: 'Rupture Stock', path: '/rapports/rupture-stock', permission: 'rapport:stock' },
       { title: 'Stock bas', path: '/rapports/stock-bas', permission: 'rapport:stock' },
     ]

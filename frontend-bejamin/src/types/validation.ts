@@ -1,9 +1,15 @@
 export interface MouvementStock {
   id: number;
   id_lot: number;
-  lot?: { id: number; numero_lot: string; quantite_disponible: number; produit?: { id: number; nom: string; code_article: string } | null; magasin?: { id: number; nom: string } | null } | null;
+  lot?: { id: number; numero_lot: string; quantite_disponible: number; prix_achat_ht_unitaire?: number | null; date_peremption?: string | null; produit?: { id: number; nom: string; code_article: string } | null; magasin?: { id: number; nom: string } | null } | null;
   id_type_mouvement: number;
   type_mouvement?: { id: number; libelle: string; sens: number } | null;
+  id_partenaire: number | null;
+  partenaire?: { id: number; nom: string } | null;
+  id_magasin: number | null;
+  magasin?: { id: number; nom: string } | null;
+  id_departement: number | null;
+  departement?: { id: number; nom: string } | null;
   quantite: number;
   date_mouvement: string;
   id_utilisateur: number;
@@ -61,6 +67,7 @@ export interface InventaireResume {
   ecarts_positifs: number;
   ecarts_negatifs: number;
   sans_ecart: number;
+  stock_mis_a_jour: boolean;
 }
 
 export interface MouvementStockListResponse {
@@ -117,6 +124,16 @@ export interface InventaireResponse {
   message: string;
 }
 
+export interface InventaireCreateMultipleResponse {
+  success: boolean;
+  data: {
+    cree: number;
+    ignores: number[];
+    inventaires: Inventaire[];
+  };
+  message: string;
+}
+
 export interface InventaireResumeResponse {
   success: boolean;
   data: InventaireResume;
@@ -128,6 +145,17 @@ export interface AjustementResponse {
   data: {
     ajustements: Ajustement[];
     total_ecart: number;
+  };
+  message: string;
+}
+
+export interface MiseAJourStockResponse {
+  success: boolean;
+  data: {
+    periode: string;
+    produits_ajustes: number;
+    total_ajoute: number;
+    total_retire: number;
   };
   message: string;
 }

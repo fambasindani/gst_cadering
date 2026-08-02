@@ -249,7 +249,8 @@ class RetourController extends Controller
         try {
             $retour = Retour::findOrFail($id);
 
-            if ($retour->statut_validation !== 'EN ATTENTE') {
+            // Modifiable par l'ADMIN même après validation
+            if ($retour->statut_validation !== 'EN ATTENTE' && !Auth::user()->hasRole('ADMIN')) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Ce retour ne peut plus être modifié car il est ' . $retour->statut_validation
@@ -292,7 +293,8 @@ class RetourController extends Controller
         try {
             $retour = Retour::findOrFail($id);
 
-            if ($retour->statut_validation !== 'EN ATTENTE') {
+            // Supprimable par l'ADMIN même après validation
+            if ($retour->statut_validation !== 'EN ATTENTE' && !Auth::user()->hasRole('ADMIN')) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Ce retour ne peut pas être supprimé car il est ' . $retour->statut_validation
@@ -302,6 +304,20 @@ class RetourController extends Controller
             DB::beginTransaction();
 
             try {
+                // Si le retour était validé (suppression ADMIN), annuler l'impact stock
+                if (in_array($retour->statut_validation, ['VALIDÉ', 'TRAITÉ'])) {
+                    $estRetourClient = !is_null($retour->id_partenaire_client);
+                    foreach ($retour->lignes as $ligne) {
+                        $lot = $ligne->lot;
+                        if ($estRetourClient) {
+                            $lot->quantite_disponible -= $ligne->quantite_retournee;
+                        } else {
+                            $lot->quantite_disponible += $ligne->quantite_retournee;
+                        }
+                        $lot->save();
+                    }
+                }
+
                 $retour->lignes()->delete();
                 $retour->delete();
 

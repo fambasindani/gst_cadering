@@ -10,6 +10,7 @@ import { SlidePanel } from '../components/ui/SlidePanel';
 import { ConfirmModal } from '../components/ui/confirm-modal';
 import { DataTablePagination } from '../components/ui/DataTablePagination';
 import { useToast } from '../hooks/useToast';
+import { useIsAdmin } from '../hooks/useIsAdmin';
 import { mouvementStockService } from '../services/mouvement-stock';
 import { typeMouvementService } from '../services/type-mouvement';
 import type { TypeMouvement } from '../services/type-mouvement';
@@ -22,6 +23,7 @@ import { cn } from '../lib/utils';
 
 export function EntreeStockForm() {
   const { toast } = useToast();
+  const isAdmin = useIsAdmin();
 
   const [data, setData] = useState<MouvementStock[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,6 +36,8 @@ export function EntreeStockForm() {
   const [slideOpen, setSlideOpen] = useState(false);
   const [editingMvt, setEditingMvt] = useState<MouvementStock | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<MouvementStock | null>(null);
+  const [validateTarget, setValidateTarget] = useState<MouvementStock | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<MouvementStock | null>(null);
   const [validatingId, setValidatingId] = useState<number | null>(null);
   const [rejectingId, setRejectingId] = useState<number | null>(null);
 
@@ -98,6 +102,18 @@ export function EntreeStockForm() {
     } finally {
       setRejectingId(null);
     }
+  };
+
+  const handleConfirmValidate = async () => {
+    if (!validateTarget) return;
+    await handleValidate(validateTarget.id);
+    setValidateTarget(null);
+  };
+
+  const handleConfirmReject = async () => {
+    if (!rejectTarget) return;
+    await handleReject(rejectTarget.id);
+    setRejectTarget(null);
   };
 
   const handlePageSizeChange = (size: number) => {
@@ -220,7 +236,7 @@ export function EntreeStockForm() {
                             {m.statut_validation === 'EN ATTENTE' ? (
                               <>
                                 <button
-                                  onClick={() => handleValidate(m.id)}
+                                  onClick={() => setValidateTarget(m)}
                                   disabled={validatingId === m.id || rejectingId === m.id}
                                   className="p-1.5 rounded text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors disabled:opacity-40"
                                   title="Valider"
@@ -228,13 +244,17 @@ export function EntreeStockForm() {
                                   {validatingId === m.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                                 </button>
                                 <button
-                                  onClick={() => handleReject(m.id)}
+                                  onClick={() => setRejectTarget(m)}
                                   disabled={rejectingId === m.id || validatingId === m.id}
                                   className="p-1.5 rounded text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors disabled:opacity-40"
                                   title="Rejeter"
                                 >
                                   {rejectingId === m.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
                                 </button>
+                              </>
+                            ) : null}
+                            {(isAdmin || m.statut_validation === 'EN ATTENTE') && (
+                              <>
                                 <button
                                   onClick={() => { setEditingMvt(m); setSlideOpen(true); }}
                                   className="p-1.5 rounded text-gray-500 hover:text-royal-700 hover:bg-royal-50 transition-colors"
@@ -250,7 +270,7 @@ export function EntreeStockForm() {
                                   <Trash2 className="w-4 h-4" />
                                 </button>
                               </>
-                            ) : null}
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>
@@ -276,6 +296,28 @@ export function EntreeStockForm() {
         editingMvt={editingMvt}
         onClose={() => { setSlideOpen(false); setEditingMvt(null); }}
         onSuccess={() => { setSlideOpen(false); setEditingMvt(null); fetchData(); }}
+      />
+
+      <ConfirmModal
+        isOpen={Boolean(validateTarget)}
+        onClose={() => setValidateTarget(null)}
+        onConfirm={handleConfirmValidate}
+        title="Valider l'entrée"
+        message={`Confirmer la validation de l'entrée du lot "${validateTarget?.lot?.numero_lot || '-'}" ?`}
+        variant="warning"
+        confirmLabel="Valider"
+        loading={validatingId !== null}
+      />
+
+      <ConfirmModal
+        isOpen={Boolean(rejectTarget)}
+        onClose={() => setRejectTarget(null)}
+        onConfirm={handleConfirmReject}
+        title="Rejeter l'entrée"
+        message={`Confirmer le rejet de l'entrée du lot "${rejectTarget?.lot?.numero_lot || '-'}" ?`}
+        variant="danger"
+        confirmLabel="Rejeter"
+        loading={rejectingId !== null}
       />
 
       <ConfirmModal

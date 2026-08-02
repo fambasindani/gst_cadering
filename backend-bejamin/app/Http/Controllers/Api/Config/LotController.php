@@ -194,7 +194,8 @@ class LotController extends Controller
         try {
             $lot = Lot::findOrFail($id);
 
-            if ($lot->statut_validation === 'VALIDÉ') {
+            // Un lot validé ne peut être modifié que par un ADMIN
+            if ($lot->statut_validation === 'VALIDÉ' && !Auth::user()->hasRole('ADMIN')) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Un lot déjà validé ne peut pas être modifié'
@@ -213,7 +214,7 @@ class LotController extends Controller
             ]);
 
             if (isset($validated['quantite_recue'])) {
-                $validated['quantite_disponible'] = $validated['quantite_recue'];
+                $validated['quantite_disponible'] = max(0, $lot->quantite_disponible + ($validated['quantite_recue'] - $lot->quantite_recue));
             }
 
             $lot->update($validated);

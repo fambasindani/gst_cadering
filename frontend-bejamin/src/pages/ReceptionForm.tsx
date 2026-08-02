@@ -5,17 +5,20 @@ import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { useToast } from '../hooks/useToast';
-import { bonCommandeService, type ReceptionItem } from '../services/bon-commande';
+import { useIsAdmin } from '../hooks/useIsAdmin';
+import { bonCommandeService, type ReceptionItem, type CorrectionItem } from '../services/bon-commande';
 import type { BonCommande } from '../types/bon-commande';
 import {
   ArrowLeft, PackagePlus, Loader2, FileText, Building2, MapPin, Calendar, Package,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { formatCurrency } from '../lib/format';
 
 export function ReceptionForm() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isAdmin = useIsAdmin();
 
   const [bon, setBon] = useState<BonCommande | null>(null);
   const [loading, setLoading] = useState(true);
@@ -23,6 +26,7 @@ export function ReceptionForm() {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [receptionData, setReceptionData] = useState<Record<number, {
     quantite_recue: string;
+    quantite_recue_correction: string;
     numero_lot: string;
     date_peremption: string;
     prix_achat_ht_unitaire: string;
@@ -60,9 +64,10 @@ export function ReceptionForm() {
     const initial: Record<number, typeof receptionData[number]> = {};
     for (const l of b.lignes || []) {
       const reste = l.quantite_commandee - l.quantite_recue;
-      if (reste > 0) {
+      if (reste > 0 || (isAdmin && l.quantite_recue > 0)) {
         initial[l.id] = {
-          quantite_recue: String(reste),
+          quantite_recue: String(reste > 0 ? reste : 0),
+          quantite_recue_correction: String(l.quantite_recue),
           numero_lot: generateNumeroLot(),
           date_peremption: '',
           prix_achat_ht_unitaire: String(l.prix_unitaire_ht),
@@ -102,17 +107,42 @@ export function ReceptionForm() {
     setSaving(true);
     setFieldErrors({});
     try {
-      const receptions: ReceptionItem[] = Object.entries(receptionData).map(([ligneId, data]) => ({
-        id_ligne_commande: Number(ligneId),
-        quantite_recue: Number(data.quantite_recue) || 0,
-        numero_lot: data.numero_lot,
-        date_peremption: data.date_peremption,
-        prix_achat_ht_unitaire: Number(data.prix_achat_ht_unitaire) || undefined,
-      }));
-      const res = await bonCommandeService.receive(Number(id), { receptions });
+      const lignes = bon.lignes || [];
+      const receptions: ReceptionItem[] = [];
+      const corrections: CorrectionItem[] = [];
+
+      for (const [ligneId, data] of Object.entries(receptionData)) {
+        const l = lignes.find((x) => x.id === Number(ligneId));
+        const qty = Number(data.quantite_recue) || 0;
+        if (qty > 0) {
+          receptions.push({
+            id_ligne_commande: Number(ligneId),
+            quantite_recue: qty,
+            numero_lot: data.numero_lot,
+            date_peremption: data.date_peremption,
+            prix_achat_ht_unitaire: Number(data.prix_achat_ht_unitaire) || undefined,
+          });
+        }
+        if (l && Number(data.quantite_recue_correction) !== l.quantite_recue) {
+          corrections.push({
+            id_ligne_commande: Number(ligneId),
+            nouvelle_quantite_recue: Number(data.quantite_recue_correction) || 0,
+          });
+        }
+      }
+
+      const res = await bonCommandeService.receive(Number(id), { receptions, corrections });
       if (res.success) {
-        toast('Réception effectuée avec succès', 'success');
-        navigate('/reception');
+        const statut = res.data?.statut;
+        const msg = corrections.length > 0
+          ? (statut === 'REÇU' ? 'Réception corrigée avec succès (complète)' : 'Réception corrigée avec succès')
+          : (statut === 'REÇU' ? 'Réception complète effectuée avec succès' : 'Réception partielle effectuée avec succès');
+        toast(msg, 'success');
+        if (statut === 'REÇU') {
+          navigate('/bon-commande');
+        } else {
+          navigate('/reception');
+        }
       }
     } catch (err: unknown) {
       const error = err as { message?: string; errors?: Record<string, string[]> };
@@ -150,8 +180,14 @@ export function ReceptionForm() {
     );
   }
 
-  const statutNonReceptionnable = bon.statut !== 'ENVOYÉ' && bon.statut !== 'REÇU PARTIELLEMENT';
+  const statutNonReceptionnable = bon.statut !== 'ENVOYÉ' && bon.statut !== 'REÇU PARTIELLEMENT' && !(isAdmin && bon.statut === 'REÇU');
   const lignes = bon.lignes || [];
+
+  const totalQuantite = Object.values(receptionData).reduce((sum, rd) => sum + (Number(rd.quantite_recue) || 0), 0);
+  const totalPrix = Object.values(receptionData).reduce(
+    (sum, rd) => sum + ((Number(rd.quantite_recue) || 0) * (Number(rd.prix_achat_ht_unitaire) || 0)),
+    0,
+  );
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -204,10 +240,10 @@ export function ReceptionForm() {
       ) : (
         <div className="space-y-5">
           {lignes.map((l) => {
-            const reste = l.quantite_commandee - l.quantite_recue;
-            if (reste <= 0) return null;
             const rd = receptionData[l.id];
             if (!rd) return null;
+            const recueCorrige = Number(rd.quantite_recue_correction) || 0;
+            const reste = l.quantite_commandee - recueCorrige;
             return (
               <Card key={l.id} className="border border-gray-200 shadow-sm">
                 <CardHeader className="pb-2 border-b border-gray-100">
@@ -218,8 +254,8 @@ export function ReceptionForm() {
                     </CardTitle>
                     <span className="text-xs text-gray-500">
                       Commandé: <strong>{l.quantite_commandee}</strong> |
-                      Reçu: <strong>{l.quantite_recue}</strong> |
-                      Restant: <strong className="text-emerald-700">{reste}</strong>
+                      Reçu: <strong>{recueCorrige}</strong> |
+                      Restant: <strong className="text-emerald-700">{Math.max(0, reste)}</strong>
                     </span>
                   </div>
                 </CardHeader>
@@ -227,13 +263,22 @@ export function ReceptionForm() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="space-y-1">
                       <Label className="text-xs text-gray-500">Qté à recevoir *</Label>
-                      <Input type="number" min="1" max={reste} value={rd.quantite_recue}
+                      <Input type="number" min="1" max={Math.max(0, reste)} value={rd.quantite_recue}
+                        disabled={reste <= 0}
                         onChange={(e) => updateLigne(l.id, 'quantite_recue', e.target.value)}
                         className={errorClass(fieldErrors[`${l.id}.quantite_recue`])} />
                       {fieldErrors[`${l.id}.quantite_recue`] && (
                         <p className="text-xs text-red-500">{fieldErrors[`${l.id}.quantite_recue`]}</p>
                       )}
                     </div>
+                    {isAdmin ? (
+                      <div className="space-y-1">
+                        <Label className="text-xs text-amber-700">Qté déjà reçue (correction)</Label>
+                        <Input type="number" min="0" max={l.quantite_commandee} value={rd.quantite_recue_correction}
+                          onChange={(e) => updateLigne(l.id, 'quantite_recue_correction', e.target.value)}
+                          className={cn('border-amber-300 focus:border-amber-500 focus:ring-amber-500', errorClass(fieldErrors[`${l.id}.nouvelle_quantite_recue`]))} />
+                      </div>
+                    ) : null}
                     <div className="space-y-1">
                       <Label className="text-xs text-gray-500">Prix unit. HT</Label>
                       <Input type="number" step="0.01" min="0" value={rd.prix_achat_ht_unitaire}
@@ -267,6 +312,20 @@ export function ReceptionForm() {
               </Card>
             );
           })}
+
+          {totalQuantite > 0 ? (
+            <Card className="border border-gray-200 shadow-sm bg-emerald-50/50">
+              <CardContent className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <Package className="w-4 h-4 text-emerald-600" />
+                  <span>Total à réceptionner : <strong className="text-emerald-700">{totalQuantite}</strong> unité{totalQuantite > 1 ? 's' : ''}</span>
+                </div>
+                <div className="text-sm text-gray-600">
+                  Total HT : <strong className="text-lg text-emerald-700">{formatCurrency(totalPrix)}</strong>
+                </div>
+              </CardContent>
+            </Card>
+          ) : null}
 
           <div className="flex items-center justify-end gap-3 pt-4 border-t border-gray-200">
             <Button type="button" variant="outline" onClick={() => navigate('/reception')}

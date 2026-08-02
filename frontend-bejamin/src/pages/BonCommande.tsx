@@ -12,6 +12,7 @@ import {
 } from '../components/ui/select';
 import { ConfirmModal } from '../components/ui/confirm-modal';
 import { useToast } from '../hooks/useToast';
+import { useIsAdmin } from '../hooks/useIsAdmin';
 import { bonCommandeService } from '../services/bon-commande';
 import type { BonCommande } from '../types/bon-commande';
 import {
@@ -31,6 +32,7 @@ const statutConfig: Record<string, { label: string; color: string }> = {
 export function BonCommande() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isAdmin = useIsAdmin();
 
   const [data, setData] = useState<BonCommande[]>([]);
   const [loading, setLoading] = useState(true);
@@ -251,7 +253,7 @@ export function BonCommande() {
                                 className="h-8 w-8 p-0 text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-lg" title="Détails">
                                 <Eye className="w-4 h-4" />
                               </Button>
-                              {b.statut === 'BROUILLON' ? (
+                              {b.statut === 'BROUILLON' || isAdmin ? (
                                 <>
                                   <Button variant="ghost" size="sm" onClick={() => navigate(`/bon-commande/${b.id}/modifier`)}
                                     className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg" title="Modifier">

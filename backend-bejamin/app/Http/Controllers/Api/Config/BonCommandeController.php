@@ -236,8 +236,8 @@ class BonCommandeController extends Controller
         try {
             $bonCommande = BonCommande::findOrFail($id);
 
-            // Vérifier que le bon est en brouillon
-            if ($bonCommande->statut !== 'BROUILLON') {
+            // Vérifier que le bon est en brouillon (sauf ADMIN)
+            if ($bonCommande->statut !== 'BROUILLON' && !Auth::user()->hasRole('ADMIN')) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Seul un bon en brouillon peut être modifié'
@@ -284,7 +284,7 @@ class BonCommandeController extends Controller
         try {
             $bonCommande = BonCommande::findOrFail($id);
 
-            if ($bonCommande->statut !== 'BROUILLON') {
+            if ($bonCommande->statut !== 'BROUILLON' && !Auth::user()->hasRole('ADMIN')) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Seul un bon en brouillon peut être supprimé'
@@ -415,7 +415,16 @@ class BonCommandeController extends Controller
         try {
             $bonCommande = BonCommande::with('lignes')->findOrFail($id);
 
-            if (!in_array($bonCommande->statut, ['ENVOYÉ', 'REÇU PARTIELLEMENT'])) {
+            $hasCorrections = $request->filled('corrections') && count($request->input('corrections', [])) > 0;
+
+            if ($hasCorrections && !Auth::user()->hasRole('ADMIN')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Seul un administrateur peut corriger une réception'
+                ], 403);
+            }
+
+            if (!in_array($bonCommande->statut, ['ENVOYÉ', 'REÇU PARTIELLEMENT']) && !($hasCorrections && $bonCommande->statut === 'REÇU')) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Seul un bon envoyé peut être réceptionné'
@@ -423,18 +432,99 @@ class BonCommandeController extends Controller
             }
 
             $validated = $request->validate([
-                'receptions' => 'required|array|min:1',
+                'receptions' => 'nullable|array',
                 'receptions.*.id_ligne_commande' => 'required|exists:ligne_commande,id',
                 'receptions.*.quantite_recue' => 'required|integer|min:1',
                 'receptions.*.numero_lot' => 'nullable|string|max:50',
                 'receptions.*.date_peremption' => 'required|date|after_or_equal:today',
                 'receptions.*.prix_achat_ht_unitaire' => 'nullable|numeric|min:0',
+                'corrections' => 'nullable|array',
+                'corrections.*.id_ligne_commande' => 'required|exists:ligne_commande,id',
+                'corrections.*.nouvelle_quantite_recue' => 'required|integer|min:0',
             ]);
+
+            if (empty($validated['receptions']) && empty($validated['corrections'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Aucune réception ou correction à enregistrer'
+                ], 422);
+            }
 
             DB::beginTransaction();
 
             try {
-                foreach ($validated['receptions'] as $reception) {
+                // 1. Appliquer les corrections (ADMIN) : ajuster la quantité reçue + rééquilibrer le stock
+                foreach ($validated['corrections'] ?? [] as $correction) {
+                    $ligne = LigneCommande::findOrFail($correction['id_ligne_commande']);
+
+                    if ($ligne->id_bon_commande != $bonCommande->id) {
+                        throw new \Exception('Ligne de commande invalide');
+                    }
+
+                    $nouveau = (int) $correction['nouvelle_quantite_recue'];
+                    if ($nouveau > $ligne->quantite_commandee) {
+                        throw new \Exception("Quantité corrigée (${nouveau}) dépasse la quantité commandée ({$ligne->quantite_commandee})");
+                    }
+
+                    $delta = $nouveau - $ligne->quantite_recue;
+                    if ($delta == 0) {
+                        continue;
+                    }
+
+                    $mouvements = $this->lotsDeReception($bonCommande, $ligne);
+
+                    if ($delta > 0) {
+                        // Augmentation : ajuster le lot le plus récent de la réception
+                        if ($mouvements->isNotEmpty()) {
+                            $mouv = $mouvements->first();
+                            $lot = $mouv->lot;
+                            $lot->quantite_recue += $delta;
+                            $lot->quantite_disponible += $delta;
+                            $lot->save();
+                            $mouv->quantite += $delta;
+                            $mouv->save();
+                        } else {
+                            $this->creerLotReception($bonCommande, $ligne, $delta, null, now()->toDateString(), null);
+                        }
+                    } else {
+                        // Diminution : retirer du stock des lots de réception (du plus récent au plus ancien)
+                        $reduction = abs($delta);
+                        foreach ($mouvements as $mouv) {
+                            if ($reduction <= 0) {
+                                break;
+                            }
+                            $lot = $mouv->lot;
+                            if (!$lot) {
+                                continue;
+                            }
+                            $take = min($lot->quantite_recue, $reduction);
+                            if ($take <= 0) {
+                                continue;
+                            }
+                            $lot->quantite_recue -= $take;
+                            $lot->quantite_disponible = max(0, $lot->quantite_disponible - $take);
+                            $lot->save();
+
+                            $mouv->quantite -= $take;
+                            if ($mouv->quantite <= 0) {
+                                $mouv->delete();
+                            } else {
+                                $mouv->save();
+                            }
+
+                            $reduction -= $take;
+                        }
+                        if ($reduction > 0) {
+                            throw new \Exception("Stock insuffisant pour réduire la quantité reçue");
+                        }
+                    }
+
+                    $ligne->quantite_recue = $nouveau;
+                    $ligne->save();
+                }
+
+                // 2. Ajouts de réception
+                foreach ($validated['receptions'] ?? [] as $reception) {
                     $ligne = LigneCommande::findOrFail($reception['id_ligne_commande']);
                     
                     // Vérifier que la ligne appartient bien au bon
@@ -448,38 +538,15 @@ class BonCommandeController extends Controller
                         throw new \Exception("Quantité reçue (${reception['quantite_recue']}) dépasse la quantité restante (${quantiteRestante})");
                     }
 
-                    // Auto-générer le numéro de lot si non fourni
-                    if (empty($reception['numero_lot'])) {
-                        $reception['numero_lot'] = CodeGenerator::lot();
-                    }
-
-                    // Créer le lot
-                    $lot = Lot::create([
-                        'id_produit' => $ligne->id_produit,
-                        'id_magasin' => $bonCommande->id_magasin_destination,
-                        'numero_lot' => $reception['numero_lot'],
-                        'code_qr' => 'QR-' . $reception['numero_lot'] . '-' . uniqid(),
-                        'quantite_recue' => $reception['quantite_recue'],
-                        'quantite_disponible' => $reception['quantite_recue'],
-                        'date_peremption' => $reception['date_peremption'],
-                        'date_reception' => now(),
-                        'id_partenaire' => $bonCommande->id_partenaire,
-                        'prix_achat_ht_unitaire' => $reception['prix_achat_ht_unitaire'] ?? $ligne->prix_unitaire_ht,
-                        'id_devise' => $ligne->id_devise,
-                        'statut_validation' => 'EN ATTENTE',
-                    ]);
-
-                    // Créer le mouvement d'entrée (stock déjà appliqué sur le lot)
-                    MouvementStock::create([
-                        'id_lot' => $lot->id,
-                        'id_type_mouvement' => 1, // Entrée réception
-                        'quantite' => $reception['quantite_recue'],
-                        'date_mouvement' => now(),
-                        'id_utilisateur' => Auth::id(),
-                        'reference_document' => $bonCommande->numero_commande,
-                        'commentaire' => 'Réception du bon de commande #' . $bonCommande->numero_commande,
-                        'statut_validation' => 'EN ATTENTE',
-                    ]);
+                    // Créer le lot + le mouvement d'entrée
+                    $this->creerLotReception(
+                        $bonCommande,
+                        $ligne,
+                        $reception['quantite_recue'],
+                        $reception['numero_lot'] ?? null,
+                        $reception['date_peremption'],
+                        $reception['prix_achat_ht_unitaire'] ?? null
+                    );
 
                     // Mettre à jour la ligne de commande
                     $ligne->quantite_recue += $reception['quantite_recue'];
@@ -521,6 +588,56 @@ class BonCommandeController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Créer un lot de réception + son mouvement d'entrée
+     */
+    private function creerLotReception(BonCommande $bonCommande, LigneCommande $ligne, int $quantite, ?string $numeroLot, string $datePeremption, $prixAchat)
+    {
+        $numeroLot = $numeroLot ?: CodeGenerator::lot();
+
+        $lot = Lot::create([
+            'id_produit' => $ligne->id_produit,
+            'id_magasin' => $bonCommande->id_magasin_destination,
+            'numero_lot' => $numeroLot,
+            'code_qr' => 'QR-' . $numeroLot . '-' . uniqid(),
+            'quantite_recue' => $quantite,
+            'quantite_disponible' => $quantite,
+            'date_peremption' => $datePeremption,
+            'date_reception' => now(),
+            'id_partenaire' => $bonCommande->id_partenaire,
+            'prix_achat_ht_unitaire' => $prixAchat ?? $ligne->prix_unitaire_ht,
+            'id_devise' => $ligne->id_devise,
+            'statut_validation' => 'EN ATTENTE',
+        ]);
+
+        MouvementStock::create([
+            'id_lot' => $lot->id,
+            'id_type_mouvement' => 1, // Entrée réception
+            'quantite' => $quantite,
+            'date_mouvement' => now(),
+            'id_utilisateur' => Auth::id(),
+            'reference_document' => $bonCommande->numero_commande,
+            'commentaire' => 'Réception du bon de commande #' . $bonCommande->numero_commande,
+            'statut_validation' => 'EN ATTENTE',
+        ]);
+
+        return $lot;
+    }
+
+    /**
+     * Mouvements de réception d'une ligne (via référence du bon), du plus récent au plus ancien
+     */
+    private function lotsDeReception(BonCommande $bonCommande, LigneCommande $ligne)
+    {
+        return MouvementStock::where('reference_document', $bonCommande->numero_commande)
+            ->whereHas('lot', function($q) use ($ligne) {
+                $q->where('id_produit', $ligne->id_produit);
+            })
+            ->with('lot')
+            ->orderBy('id', 'desc')
+            ->get();
     }
 
     /**

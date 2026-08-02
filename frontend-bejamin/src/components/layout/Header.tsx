@@ -32,6 +32,7 @@ export function Header({ onMenuToggle }: HeaderProps) {
       '/produits': 'Produits',
       '/bon-commande': 'Bons de commande',
       '/reception': 'Réceptions',
+      '/stock/mouvement-produit': 'Mouvements par produit',
       '/entrer-stock': 'Entrées stock',
       '/sortie-stock': 'Sorties stock',
       '/retour-stock': 'Retours stock',
@@ -75,8 +76,11 @@ export function Header({ onMenuToggle }: HeaderProps) {
       [/^\/recettes\/creation\/(\d+)\/modifier$/, 'Modifier fiche technique'],
       [/^\/recettes\/creation\/nouveau$/, 'Nouvelle fiche technique'],
       [/^\/reception\/(\d+)$/, 'Réception'],
+      [/^\/stock\/mouvement-produit\/(\d+)$/, 'Mouvements du produit'],
       [/^\/configuration\/utilisateurs\/(\d+)\/modifier$/, 'Modifier utilisateur'],
       [/^\/configuration\/utilisateurs\/creer$/, 'Nouvel utilisateur'],
+      [/^\/stock\/sortie\/creer$/, 'Nouvelle sortie'],
+      [/^\/stock\/sortie\/(\d+)\/modifier$/, 'Modifier sortie'],
     ];
 
     for (const [pattern, title] of dynamicPatterns) {

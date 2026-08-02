@@ -22,6 +22,7 @@ class MouvementStockController extends Controller
             $perPage = $request->input('per_page', 15);
             $search = $request->input('search');
             $lotId = $request->input('lot_id');
+            $produitId = $request->input('produit_id');
             $typeId = $request->input('type_id');
             $magasinId = $request->input('magasin_id');
             $statut = $request->input('statut');
@@ -35,6 +36,9 @@ class MouvementStockController extends Controller
                 'lot.produit',
                 'lot.magasin',
                 'typeMouvement',
+                'partenaire',
+                'magasin',
+                'departement',
                 'utilisateur',
                 'validePar'
             ]);
@@ -48,6 +52,12 @@ class MouvementStockController extends Controller
 
             if ($lotId) {
                 $query->where('id_lot', $lotId);
+            }
+
+            if ($produitId) {
+                $query->whereHas('lot', function($q) use ($produitId) {
+                    $q->where('id_produit', $produitId);
+                });
             }
 
             if ($typeId) {
@@ -104,6 +114,9 @@ class MouvementStockController extends Controller
             $validated = $request->validate([
                 'id_lot' => 'required|exists:lots,id',
                 'id_type_mouvement' => 'required|exists:type_mouvement,id',
+                'id_partenaire' => 'nullable|exists:partenaires,id',
+                'id_magasin' => 'nullable|exists:magasins,id',
+                'id_departement' => 'nullable|exists:departements,id',
                 'quantite' => 'required|integer|min:1',
                 'date_mouvement' => 'nullable|date',
                 'reference_document' => 'nullable|string|max:100',
@@ -134,6 +147,9 @@ class MouvementStockController extends Controller
                 $mouvement = MouvementStock::create([
                     'id_lot' => $validated['id_lot'],
                     'id_type_mouvement' => $validated['id_type_mouvement'],
+                    'id_partenaire' => $validated['id_partenaire'] ?? null,
+                    'id_magasin' => $validated['id_magasin'] ?? null,
+                    'id_departement' => $validated['id_departement'] ?? null,
                     'quantite' => $validated['quantite'],
                     'date_mouvement' => $validated['date_mouvement'] ?? now(),
                     'id_utilisateur' => Auth::id(),
@@ -152,7 +168,7 @@ class MouvementStockController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'data' => $mouvement->load(['lot.produit', 'typeMouvement', 'utilisateur']),
+                    'data' => $mouvement->load(['lot.produit', 'typeMouvement', 'partenaire', 'magasin', 'departement', 'utilisateur']),
                     'message' => 'Mouvement de stock créé avec succès'
                 ], 201);
 
@@ -184,10 +200,11 @@ public function show($id)
             'lot.produit',
             'lot.magasin',
             'typeMouvement',
+            'partenaire',
+            'magasin',
+            'departement',
             'utilisateur',
             'validePar',
-            'facture'
-            // 'periodeInventaire' // <- Commenter ou supprimer cette ligne
         ])->findOrFail($id);
 
         return response()->json([
@@ -212,8 +229,8 @@ public function show($id)
         try {
             $mouvement = MouvementStock::findOrFail($id);
 
-            // Ne peut modifier que les mouvements non validés
-            if ($mouvement->statut_validation !== 'EN ATTENTE') {
+            // Ne peut modifier que les mouvements non validés (sauf ADMIN)
+            if ($mouvement->statut_validation !== 'EN ATTENTE' && !Auth::user()->hasRole('ADMIN')) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Ce mouvement a déjà été validé ou rejeté'
@@ -223,17 +240,71 @@ public function show($id)
             $validated = $request->validate([
                 'id_lot' => 'sometimes|required|exists:lots,id',
                 'id_type_mouvement' => 'sometimes|required|exists:type_mouvement,id',
+                'id_partenaire' => 'nullable|exists:partenaires,id',
+                'id_magasin' => 'nullable|exists:magasins,id',
+                'id_departement' => 'nullable|exists:departements,id',
                 'quantite' => 'sometimes|required|integer|min:1',
                 'date_mouvement' => 'nullable|date',
                 'reference_document' => 'nullable|string|max:100',
                 'commentaire' => 'nullable|string',
             ]);
 
-            $mouvement->update($validated);
+            // Si le mouvement est déjà validé (modification ADMIN), rééquilibrer le stock
+            if ($mouvement->statut_validation === 'VALIDÉ') {
+                DB::beginTransaction();
+
+                try {
+                    $type = $mouvement->typeMouvement;
+                    $oldLot = $mouvement->lot;
+                    $newLotId = $validated['id_lot'] ?? $mouvement->id_lot;
+                    $newQuantite = $validated['quantite'] ?? $mouvement->quantite;
+
+                    if ($oldLot->id == $newLotId) {
+                        // Même lot : appliquer directement le delta
+                        $delta = $newQuantite - $mouvement->quantite;
+                        $newDisponible = $oldLot->quantite_disponible + ($type->sens * $delta);
+                        if ($newDisponible < 0) {
+                            throw new \Exception("Stock insuffisant. Disponible: {$oldLot->quantite_disponible}, ajustement demandé: {$delta}");
+                        }
+                        $oldLot->quantite_disponible = $newDisponible;
+                        $oldLot->save();
+                    } else {
+                        // Lot différent : annuler l'ancien effet, appliquer le nouveau
+                        $newLot = Lot::findOrFail($newLotId);
+                        if ($type->sens === -1) {
+                            $oldLot->quantite_disponible += $mouvement->quantite;
+                            if ($newLot->quantite_disponible < $newQuantite) {
+                                throw new \Exception("Stock insuffisant. Disponible: {$newLot->quantite_disponible}, Demandé: {$newQuantite}");
+                            }
+                            $newLot->quantite_disponible -= $newQuantite;
+                        } else {
+                            if ($oldLot->quantite_disponible < $mouvement->quantite) {
+                                throw new \Exception("Stock insuffisant pour annuler l'ancienne entrée");
+                            }
+                            $oldLot->quantite_disponible -= $mouvement->quantite;
+                            $newLot->quantite_disponible += $newQuantite;
+                        }
+                        $oldLot->save();
+                        $newLot->save();
+                    }
+
+                    $mouvement->update($validated);
+
+                    DB::commit();
+                } catch (\Exception $e) {
+                    DB::rollBack();
+                    return response()->json([
+                        'success' => false,
+                        'message' => $e->getMessage() ?: 'Erreur lors de la mise à jour'
+                    ], 422);
+                }
+            } else {
+                $mouvement->update($validated);
+            }
 
             return response()->json([
                 'success' => true,
-                'data' => $mouvement->load(['lot.produit', 'typeMouvement']),
+                'data' => $mouvement->load(['lot.produit', 'typeMouvement', 'partenaire', 'magasin', 'departement']),
                 'message' => 'Mouvement mis à jour avec succès'
             ]);
 
@@ -260,15 +331,36 @@ public function show($id)
         try {
             $mouvement = MouvementStock::findOrFail($id);
 
-            // Ne peut supprimer que les mouvements non validés
-            if ($mouvement->statut_validation !== 'EN ATTENTE') {
+            // Ne peut supprimer que les mouvements non validés (sauf ADMIN)
+            if ($mouvement->statut_validation !== 'EN ATTENTE' && !Auth::user()->hasRole('ADMIN')) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Ce mouvement a déjà été validé ou rejeté'
                 ], 403);
             }
 
-            $mouvement->delete();
+            DB::beginTransaction();
+
+            try {
+                // Si le mouvement était validé (suppression ADMIN), annuler l'impact stock
+                if ($mouvement->statut_validation === 'VALIDÉ') {
+                    $lot = $mouvement->lot;
+                    $type = $mouvement->typeMouvement;
+                    if ($type->sens === -1) {
+                        $lot->quantite_disponible += $mouvement->quantite;
+                    } else {
+                        $lot->quantite_disponible -= $mouvement->quantite;
+                    }
+                    $lot->save();
+                }
+
+                $mouvement->delete();
+
+                DB::commit();
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
 
             return response()->json([
                 'success' => true,

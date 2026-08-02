@@ -6,6 +6,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '../components/ui/table';
 import { DataTablePagination } from '../components/ui/DataTablePagination';
+import { ConfirmModal } from '../components/ui/confirm-modal';
 import { useToast } from '../hooks/useToast';
 import { mouvementStockService } from '../services/mouvement-stock';
 import type { MouvementStock } from '../types/validation';
@@ -25,6 +26,8 @@ export function EntrerStock() {
   const [lastPage, setLastPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [pageSize, setPageSize] = useState(20);
+  const [validateTarget, setValidateTarget] = useState<MouvementStock | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<MouvementStock | null>(null);
   const [validatingId, setValidatingId] = useState<number | null>(null);
   const [rejectingId, setRejectingId] = useState<number | null>(null);
 
@@ -83,6 +86,18 @@ export function EntrerStock() {
     } finally {
       setRejectingId(null);
     }
+  };
+
+  const handleConfirmValidate = async () => {
+    if (!validateTarget) return;
+    await handleValidate(validateTarget.id);
+    setValidateTarget(null);
+  };
+
+  const handleConfirmReject = async () => {
+    if (!rejectTarget) return;
+    await handleReject(rejectTarget.id);
+    setRejectTarget(null);
   };
 
   return (
@@ -214,7 +229,7 @@ export function EntrerStock() {
                             <div className="flex items-center justify-center gap-1.5">
                               <Button
                                 size="sm"
-                                onClick={() => handleValidate(m.id)}
+                                onClick={() => setValidateTarget(m)}
                                 disabled={validatingId === m.id || rejectingId === m.id}
                                 className="h-8 px-3 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium rounded-lg shadow-sm"
                               >
@@ -227,7 +242,7 @@ export function EntrerStock() {
                               </Button>
                               <Button
                                 size="sm"
-                                onClick={() => handleReject(m.id)}
+                                onClick={() => setRejectTarget(m)}
                                 disabled={rejectingId === m.id || validatingId === m.id}
                                 className="h-8 px-3 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-lg shadow-sm"
                               >
@@ -252,6 +267,27 @@ export function EntrerStock() {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmModal
+        isOpen={Boolean(validateTarget)}
+        onClose={() => setValidateTarget(null)}
+        onConfirm={handleConfirmValidate}
+        title="Valider le mouvement"
+        message={`Confirmer la validation du mouvement (${validateTarget?.lot?.produit?.nom || validateTarget?.lot?.numero_lot || '-'}) ?`}
+        variant="warning"
+        confirmLabel="Valider"
+        loading={validatingId !== null}
+      />
+      <ConfirmModal
+        isOpen={Boolean(rejectTarget)}
+        onClose={() => setRejectTarget(null)}
+        onConfirm={handleConfirmReject}
+        title="Rejeter le mouvement"
+        message={`Confirmer le rejet du mouvement (${rejectTarget?.lot?.produit?.nom || rejectTarget?.lot?.numero_lot || '-'}) ?`}
+        variant="danger"
+        confirmLabel="Rejeter"
+        loading={rejectingId !== null}
+      />
     </div>
   );
 }

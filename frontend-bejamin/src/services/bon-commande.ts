@@ -38,7 +38,7 @@ export const bonCommandeService = {
   getProduits: (params?: Record<string, string>) =>
     api.get<{ success: boolean; data: { data: { id: number; nom: string; code_article: string }[] } }>('/config/produits', { params: { ...params, per_page: '200' } }),
 
-  receive: (id: number, data: { receptions: ReceptionItem[] }) =>
+  receive: (id: number, data: { receptions: ReceptionItem[]; corrections?: CorrectionItem[] }) =>
     api.patch<BonCommandeResponse>(`/config/bons-commande/${id}/recevoir`, data),
 };
 
@@ -48,4 +48,9 @@ export interface ReceptionItem {
   numero_lot: string;
   date_peremption: string;
   prix_achat_ht_unitaire?: number;
+}
+
+export interface CorrectionItem {
+  id_ligne_commande: number;
+  nouvelle_quantite_recue: number;
 }
