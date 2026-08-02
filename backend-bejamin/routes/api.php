@@ -28,7 +28,8 @@ use App\Http\Controllers\Api\Config\{
     InventaireController,
     FicheTechniqueController,
     EntreeRecetteController,
-    NotificationController
+    NotificationController,
+    PurgeController
 };
 
 /*
@@ -201,6 +202,9 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
         Route::get('mouvements/lot/{lotId}', [MouvementStockController::class, 'getByLot'])->middleware('permission:config:mouvements:view');
         Route::get('mouvements-statistiques', [MouvementStockController::class, 'statistiques'])->middleware('permission:config:mouvements:view');
 
+        // ---------- Purge du stock ----------
+        Route::post('purge-stock', [PurgeController::class, 'purgeStock'])->middleware('permission:config:purge:stock');
+
         // ---------- Périodes Inventaire ----------
         Route::get('periodes-inventaire', [PeriodeInventaireController::class, 'index'])->middleware('permission:config:periode_inventaire:view');
         Route::post('periodes-inventaire', [PeriodeInventaireController::class, 'store'])->middleware('permission:config:periode_inventaire:create');
@@ -321,7 +325,6 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
     // ============================================================
     Route::prefix('audits')->group(function () {
         Route::get('/', [AuditController::class, 'index'])->middleware('permission:audit:view');
-        Route::get('{id}', [AuditController::class, 'show'])->middleware('permission:audit:view');
         Route::get('statistiques', [AuditController::class, 'statistiques'])->middleware('permission:audit:view');
         Route::get('table/{table}', [AuditController::class, 'byTable'])->middleware('permission:audit:view');
         Route::get('utilisateur/{utilisateurId}', [AuditController::class, 'byUtilisateur'])->middleware('permission:audit:view');
@@ -329,5 +332,6 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
         Route::get('actions/liste', [AuditController::class, 'actions'])->middleware('permission:audit:view');
         Route::get('export', [AuditController::class, 'export'])->middleware('permission:audit:export');
         Route::delete('clean', [AuditController::class, 'clean'])->middleware('permission:audit:delete');
+        Route::get('{id}', [AuditController::class, 'show'])->middleware('permission:audit:view')->where('id', '[0-9]+');
     });
 });

@@ -308,6 +308,7 @@ export function AjustementProduit() {
                       <TableHead className="text-right font-semibold text-gray-600">Stock théorique</TableHead>
                       <TableHead className="text-right font-semibold text-gray-600">Stock physique</TableHead>
                       <TableHead className="text-center font-semibold text-gray-600">Écart</TableHead>
+                      <TableHead className="text-center font-semibold text-gray-600">Écart (saisie)</TableHead>
                       <TableHead className="font-semibold text-gray-600">Commentaire</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -320,6 +321,7 @@ export function AjustementProduit() {
                         <TableCell className="text-right font-mono text-sm text-gray-600">{inv.stock_theorique}</TableCell>
                         <TableCell className="text-right font-mono text-sm text-gray-600">{inv.stock_physique_compte}</TableCell>
                         <TableCell className="text-center">{getEcartDisplay(inv.ecart)}</TableCell>
+                        <TableCell className="text-center">{getEcartDisplay(inv.ecart_saisie ?? inv.ecart)}</TableCell>
                         <TableCell className="text-sm text-gray-500 max-w-[200px] truncate">{inv.commentaire || '-'}</TableCell>
                       </TableRow>
                     ))}

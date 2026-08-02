@@ -15,8 +15,8 @@ class AuditController extends Controller
     {
         try {
             $perPage = $request->input('per_page', 15);
-            
-            $audits = Audit::with('utilisateur')
+
+            $audits = $this->buildQuery($request)
                 ->orderBy('id', 'desc')
                 ->paginate($perPage);
 
@@ -30,6 +30,96 @@ class AuditController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la récupération des audits',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Construit la requête avec les filtres (recherche, table, action, dates)
+     */
+    private function buildQuery(Request $request)
+    {
+        $query = Audit::with('utilisateur');
+
+        if ($search = $request->input('search')) {
+            $query->where(function ($q) use ($search) {
+                $q->where('action', 'LIKE', "%{$search}%")
+                    ->orWhere('table_cible', 'LIKE', "%{$search}%")
+                    ->orWhere('route', 'LIKE', "%{$search}%")
+                    ->orWhere('id_enregistrement', 'LIKE', "%{$search}%")
+                    ->orWhereHas('utilisateur', function ($u) use ($search) {
+                        $u->where('nom', 'LIKE', "%{$search}%")
+                            ->orWhere('prenom', 'LIKE', "%{$search}%");
+                    });
+            });
+        }
+
+        if ($table = $request->input('table_cible')) {
+            $query->where('table_cible', $table);
+        }
+
+        if ($action = $request->input('action')) {
+            $query->where('action', $action);
+        }
+
+        if ($dateDebut = $request->input('date_debut')) {
+            $query->where('date_action', '>=', $dateDebut . ' 00:00:00');
+        }
+
+        if ($dateFin = $request->input('date_fin')) {
+            $query->where('date_action', '<=', $dateFin . ' 23:59:59');
+        }
+
+        return $query;
+    }
+
+    /**
+     * Export des audits en CSV (lisible par Excel)
+     */
+    public function export(Request $request)
+    {
+        try {
+            $audits = $this->buildQuery($request)
+                ->orderBy('id', 'desc')
+                ->get();
+
+            $filename = 'audits_' . now()->format('Y-m-d') . '.csv';
+
+            return response()->streamDownload(function () use ($audits) {
+                $handle = fopen('php://output', 'w');
+                fwrite($handle, "\xEF\xBB\xBF"); // BOM UTF-8 pour Excel
+
+                fputcsv($handle, [
+                    'ID', 'Date', 'Utilisateur', 'Action', 'Table', 'ID enregistrement',
+                    'Adresse IP', 'Route', 'User-Agent', 'Anciennes valeurs', 'Nouvelles valeurs',
+                ], ';');
+
+                foreach ($audits as $audit) {
+                    fputcsv($handle, [
+                        $audit->id,
+                        $audit->date_action ? $audit->date_action->format('d/m/Y H:i:s') : '',
+                        $audit->utilisateur ? trim($audit->utilisateur->prenom . ' ' . $audit->utilisateur->nom) : 'Système',
+                        $audit->action,
+                        $audit->table_cible,
+                        $audit->id_enregistrement,
+                        $audit->adresse_ip,
+                        $audit->route,
+                        $audit->user_agent,
+                        json_encode($audit->anciennes_valeurs, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                        json_encode($audit->nouvelles_valeurs, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                    ], ';');
+                }
+
+                fclose($handle);
+            }, $filename, [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de l\'export des audits',
                 'error' => $e->getMessage()
             ], 500);
         }

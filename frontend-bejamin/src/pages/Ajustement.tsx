@@ -168,7 +168,7 @@ export function Ajustement() {
                         {new Date(p.date_debut).toLocaleDateString('fr-FR')} - {new Date(p.date_fin).toLocaleDateString('fr-FR')}
                       </TableCell>
                       <TableCell className="text-right font-mono text-sm font-medium text-gray-900">
-                        {p.inventaires ? `${p.inventaires.reduce((s, inv) => s + (inv.ecart || 0), 0)}` : '-'}
+                        {p.inventaires ? `${p.inventaires.reduce((s, inv) => s + ((inv.ecart_saisie ?? inv.ecart) || 0), 0)}` : '-'}
                       </TableCell>
                       <TableCell className="text-center">
                         <Button

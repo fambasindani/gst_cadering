@@ -23,7 +23,7 @@ class PeriodeInventaireController extends Controller
             $sortBy = $request->input('sort_by', 'id');
             $sortOrder = $request->input('sort_order', 'desc');
 
-            $query = PeriodeInventaire::with('magasin');
+            $query = PeriodeInventaire::with(['magasin', 'inventaires.produit']);
 
             if ($search) {
                 $query->where('libelle', 'LIKE', "%{$search}%");

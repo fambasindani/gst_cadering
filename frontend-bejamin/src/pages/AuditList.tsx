@@ -114,7 +114,10 @@ export function AuditList() {
       const params = buildParams();
       const token = localStorage.getItem('auth-token');
       const query = new URLSearchParams(params).toString();
-      const res = await fetch(`/api/audits/export?${query}`, {
+      const base = import.meta.env.VITE_API_URL
+        ? `${import.meta.env.VITE_API_URL}/api`
+        : '/api';
+      const res = await fetch(`${base}/audits/export?${query}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) throw new Error('Export failed');

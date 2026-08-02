@@ -46,6 +46,7 @@ export interface Inventaire {
   stock_theorique: number;
   stock_physique_compte: number;
   ecart: number;
+  ecart_saisie?: number;
   date_saisie: string;
   id_utilisateur: number;
   utilisateur?: { id: number; nom: string; prenom: string } | null;

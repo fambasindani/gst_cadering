@@ -86,6 +86,7 @@ export const menuItems: MenuItem[] = [
       { title: 'Département', path: '/configuration/departement', permission: 'config:departements:view' },
       { title: 'Catégorie', path: '/configuration/categorie', permission: 'config:categories:view' },
       { title: 'Devise', path: '/configuration/devise', permission: 'config:devises:view' },
+      { title: 'Purge stock', path: '/configuration/purge-stock', permission: 'config:purge:stock' },
     ]
   },
   { 

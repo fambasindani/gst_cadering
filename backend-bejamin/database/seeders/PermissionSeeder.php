@@ -125,6 +125,11 @@ class PermissionSeeder extends Seeder
             ['nom' => 'Valider un mouvement', 'code' => 'config:mouvements:validate'],
 
             // ============================================================
+            // CONFIG - Purge stock
+            // ============================================================
+            ['nom' => 'Purger le stock (entrées/sorties)', 'code' => 'config:purge:stock'],
+
+            // ============================================================
             // CONFIG - Périodes Inventaire
             // ============================================================
             ['nom' => 'Voir les périodes d\'inventaire', 'code' => 'config:periode_inventaire:view'],

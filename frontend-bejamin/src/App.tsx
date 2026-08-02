@@ -34,6 +34,7 @@ import { ConfigurationMagasin } from './pages/ConfigurationMagasin';
 import { ConfigurationDepartement } from './pages/ConfigurationDepartement';
 import { ConfigurationDevise } from './pages/ConfigurationDevise';
 import { ConfigurationCategorie } from './pages/ConfigurationCategorie';
+import { PurgeStock } from './pages/PurgeStock';
 import { ConfigurationUtilisateurs } from './pages/ConfigurationUtilisateurs';
 import { ConfigurationUtilisateurForm } from './pages/ConfigurationUtilisateurForm';
 import { ConfigurationRoles } from './pages/ConfigurationRoles';
@@ -103,6 +104,7 @@ function App() {
           <Route path="configuration/departement" element={<ConfigurationDepartement />} />
           <Route path="configuration/devise" element={<ConfigurationDevise />} />
           <Route path="configuration/categorie" element={<ConfigurationCategorie />} />
+          <Route path="configuration/purge-stock" element={<PurgeStock />} />
           <Route path="partenaire" element={<Partenaires />} />
           <Route path="partenaire/creer" element={<PartenaireForm />} />
           <Route path="partenaire/:id/modifier" element={<PartenaireForm />} />

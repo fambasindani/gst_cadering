@@ -17,6 +17,7 @@ class Inventaire extends Model
         'id_magasin',
         'stock_theorique',
         'stock_physique_compte',
+        'ecart_saisie',
         'date_saisie',
         'id_utilisateur',
         'commentaire'
@@ -26,6 +27,7 @@ class Inventaire extends Model
         'stock_theorique' => 'integer',
         'stock_physique_compte' => 'integer',
         'ecart' => 'integer',
+        'ecart_saisie' => 'integer',
         'date_saisie' => 'datetime',
     ];
 

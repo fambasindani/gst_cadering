@@ -8,6 +8,9 @@ export const produitService = {
   get: (id: number) =>
     api.get<ProduitResponse>(`/config/produits/${id}`),
 
+  getDernierPrix: (produitId: number) =>
+    api.get<{ success: boolean; data: { produit: string; dernier_prix_achat: { prix: number; devise: string; date: string } | null }; message: string }>(`/config/produits/${produitId}/dernier-prix`),
+
   create: (data: ProduitFormData) =>
     api.post<ProduitResponse>('/config/produits', data),
 

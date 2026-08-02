@@ -50,9 +50,9 @@ const newRow = (): IngredientRow => ({
 
 const getDernierPrix = async (produitId: number): Promise<number> => {
   try {
-    const res = await produitService.get(produitId);
-    if (res.success && res.data.historiquePrix && res.data.historiquePrix.length > 0) {
-      return Number(res.data.historiquePrix[0].prix_achat_ht) || 0;
+    const res = await produitService.getDernierPrix(produitId);
+    if (res.success && res.data.dernier_prix_achat) {
+      return Number(res.data.dernier_prix_achat.prix) || 0;
     }
   } catch { /* */ }
   return 0;

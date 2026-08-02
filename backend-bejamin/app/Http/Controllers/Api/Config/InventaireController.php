@@ -137,6 +137,7 @@ class InventaireController extends Controller
                 'id_magasin' => $validated['id_magasin'],
                 'stock_theorique' => $stockTheorique,
                 'stock_physique_compte' => $validated['stock_physique_compte'],
+                'ecart_saisie' => $validated['stock_physique_compte'] - $stockTheorique,
                 'date_saisie' => now(),
                 'id_utilisateur' => Auth::id(),
                 'commentaire' => $validated['commentaire'] ?? null,
@@ -242,6 +243,7 @@ class InventaireController extends Controller
                         'id_magasin' => $validated['id_magasin'],
                         'stock_theorique' => $stockTheorique,
                         'stock_physique_compte' => $ligne['stock_physique_compte'],
+                        'ecart_saisie' => $ligne['stock_physique_compte'] - $stockTheorique,
                         'date_saisie' => now(),
                         'id_utilisateur' => Auth::id(),
                         'commentaire' => $ligne['commentaire'] ?? null,
@@ -310,6 +312,7 @@ class InventaireController extends Controller
 
             $inventaire->update([
                 'stock_physique_compte' => $validated['stock_physique_compte'],
+                'ecart_saisie' => $validated['stock_physique_compte'] - $inventaire->stock_theorique,
                 'commentaire' => $validated['commentaire'] ?? null,
             ]);
 
@@ -381,13 +384,13 @@ class InventaireController extends Controller
                 ], 403);
             }
 
-            $inventaires = Inventaire::where('id_periode_inventaire', $periodeId)->get();
+            $inventaires = Inventaire::with('produit')->where('id_periode_inventaire', $periodeId)->get();
 
             $ajustements = [];
             $totalEcart = 0;
             foreach ($inventaires as $inventaire) {
-                $theoriqueActuel = $this->getStockTheoriqueActuel((int) $inventaire->id_produit, (int) $inventaire->id_magasin);
-                $ecart = (int) $inventaire->stock_physique_compte - $theoriqueActuel;
+                // Écart figé à la saisie : conserve l'historique même après « Mise à jour stock »
+                $ecart = (int) $inventaire->ecart_saisie;
 
                 if ($ecart === 0) {
                     continue;
@@ -397,8 +400,8 @@ class InventaireController extends Controller
                 $ajustements[] = [
                     'produit' => $inventaire->produit->nom,
                     'ecart' => $ecart,
-                    'stock_theorique' => $theoriqueActuel,
-                    'stock_physique' => $inventaire->stock_physique_compte,
+                    'stock_theorique' => (int) $inventaire->stock_theorique,
+                    'stock_physique' => (int) $inventaire->stock_physique_compte,
                 ];
             }
 

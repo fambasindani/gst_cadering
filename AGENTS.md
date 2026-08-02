@@ -125,3 +125,90 @@
   - `mettreAJourStock()` : filtre `where('ecart', '!=', 0)` retiré (le delta est déjà recalculé en direct ; message « Aucun écart à appliquer » si `produitsAjustes == 0`).
 - **Frontend** : aucun changement nécessaire (`AjustementProduit.tsx` et `SaisieInventaire.tsx` lisent `inv.stock_theorique` / `inv.ecart` directement dans la réponse API).
 - Vérifs : `php -l` OK, test rapide `index`/`resume`/`genererAjustements` sur période 8 OK (viande de boeuf 48/48 écart 0, Fromage 43/43 écart 0), scripts temporaires supprimés
+
+### Session 15 – Purge du stock (entrées/sorties) depuis le frontend
+- **Besoin** : vider toutes les entrées/sorties et tout ce qui est lié au stock (sauf les produits), opération à refaire périodiquement (ex. tous les 5 ans), accessible depuis le frontend.
+- **Backend** : nouveau `PurgeController::purgeStock()` (route `POST config/purge-stock`, permission **`config:purge:stock`**) :
+  - Réservé à l'ADMIN (`hasRole('ADMIN')`, 403 sinon) + **confirmation obligatoire** : le body doit contenir `confirmation` = `PURGER` (sinon 422).
+  - Suppression en `DB::transaction`, **ordre respectant les FK** : `mouvement_stock`, `ligne_retour`, `ligne_commande`, `avoir`, `retour`, `bon_commande`, `entree_recette`, `inventaire`, `lots`, `periode_inventaire` (via `Model::query()->delete()` = hard delete). Retourne les compteurs `supprime` par table.
+  - **Conservé** : produits, catégories, unités, devises, partenaires, magasins, départements, utilisateurs, rôles, permissions, fiches techniques (+ lignes), notifications, audits, **historique des prix**.
+  - Migration `2026_08_03_120000_add_purge_stock_permission.php` : crée la permission + lien vers le rôle ADMIN (base + seeders `PermissionSeeder`/`ConfigPermissionSeeder`).
+- **Frontend** : page `PurgeStock.tsx` (`/configuration/purge-stock`, sous-menu Configuration), type `PurgeStockResponse` (`types/purge.ts`), service `purgeService.purgeStock` (`services/purge.ts`). UI : deux cartes « Sera supprimé / Sera conservé », champ « Tapez PURGER » qui active le bouton rouge, résultat avec le nombre d'enregistrements supprimés par table.
+- Vérifs : `php -l` OK, migration exécutée, `route:list` OK (route présente), test garde-fou 422 OK (confirmation requise, données intactes), `tsc -b` OK, `oxlint` 0 erreur (39 warnings préexistants), `npm run build` OK
+
+### Session 16 – Fiche technique : coût ingrédient non automatique
+- **Bug** : dans « Nouvelle fiche technique » (`/recettes/creation`), sélectionner un ingrédient laissait le coût à 0. Cause : `getDernierPrix()` lisait `res.data.historiquePrix` alors que l'API renvoie la relation en **snake_case `historique_prix`** → jamais trouvé → prix 0.
+- **Fix** : utilisation de l'endpoint dédié `produits/{produitId}/dernier-prix` (`HistoriquePrixController::dernierPrix`, qui utilise `getDernierPrixAchat()` — même logique que le backend `FicheTechniqueController`). Ajout de `produitService.getDernierPrix()` (`services/produit.ts`) et lecture de `res.data.dernier_prix_achat.prix` dans `FicheTechniqueForm.tsx`.
+- Vérifs : endpoint testé (Carotte 0.80, viande de boeuf 20.00), `tsc -b` OK, `oxlint` 0 erreur (1 warning préexistant toast useEffect)
+
+### Session 17 – Historique des écarts conservé après mise à jour du stock
+- **Besoin** : dans « Ajustement inventaire », après avoir cliqué « Mise à jour stock », l'écart passait à 0 (théorique live = physique) et l'historique de l'écart constaté disparaissait. On veut garder la trace de l'écart de saisie.
+- **Migration** `2026_08_03_130000_add_ecart_saisie_to_inventaire.php` : colonne `ecart_saisie` (int) figée à la saisie + backfill `stock_physique_compte − stock_theorique` (le `ecart` en base est une colonne virtuelle, non persistable).
+- **Backend** : `InventaireController::store()`/`storeMultiple()`/`update()` enregistrent `ecart_saisie = stock_physique_compte − stock_theorique` (du moment). `index()` continue de renvoyer `ecart` live + `ecart_saisie`.
+- **Frontend** : type `Inventaire` (`ecart_saisie?`), colonne **« Écart (saisie) »** ajoutée dans `AjustementProduit.tsx` (badge coloré réutilisé). L'écart de saisie reste visible même après la mise à jour du stock.
+- Vérifs : migration exécutée, backfill OK, test index période 9 (`stock_mis_a_jour: true` : Carotte écart live 0, écart_saisie −3), `tsc -b` OK, `oxlint` 0 erreur (1 warning préexistant)
+
+### Session 18 – Page « Ajustements » : total écart 0 corrigé (historique conservé)
+- **Problème** : le modal « Ajustements - {période} » (page `Ajustement.tsx`, Validation → Ajustements) affichait « Total écart : 0 » et « Aucun ajustement à générer » pour « Inventaire du mois d'aout 2026 » (période 9) après « Mise à jour stock ». Cause : `genererAjustements()` recalculait l'écart **live** (0 après mise à jour) et filtrait les lignes à 0.
+- **Fix backend `InventaireController::genererAjustements()`** : l'écart utilisé est désormais `ecart_saisie` (figé à la saisie, comme la colonne « Écart (saisie) »), avec `stock_theorique`/`stock_physique` stockés → l'historique reste visible après mise à jour. (La mise à jour réelle du stock via `mettreAJourStock()` reste basée sur le delta live.)
+- **Fix colonne « Total écart » du tableau des périodes** : `PeriodeInventaireController::index()` charge désormais `inventaires.produit` (avant : jamais chargés → `-`) ; `Ajustement.tsx` somme `inv.ecart_saisie ?? inv.ecart`.
+- Vérifs : test API période 9 → `total_ecart: -3` (Carotte 89/86), total colonne = −3 ; `php -l` OK, `tsc -b` OK, `oxlint` 0 erreur, `npm run build` OK
+
+### Session 19 – Export Excel des audits corrigé (404)
+- **Problème** : le bouton « Exporter » de la page Audit (`AuditList.tsx` → `GET /api/audits/export`) renvoyait **404**. Deux causes :
+  1. **Ordre des routes** (`routes/api.php`) : `Route::get('{id}')` était enregistré **avant** `statistiques`/`export` → Laravel matchait `/audits/export` et `/audits/statistiques` sur `{id}` → `show('export')` → 404 (confirmé par test route : `{id}` capturait les deux). Les stats de la page Audit étaient donc aussi silencieusement cassées (`.catch(() => {})` masquait l'erreur).
+  2. **Méthode `export()` inexistante** dans `AuditController` (et `clean()` aussi).
+- **Fix routes** : `{id}` déplacé en **dernier** du groupe + contrainte `->where('id', '[0-9]+')` (donne uniquement sur id numérique). `statistiques`/`export`/`table/{table}`/etc. matchent désormais correctement.
+- **`AuditController`** : ajout de `export()` → CSV `audits_AAAA-MM-JJ.csv` (BOM UTF-8 + séparateur `;` pour Excel français), colonnes ID/Date/Utilisateur/Action/Table/ID enregistrement/Adresse IP/Route/User-Agent/Anciennes valeurs/Nouvelles valeurs, respecte les filtres (search, table_cible, action, date_debut, date_fin). Nouveau helper privé `buildQuery()` appliqué aussi à `index()` (les filtres du frontend étaient ignorés auparavant).
+- Vérifs : test route (export/statistiques/tables/liste → bonnes méthodes, `{id}` numérique) ; test CSV sans filtre 819 lignes, action=INSERT 264, table_cible=produit 22, dates 1-2 août 182 ; permission `audit:export` présente et liée à ADMIN ; `php -l` OK.
+
+### Session 20 – Purge stock : les audits sont supprimés aussi
+- **Besoin** : la purge du stock doit également vider le journal d'audit (jusqu'ici conservé).
+- **Backend `PurgeController::purgeStock()`** : `Audit::class` ajouté à la liste des tables supprimées (label `audits`), même transaction, compteur renvoyé dans `supprime`.
+- **Frontend `PurgeStock.tsx`** : « Audit (journal des activités) » ajouté à la liste « Sera supprimé » ; texte de la carte et du modal de confirmation mis à jour.
+- Note : le log d'audit généré par le middleware pour la purge elle-même est lui aussi supprimé → audit vide après purge.
+- Vérifs : test dans transaction externe rollback (aucune donnée perdue) → `audits: 819` supprimés, restaurés après rollback ; `php -l` OK, `tsc -b` OK, `oxlint` 0 erreur.
+
+### Session 21 – Tableau de bord amélioré + graphiques (recharts)
+- **`StatCard.tsx` refondu** : carte blanche avec liseré supérieur en dégradé, badge icône en dégradé lumineux (ombre colorée), effet hover (élévation + icône agrandie). Nouveau coloris `cyan`.
+- **`Dashboard.tsx` refondu** :
+  - Cartes : Produits (blue), En stock (green), Stock bas (orange), À valider (purple), Clients (indigo), Rupture (red) — grille `grid-cols-2 sm:grid-cols-3 xl:grid-cols-6`.
+  - **Bandeau récapitulatif** (4 items) : Stock total, Valeur du stock (`formatCurrency`), Commandes validées, Péremption ≤ 7 j.
+  - **Graphique en barres** « Évolution des commandes » (6 derniers mois, `evolution_commandes`) via recharts — dernière barre en `royal-700`, tooltip stylé.
+  - **Graphique en anneau** « Répartition par catégorie » (`repartition_categorie`) via recharts — palette 10 couleurs, legend.
+  - **Top produits** (rang 1/2/3 coloré + barre de progression proportionnelle) et **Top clients** (rang, commandes, montant formaté).
+  - Alertes enrichies (4 badges), Accès rapide en cartes arrondies, en-têtes de cartes avec pastille icône colorée.
+  - Données déjà fournies par `DashboardController` (aucun changement backend).
+- Vérifs : test API dashboard → `evolution_commandes` (Août 2026: 2), `repartition_categorie` (Dessert 1, Entrée 6), `top_produits` (Carotte 20), `top_clients` (Air France 2 cmd) ; `tsc -b` OK, `oxlint` 0 erreur, `npm run build` OK.
+
+### Session 22 – Filtre par mois/année sur le tableau de bord
+- **Besoin** : pouvoir filtrer le dashboard par mois/année.
+- **Backend `DashboardController::index()`** : les params `date_debut`/`date_fin` (déjà acceptés mais ignorés) sont désormais appliqués à `evolution_commandes`, `top_produits`, `top_clients` et `activites_recentes` (`whereBetween` au lieu de `now()->subMonths(6)`). Défaut : 6 derniers mois. Les cartes de stock (produits, stock, alertes) restent l'état actuel.
+- **Frontend `Dashboard.tsx`** : barre « Période » dans l'en-tête avec deux Selects (Mois + Année) + bouton reset. `buildParams()` calcule `date_debut`/`date_fin` (mois précis = 1er..dernier jour, année seule = 01-01..12-31, tout = défaut 6 mois). `dashboardService.get(params)` enrichi. Rechargement via `useCallback` + `useEffect`.
+- Vérifs : test API (défaut 6 mois = données août, Août 2026 = mêmes données, Janvier 2025 = vide, 2025 = vide) ; `php -l` OK, `tsc -b` OK, `oxlint` 0 erreur, `npm run build` OK.
+
+### Session 23 – Le filtre mois/année affecte TOUT le tableau de bord + défaut mois courant
+- **Besoin** : le filtre de mois/année doit impacter tout le dashboard (cartes, bandeau récapitulatif, alertes inclus) et pas seulement les graphiques/classements/activités. Par défaut, on sélectionne le **mois et l'année en cours**.
+- **Backend `DashboardController::index()`** :
+  - **Stock reconstruit à la fin de la période** via `stockParLotAu($dateFin)` : pour chaque lot VALIDÉ (Eloquent, donc SoftDeletes respecté), `disponible = quantite_disponible + sorties après date_fin − entrées après date_fin` (annulation des mouvements survenus après la période). Les lots créés après `date_fin` sont exclus. Helper `lotsPerimesProches()` : lots à péremption ≤ 7 j (fenêtre depuis aujourd'hui) encore en stock à `date_fin`.
+  - Toutes les stats de cartes désormais filtrées par la période : `produits_en_stock`, `produits_rupture`, `stock_total`, `valeur_stock`, `produits_stock_bas` (basés sur le stock à date_fin) ; `commandes_validees`/`commandes_en_attente` (`whereBetween date_commande`), `retours_en_attente` (`whereBetween created_at`), alertes stock bas + péremption.
+  - Restent l'état courant (non filtrées, catalogue) : `total_produits`, clients, fournisseurs, `repartition_categorie`.
+  - `date_debut`/`date_fin` normalisés (`startOfDay`/`endOfDay`), défaut backend inchangé (6 derniers mois).
+- **Frontend `Dashboard.tsx`** : état initial du filtre = **mois + année en cours** (au lieu de `all`/`all`). Bouton reset → revient au mois courant. Libellé « Période : Août 2026 » affiché sous l'en-tête (helper `periodLabel()`). Texte vide du graphique → « Aucune donnée sur la période sélectionnée ».
+- **Note données** : dans la base actuelle, la majorité des lots/bons de commande VALIDÉ sont `soft-deleted` (artefacts de test) → le stock réel (246 unités, 3 produits en stock) et les commandes (2) ne concernent que les enregistrements actifs. Juillet 2026 renvoie donc 0 partout (toutes les données juillet sont soft-deleted). Comportement cohérent avec le reste de l'app (Eloquent + SoftDeletes).
+- Vérifs : test script (défaut = Août 2026 : stock 246 / 3 en stock / 2 cmd validées ; Juin/Juillet 2026 vides) ; `php -l` OK, `tsc -b` OK, `oxlint` 0 erreur (39 warnings préexistants), `npm run build` OK.
+
+### Session 24 – Export audit CSV corrigé (404 : proxy vite sur le mauvais port)
+- **Symptôme** : « Exporter » sur la page Audit renvoyait une page d'erreur **IIS 404** (`C:\inetpub\wwwroot\api\audits\export`, handler StaticFile, code 0x80070002) alors que l'endpoint backend fonctionne (`route:list` OK, `AuditController::export()` présent depuis Session 19).
+- **Cause** : tout le frontend appelle l'API via `VITE_API_URL=http://localhost:8000` (client `api.ts`), **sauf** le bouton d'export qui utilisait un `fetch('/api/audits/export?...')` **relatif** → passait par le proxy vite `target: http://localhost` (port 80) occupé par **IIS** (et non par le backend PHP artisan serve sur le port 8000) → 404 statique.
+- **Fix `AuditList.tsx`** : l'URL d'export utilise désormais la même base que le client API : `const base = import.meta.env.VITE_API_URL ? \`${VITE_API_URL}/api\` : '/api'`.
+- **Fix `vite.config.ts`** : proxy `'/api'` → `target: 'http://localhost:8000'` (le backend réel), pour que le fallback relatif `/api` fonctionne aussi sans `VITE_API_URL`.
+- **Vérifs** : export testé via HTTP sur le port 8000 (admin, token Bearer) → HTTP 200, `text/csv`, 322 Ko, BOM + `;`, lignes `ID;Date;Utilisateur;Action;Table;...` ; seul `fetch(` brut du frontend corrigé (recherche `fetch(` dans `src` = 1 seul résultat, le bon) ; `tsc -b` OK, `oxlint` 0 erreur (39 warnings préexistants), `npm run build` OK.
+- **Note** : les erreurs console « `yearOptions is not defined` / `periodLabel is not defined` » sur le Dashboard étaient transitoires (stale HMR) — le code compile (`tsc -b` OK) ; un simple refresh navigateur les fait disparaître.
+
+### Session 25 – Rapport « Inventaire théorique » affiché comme « Ajustement inventaire »
+- **Besoin** : le rapport menu Rapport → Inventaire théorique (`/rapports/inventaire-theorique`) doit afficher les données comme la page « Ajustement inventaire » (Validation → Ajustement inventaire), au lieu de l'ancien « Rapport stock logique/physique » (colonnes prix/valeurs, PDF).
+- **`InventaireTheorique.tsx` réécrit** : miroir de `AjustementProduit.tsx` — sélecteur de **période clôturée** (`periodeInventaireService.list` filtré `statut === 'CLOTURE'`), recherche produit, tableau **Produit / Code article / Magasin / Stock théorique / Stock physique / Écart / Écart (saisie) / Commentaire**, badges d'écart colorés (vert `+excédent`, rouge `-manquant`, gris `0`), pagination `DataTablePagination`. Données via `inventaireService.list({ periode_id })`. Pas de boutons d'action (lecture seule).
+- **PDF** : bouton « PDF » (RapportTablePDF, paysage) à côté d'Actualiser — colonnes Produit / Code article / Magasin / Stock théorique / Stock physique / Écart / Écart (saisie) / Commentaire, stats totaux (théorique, physique, écart, écart saisie). Le PDF est généré depuis un **fetch complet** (`per_page: '5000'`, applique la recherche) stocké dans `allData` (la table reste paginée) → le PDF contient toutes les lignes.
+- **`Header.tsx`** : titre de route `/rapports/inventaire-theorique` → « Inventaire théorique ».
+- Vérifs : `tsc -b` OK, `oxlint` 0 erreur (38 warnings préexistants), `npm run build` OK.

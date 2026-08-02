@@ -57,6 +57,9 @@ class ConfigPermissionSeeder extends Seeder
             ['nom' => 'Créer une permission', 'code' => 'config:permissions:create'],
             ['nom' => 'Modifier une permission', 'code' => 'config:permissions:update'],
             ['nom' => 'Supprimer une permission', 'code' => 'config:permissions:delete'],
+
+            // Purge stock
+            ['nom' => 'Purger le stock (entrées/sorties)', 'code' => 'config:purge:stock'],
         ];
 
         foreach ($permissions as $permission) {
