@@ -18,10 +18,9 @@ const styles = StyleSheet.create({
   tableHeader: { flexDirection: 'row', backgroundColor: '#1e3a5f', padding: 5 },
   tableHeaderCell: { color: '#fff', fontSize: 7.5, fontWeight: 'bold' },
   colCode: { width: '14%' },
-  colNom: { width: '24%' },
-  colProduit: { width: '20%' },
-  colMagasin: { width: '14%' },
-  colRendement: { width: '12%', textAlign: 'right' },
+  colNom: { width: '36%' },
+  colMagasin: { width: '20%' },
+  colRendement: { width: '14%', textAlign: 'right' },
   colCoutTotal: { width: '16%', textAlign: 'right' },
   tableRow: { flexDirection: 'row', padding: 4, borderBottom: '1 solid #f0f0f0', alignItems: 'center' },
   tableRowAlt: { backgroundColor: '#f9f9f9' },
@@ -48,7 +47,7 @@ export function RapportRecettePDF({ fiches }: { fiches: FicheTechnique[] }) {
         </View>
 
         <Text style={styles.title}>Rapport des recettes</Text>
-        <Text style={styles.subtitle}>{fiches.length} fiche{fiches.length > 1 ? 's' : ''} technique{fiches.length > 1 ? 's' : ''}</Text>
+        <Text style={styles.subtitle}>{fiches.length} fiche{fiches.length > 1 ? 's' : ''} de recette{fiches.length > 1 ? 's' : ''}</Text>
 
         <View style={styles.statsRow}>
           <View style={styles.statBox}>
@@ -65,12 +64,11 @@ export function RapportRecettePDF({ fiches }: { fiches: FicheTechnique[] }) {
           </View>
         </View>
 
-        <Text style={styles.sectionTitle}>Détail des fiches</Text>
+        <Text style={styles.sectionTitle}>Détail des fiches de recette</Text>
         <View style={styles.table}>
           <View style={styles.tableHeader}>
             <Text style={[styles.tableHeaderCell, styles.colCode]}>Code</Text>
             <Text style={[styles.tableHeaderCell, styles.colNom]}>Nom</Text>
-            <Text style={[styles.tableHeaderCell, styles.colProduit]}>Produit fini</Text>
             <Text style={[styles.tableHeaderCell, styles.colMagasin]}>Magasin</Text>
             <Text style={[styles.tableHeaderCell, styles.colRendement]}>Rendement</Text>
             <Text style={[styles.tableHeaderCell, styles.colCoutTotal]}>Coût total</Text>
@@ -79,7 +77,6 @@ export function RapportRecettePDF({ fiches }: { fiches: FicheTechnique[] }) {
             <View key={f.id} style={[styles.tableRow, i % 2 === 1 ? styles.tableRowAlt : {}]}>
               <Text style={[styles.tableCell, styles.colCode]}>{f.code}</Text>
               <Text style={[styles.tableCell, styles.colNom]}>{f.nom}</Text>
-              <Text style={[styles.tableCell, styles.colProduit]}>{f.produitFini?.nom || '-'}</Text>
               <Text style={[styles.tableCell, styles.colMagasin]}>{f.magasin?.nom || '-'}</Text>
               <Text style={[styles.tableCellRight, styles.colRendement]}>{f.rendement}</Text>
               <Text style={[styles.tableCellRight, styles.colCoutTotal]}>{formatCurrency(f.cout_total)}</Text>

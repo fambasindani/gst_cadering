@@ -169,11 +169,11 @@ export function FicheTechniqueForm() {
     try {
       if (isEdit && id) {
         await ficheTechniqueService.update(Number(id), payload as never);
-        toast('Fiche technique modifiée', 'success');
+        toast('Fiche recette modifiée', 'success');
         navigate(`/recettes/creation/${id}`);
       } else {
         await ficheTechniqueService.create(payload as never);
-        toast('Fiche technique créée', 'success');
+        toast('Fiche recette créée', 'success');
       }
       navigate('/recettes/creation');
     } catch (err: unknown) {
@@ -214,10 +214,10 @@ export function FicheTechniqueForm() {
         </button>
         <div className="flex-1">
           <h1 className="text-xl font-bold text-gray-900">
-            {isView ? 'Détails fiche technique' : isEdit ? 'Modifier la fiche technique' : 'Nouvelle fiche technique'}
+            {isView ? 'Détails fiche recette' : isEdit ? 'Modifier la fiche recette' : 'Nouvelle fiche recette'}
           </h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            {isView ? 'Consultation de la fiche technique' : isEdit ? 'Modifier les informations' : 'Créer une nouvelle recette'}
+            {isView ? 'Consultation de la fiche recette' : isEdit ? 'Modifier les informations' : 'Créer une nouvelle recette'}
           </p>
         </div>
         {isView && ficheData && (

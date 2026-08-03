@@ -272,9 +272,9 @@ export function PartenaireForm() {
                       <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
                       <SearchableSelect
                         options={[
-                          { id: 1, nom: 'Aérien' },
-                          { id: 2, nom: 'Non Aérien' },
-                          { id: 3, nom: 'Les deux' },
+                          { id: 1, nom: 'Aérien', value: 'aerien' },
+                          { id: 2, nom: 'Non Aérien', value: 'non_aerien' },
+                          { id: 3, nom: 'Les deux', value: 'both' },
                         ]}
                         value={form.type_client}
                         onValueChange={(value) => handleChange('type_client', value)}

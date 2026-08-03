@@ -56,4 +56,9 @@ class CodeGenerator
     {
         return self::generate('fiche_technique', 'code', 'FT');
     }
+
+    public static function ficheTechniqueMenu(): string
+    {
+        return self::generate('fiche_technique_menu', 'code', 'FM');
+    }
 }

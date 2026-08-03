@@ -49,6 +49,11 @@ import { FicheTechniqueForm } from './pages/FicheTechniqueForm';
 import { FicheTechniqueDetails } from './pages/FicheTechniqueDetails';
 import { EntreeRecette } from './pages/EntreeRecette';
 import { RapportRecette } from './pages/RapportRecette';
+import { FicheTechniqueMenuList } from './pages/FicheTechniqueMenuList';
+import { FicheTechniqueMenuForm } from './pages/FicheTechniqueMenuForm';
+import { FicheTechniqueMenuDetails } from './pages/FicheTechniqueMenuDetails';
+import { RapportFicheTechnique } from './pages/RapportFicheTechnique';
+import { RapportFicheTechniqueDetails } from './pages/RapportFicheTechniqueDetails';
 import { BonCommandeRapport } from './pages/rapports/BonCommandeRapport';
 import { BonLivraisonRapport } from './pages/rapports/BonLivraisonRapport';
 import { RapportStock } from './pages/rapports/RapportStock';
@@ -131,6 +136,12 @@ function App() {
           <Route path="recettes/creation/:id" element={<FicheTechniqueDetails />} />
           <Route path="recettes/entree" element={<EntreeRecette />} />
           <Route path="recettes/rapport" element={<RapportRecette />} />
+          <Route path="recettes/fiche-technique" element={<FicheTechniqueMenuList />} />
+          <Route path="recettes/fiche-technique/nouveau" element={<FicheTechniqueMenuForm />} />
+          <Route path="recettes/fiche-technique/:id/:action" element={<FicheTechniqueMenuForm />} />
+          <Route path="recettes/fiche-technique/:id" element={<FicheTechniqueMenuDetails />} />
+          <Route path="recettes/rapport-ft" element={<RapportFicheTechnique />} />
+          <Route path="recettes/rapport-ft/:id" element={<RapportFicheTechniqueDetails />} />
           <Route path="rapports/bon-commande" element={<BonCommandeRapport />} />
           <Route path="rapports/bon-livraison" element={<BonLivraisonRapport />} />
           <Route path="rapports/stock" element={<RapportStock />} />

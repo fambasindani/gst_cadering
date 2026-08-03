@@ -137,7 +137,7 @@ class FicheTechniqueController extends Controller
                 return response()->json([
                     'success' => true,
                     'data' => $fiche->load(['magasin', 'lignes.ingredient', 'lignes.unite']),
-                    'message' => 'Fiche technique créée avec succès'
+                    'message' => 'Fiche recette créée avec succès'
                 ], 201);
 
             } catch (\Exception $e) {
@@ -182,7 +182,7 @@ class FicheTechniqueController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Fiche technique non trouvée'
+                'message' => 'Fiche recette non trouvée'
             ], 404);
         }
     }
@@ -260,7 +260,7 @@ class FicheTechniqueController extends Controller
                 return response()->json([
                     'success' => true,
                     'data' => $fiche->load(['magasin', 'lignes.ingredient', 'lignes.unite']),
-                    'message' => 'Fiche technique mise à jour avec succès'
+                    'message' => 'Fiche recette mise à jour avec succès'
                 ]);
 
             } catch (\Exception $e) {
@@ -303,7 +303,7 @@ class FicheTechniqueController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Fiche technique supprimée avec succès'
+                'message' => 'Fiche recette supprimée avec succès'
             ]);
 
         } catch (\Illuminate\Database\QueryException $e) {
@@ -398,7 +398,7 @@ class FicheTechniqueController extends Controller
                 return response()->json([
                     'success' => true,
                     'data' => $newFiche->load(['magasin', 'lignes.ingredient']),
-                    'message' => 'Fiche technique dupliquée avec succès'
+                    'message' => 'Fiche recette dupliquée avec succès'
                 ]);
 
             } catch (\Exception $e) {

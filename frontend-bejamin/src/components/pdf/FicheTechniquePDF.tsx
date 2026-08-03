@@ -65,7 +65,7 @@ export function FicheTechniquePDF({ fiche }: { fiche: FicheTechnique }) {
 
         <View style={styles.titleSection}>
           <View style={styles.titleBox}>
-            <Text style={styles.title}>Fiche Technique</Text>
+            <Text style={styles.title}>Fiche de recette</Text>
             <Text style={styles.subtitle}>{fiche.code} - {fiche.nom}</Text>
           </View>
           <View style={styles.infoBox}>

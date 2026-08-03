@@ -31,11 +31,13 @@ const styles = StyleSheet.create({
   table: { marginTop: 4 },
   tableHeader: { flexDirection: 'row', backgroundColor: '#1e3a5f', padding: 6, borderRadius: 2 },
   tableHeaderCell: { color: '#fff', fontSize: 7.5, fontWeight: 'bold' },
-  colCode: { width: '20%' },
-  colProduit: { width: '30%' },
-  colQte: { width: '12%', textAlign: 'right' },
-  colPrix: { width: '16%', textAlign: 'right' },
-  colTotal: { width: '22%', textAlign: 'right' },
+  colCode: { width: '15%' },
+  colProduit: { width: '25%' },
+  colQte: { width: '10%', textAlign: 'right' },
+  colRecu: { width: '10%', textAlign: 'right' },
+  colReste: { width: '10%', textAlign: 'right' },
+  colPrix: { width: '14%', textAlign: 'right' },
+  colTotal: { width: '16%', textAlign: 'right' },
   tableRow: { flexDirection: 'row', padding: 5, borderBottom: '1 solid #f0f0f0', alignItems: 'center' },
   tableRowAlt: { backgroundColor: '#f9f9f9' },
   tableCell: { fontSize: 7.5, color: '#333' },
@@ -117,20 +119,30 @@ export function BonCommandePDF({ bon }: Props) {
               <Text style={[styles.tableHeaderCell, styles.colCode]}>Code</Text>
               <Text style={[styles.tableHeaderCell, styles.colProduit]}>Produit</Text>
               <Text style={[styles.tableHeaderCell, styles.colQte]}>Qté</Text>
+              <Text style={[styles.tableHeaderCell, styles.colRecu]}>Reçu</Text>
+              <Text style={[styles.tableHeaderCell, styles.colReste]}>Reste</Text>
               <Text style={[styles.tableHeaderCell, styles.colPrix]}>Prix unit.</Text>
               <Text style={[styles.tableHeaderCell, styles.colTotal]}>Total HT</Text>
             </View>
-            {lignes.map((l, i) => (
-              <View key={l.id} style={[styles.tableRow, i % 2 === 1 ? styles.tableRowAlt : {}]}>
-                <Text style={[styles.tableCell, styles.colCode]}>{l.produit?.code_article || '-'}</Text>
-                <Text style={[styles.tableCell, styles.colProduit]}>{l.produit?.nom || '-'}</Text>
-                <Text style={[styles.tableCellRight, styles.colQte]}>{l.quantite_commandee}</Text>
-                <Text style={[styles.tableCellRight, styles.colPrix]}>{formatCurrency(Number(l.prix_unitaire_ht))}</Text>
-                <Text style={[styles.tableCellRight, styles.colTotal]}>
-                  {formatCurrency(l.quantite_commandee * l.prix_unitaire_ht, l.devise?.code || deviseCode)}
-                </Text>
-              </View>
-            ))}
+            {lignes.map((l, i) => {
+              const recu = Number(l.quantite_recue) || 0;
+              const reste = Math.max(0, l.quantite_commandee - recu);
+              return (
+                <View key={l.id} style={[styles.tableRow, i % 2 === 1 ? styles.tableRowAlt : {}]}>
+                  <Text style={[styles.tableCell, styles.colCode]}>{l.produit?.code_article || '-'}</Text>
+                  <Text style={[styles.tableCell, styles.colProduit]}>{l.produit?.nom || '-'}</Text>
+                  <Text style={[styles.tableCellRight, styles.colQte]}>{l.quantite_commandee}</Text>
+                  <Text style={[styles.tableCellRight, styles.colRecu]}>{recu}</Text>
+                  <Text style={[styles.tableCellRight, styles.colReste, reste > 0 ? { color: '#ef4444', fontWeight: 'bold' } : {}]}>
+                    {reste}
+                  </Text>
+                  <Text style={[styles.tableCellRight, styles.colPrix]}>{formatCurrency(Number(l.prix_unitaire_ht))}</Text>
+                  <Text style={[styles.tableCellRight, styles.colTotal]}>
+                    {formatCurrency(l.quantite_commandee * l.prix_unitaire_ht, l.devise?.code || deviseCode)}
+                  </Text>
+                </View>
+              );
+            })}
           </View>
         </View>
 

@@ -71,9 +71,8 @@ export const menuItems: MenuItem[] = [
     path: '/recettes',
     permission: 'config:fiche_technique:view',
     subItems: [
-      { title: 'Création Fiche Tech.', path: '/recettes/creation', permission: 'config:fiche_technique:view' },
-      { title: 'Entrée Recette', path: '/recettes/entree', permission: 'config:recette:view' },
-      { title: 'Rapport Recette', path: '/recettes/rapport', permission: 'config:recette:view' },
+      { title: 'Fiche recette', path: '/recettes/creation', permission: 'config:fiche_technique:view' },
+      { title: 'Fiche technique', path: '/recettes/fiche-technique', permission: 'config:fiche_technique_menu:view' },
     ]
   },
   { 

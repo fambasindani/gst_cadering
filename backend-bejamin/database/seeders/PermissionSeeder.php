@@ -201,6 +201,12 @@ class PermissionSeeder extends Seeder
             ['nom' => 'Produire à partir d\'une recette', 'code' => 'config:recette:create'],
             ['nom' => 'Supprimer une entrée recette', 'code' => 'config:recette:delete'],
 
+            // Fiches techniques (menus)
+            ['nom' => 'Voir les fiches techniques (menus)', 'code' => 'config:fiche_technique_menu:view'],
+            ['nom' => 'Créer une fiche technique (menu)', 'code' => 'config:fiche_technique_menu:create'],
+            ['nom' => 'Modifier une fiche technique (menu)', 'code' => 'config:fiche_technique_menu:update'],
+            ['nom' => 'Supprimer une fiche technique (menu)', 'code' => 'config:fiche_technique_menu:delete'],
+
             // Notifications
             ['nom' => 'Voir les notifications', 'code' => 'config:notifications:view'],
             ['nom' => 'Gérer les notifications', 'code' => 'config:notifications:update'],

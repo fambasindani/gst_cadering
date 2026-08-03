@@ -5,31 +5,29 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class EntreeRecette extends Model
+class EntreeFicheTechnique extends Model
 {
     use SoftDeletes;
 
-    protected $table = 'entree_recette';
+    protected $table = 'entree_fiche_technique';
 
     protected $fillable = [
-        'id_fiche_technique',
+        'id_fiche_technique_menu',
         'id_partenaire',
-        'nombre_portions',
-        'nombre_passages',
-        'date_production',
+        'nombre_passagers',
+        'date_rapport',
         'commentaire',
         'id_utilisateur'
     ];
 
     protected $casts = [
-        'nombre_portions' => 'integer',
-        'nombre_passages' => 'integer',
-        'date_production' => 'date',
+        'nombre_passagers' => 'integer',
+        'date_rapport' => 'date',
     ];
 
-    public function ficheTechnique()
+    public function menu()
     {
-        return $this->belongsTo(FicheTechnique::class, 'id_fiche_technique');
+        return $this->belongsTo(FicheTechniqueMenu::class, 'id_fiche_technique_menu');
     }
 
     public function partenaire()

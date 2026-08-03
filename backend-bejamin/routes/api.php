@@ -28,6 +28,8 @@ use App\Http\Controllers\Api\Config\{
     InventaireController,
     FicheTechniqueController,
     EntreeRecetteController,
+    FicheTechniqueMenuController,
+    EntreeFicheTechniqueController,
     NotificationController,
     PurgeController
 };
@@ -266,6 +268,25 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
             ->middleware('permission:config:recette:create');
         Route::get('entree-recette/{id}', [EntreeRecetteController::class, 'show'])->middleware('permission:config:recette:view');
         Route::delete('entree-recette/{id}', [EntreeRecetteController::class, 'destroy'])->middleware('permission:config:recette:delete');
+
+        // ✅ ============================================================
+        // ✅ FICHES TECHNIQUES (MENUS) - À L'INTÉRIEUR DU GROUPE CONFIG
+        // ✅ ============================================================
+        Route::get('fiches-technique-menu', [FicheTechniqueMenuController::class, 'index'])->middleware('permission:config:fiche_technique_menu:view');
+        Route::post('fiches-technique-menu', [FicheTechniqueMenuController::class, 'store'])->middleware('permission:config:fiche_technique_menu:create');
+        Route::get('fiches-technique-menu/{id}', [FicheTechniqueMenuController::class, 'show'])->middleware('permission:config:fiche_technique_menu:view');
+        Route::put('fiches-technique-menu/{id}', [FicheTechniqueMenuController::class, 'update'])->middleware('permission:config:fiche_technique_menu:update');
+        Route::delete('fiches-technique-menu/{id}', [FicheTechniqueMenuController::class, 'destroy'])->middleware('permission:config:fiche_technique_menu:delete');
+        Route::patch('fiches-technique-menu/{id}/toggle', [FicheTechniqueMenuController::class, 'toggleActif'])->middleware('permission:config:fiche_technique_menu:update');
+
+        // ✅ ============================================================
+        // ✅ RAPPORT FICHE TECHNIQUE (ENTRÉE FICHE TECHNIQUE)
+        // ✅ ============================================================
+        Route::get('entree-fiche-technique', [EntreeFicheTechniqueController::class, 'index'])->middleware('permission:config:recette:view');
+        Route::post('entree-fiche-technique/apercu', [EntreeFicheTechniqueController::class, 'apercu'])->middleware('permission:config:recette:view');
+        Route::post('entree-fiche-technique/generer', [EntreeFicheTechniqueController::class, 'generer'])->middleware('permission:config:recette:create');
+        Route::get('entree-fiche-technique/{id}', [EntreeFicheTechniqueController::class, 'show'])->middleware('permission:config:recette:view');
+        Route::delete('entree-fiche-technique/{id}', [EntreeFicheTechniqueController::class, 'destroy'])->middleware('permission:config:recette:delete');
 
         // ============================================================
         // NOTIFICATIONS

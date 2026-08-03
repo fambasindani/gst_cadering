@@ -15,7 +15,6 @@ class FicheTechnique extends Model
         'code',
         'nom',
         'description',
-        'id_produit_fini',
         'rendement',
         'poids_portion',
         'unite_poids_portion',
@@ -34,11 +33,6 @@ class FicheTechnique extends Model
         'prix_kg' => 'decimal:2',
         'actif' => 'boolean',
     ];
-
-    public function produitFini()
-    {
-        return $this->belongsTo(Produit::class, 'id_produit_fini');
-    }
 
     public function magasin()
     {

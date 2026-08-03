@@ -78,7 +78,7 @@ export function FicheTechniqueDetails() {
     return (
       <div className="text-center py-12">
         <FileText className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-        <h2 className="text-xl font-semibold text-gray-700">Fiche technique non trouvée</h2>
+        <h2 className="text-xl font-semibold text-gray-700">Fiche recette non trouvée</h2>
         <Button variant="outline" className="mt-4" onClick={() => navigate('/recettes/creation')}><ArrowLeft className="w-4 h-4 mr-2" /> Retour</Button>
       </div>
     );
@@ -249,7 +249,7 @@ export function FicheTechniqueDetails() {
 
               <Button onClick={() => doAction('duplication',
                 () => ficheTechniqueService.duplicate(Number(id)),
-                'Fiche technique dupliquée avec succès')}
+                'Fiche recette dupliquée avec succès')}
                 disabled={actionLoading} variant="outline" className="w-full justify-start border-gray-200 text-gray-700 hover:bg-gray-50">
                 {actionLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Copy className="w-4 h-4 mr-2" />}
                 Dupliquer
@@ -257,7 +257,7 @@ export function FicheTechniqueDetails() {
 
               <Button onClick={() => doAction('activation/désactivation',
                 () => ficheTechniqueService.toggle(Number(id)),
-                fiche.actif ? 'Fiche technique désactivée' : 'Fiche technique activée')}
+                fiche.actif ? 'Fiche recette désactivée' : 'Fiche recette activée')}
                 disabled={actionLoading} variant="outline" className={cn(
                   'w-full justify-start border-gray-200 hover:bg-gray-50',
                   fiche.actif ? 'text-red-700' : 'text-emerald-700'

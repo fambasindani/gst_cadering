@@ -29,9 +29,9 @@ export function EntreeRecette() {
   const [clients, setClients] = useState<{ id: number; nom: string }[]>([]);
   const [selectedFiche, setSelectedFiche] = useState<FicheTechnique | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [result, setResult] = useState<{ recette: EntreeRecette; nombre_passages: number; cout_total: number; cout_unitaire: number } | null>(null);
+  const [result, setResult] = useState<{ recette: EntreeRecette; nombre_portions: number; nombre_passages: number; cout_total: number; cout_unitaire: number } | null>(null);
   const [form, setForm] = useState({
-    id_fiche_technique: '', id_partenaire: '', nombre_passages: '1',
+    id_fiche_technique: '', id_partenaire: '', nombre_portions: '',
     date_production: new Date().toISOString().slice(0, 10), commentaire: '',
   });
 
@@ -88,7 +88,7 @@ export function EntreeRecette() {
       const payload = {
         id_fiche_technique: Number(form.id_fiche_technique),
         id_partenaire: Number(form.id_partenaire),
-        nombre_passages: Number(form.nombre_passages),
+        nombre_portions: Number(form.nombre_portions),
         date_production: form.date_production,
         commentaire: form.commentaire || undefined,
       };
@@ -129,14 +129,18 @@ export function EntreeRecette() {
 
   const resetForm = () => {
     setForm({
-      id_fiche_technique: '', id_partenaire: '', nombre_passages: '1',
+      id_fiche_technique: '', id_partenaire: '', nombre_portions: '',
       date_production: new Date().toISOString().slice(0, 10), commentaire: '',
     });
     setSelectedFiche(null);
     setResult(null);
   };
 
-  const coutTotalEstime = selectedFiche ? (Number(selectedFiche.cout_total) || 0) * Number(form.nombre_passages || 1) : 0;
+  const portions = Number(form.nombre_portions) || 0;
+  const passagesCalcules = selectedFiche && portions > 0
+    ? Math.max(1, Math.ceil(portions / Math.max(Number(selectedFiche.rendement) || 1, 1)))
+    : 0;
+  const coutTotalEstime = selectedFiche ? (Number(selectedFiche.cout_unitaire) || 0) * portions : 0;
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
@@ -157,7 +161,7 @@ export function EntreeRecette() {
                 </div>
 
                 <div>
-                  <LabelIcon icon={FileText} required>Fiche technique</LabelIcon>
+                  <LabelIcon icon={FileText} required>Fiche recette</LabelIcon>
                   <Select value={form.id_fiche_technique} onValueChange={handleFicheChange}>
                     <SelectTrigger className="w-full h-11 border-gray-200 shadow-sm">
                       <SelectValue placeholder="Sélectionner une recette" />
@@ -206,10 +210,15 @@ export function EntreeRecette() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <LabelIcon icon={Repeat} required>Nombre de passages</LabelIcon>
-                    <Input type="number" min="1" value={form.nombre_passages}
-                      onChange={e => setForm(f => ({ ...f, nombre_passages: e.target.value }))}
+                    <LabelIcon icon={Repeat} required>Nombre de portions (passagers)</LabelIcon>
+                    <Input type="number" min="1" value={form.nombre_portions}
+                      onChange={e => setForm(f => ({ ...f, nombre_portions: e.target.value }))}
                       className="h-11 border-gray-200 shadow-sm" />
+                    {selectedFiche && portions > 0 && (
+                      <p className="text-xs text-gray-500 mt-1.5">
+                        = {passagesCalcules} passage{passagesCalcules > 1 ? 's' : ''} de {selectedFiche.rendement} portion(s)
+                      </p>
+                    )}
                   </div>
                   <div>
                     <LabelIcon icon={CalendarDays} required>Date production</LabelIcon>
@@ -239,20 +248,24 @@ export function EntreeRecette() {
                 {selectedFiche ? (
                   <>
                     <div>
-                      <div className="text-sm text-gray-500">Passages</div>
-                      <div className="text-xl font-semibold text-gray-900">{form.nombre_passages}</div>
+                      <div className="text-sm text-gray-500">Portions (passagers)</div>
+                      <div className="text-xl font-semibold text-gray-900">{portions || '-'}</div>
                     </div>
                     <div>
-                      <div className="text-sm text-gray-500">Coût total recette</div>
-                      <div className="text-lg font-bold text-gray-900 font-mono">{formatCurrency(selectedFiche.cout_total)}</div>
+                      <div className="text-sm text-gray-500">Passages nécessaires</div>
+                      <div className="text-lg font-semibold text-gray-900">{passagesCalcules || '-'}</div>
                     </div>
                     <div>
-                      <div className="text-sm text-gray-500">Coût total estimé ({form.nombre_passages} passage(s))</div>
+                      <div className="text-sm text-gray-500">Coût unitaire (par portion)</div>
+                      <div className="text-lg font-bold text-gray-900 font-mono">{formatCurrency(selectedFiche.cout_unitaire)}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-500">Coût total estimé ({portions} portion(s))</div>
                       <div className="text-2xl font-bold text-royal-700 font-mono">{formatCurrency(coutTotalEstime)}</div>
                     </div>
                   </>
                 ) : (
-                  <div className="text-sm text-gray-400 py-4 text-center">Sélectionnez une fiche technique</div>
+                  <div className="text-sm text-gray-400 py-4 text-center">Sélectionnez une fiche recette</div>
                 )}
               </CardContent>
             </Card>
@@ -267,6 +280,7 @@ export function EntreeRecette() {
                   </div>
                   <div className="text-sm space-y-1 text-gray-600">
                     <p><span className="font-medium">Client :</span> {result.recette.partenaire?.nom || '-'}</p>
+                    <p><span className="font-medium">Portions (passagers) :</span> {result.nombre_portions}</p>
                     <p><span className="font-medium">Passages :</span> {result.nombre_passages}</p>
                     <p><span className="font-medium">Date :</span> {result.recette.date_production ? new Date(result.recette.date_production).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-'}</p>
                     <p><span className="font-medium">Coût total :</span> {formatCurrency(result.cout_total ?? 0)}</p>
@@ -282,7 +296,7 @@ export function EntreeRecette() {
 
         {!result && (
           <div className="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
-            <Button type="submit" disabled={submitting || !form.id_fiche_technique || !form.id_partenaire}
+            <Button type="submit" disabled={submitting || !form.id_fiche_technique || !form.id_partenaire || !form.nombre_portions}
               className="h-11 px-8 bg-emerald-700 hover:bg-emerald-800 text-white font-medium rounded-xl shadow-sm">
               {submitting ? (
                 <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Enregistrement...</>
@@ -317,6 +331,7 @@ export function EntreeRecette() {
                     <tr className="bg-gray-50">
                       <th className="text-left font-semibold text-gray-600 px-4 py-3">Recette</th>
                       <th className="text-left font-semibold text-gray-600 px-4 py-3">Client</th>
+                      <th className="text-right font-semibold text-gray-600 px-4 py-3">Portions</th>
                       <th className="text-right font-semibold text-gray-600 px-4 py-3">Passages</th>
                       <th className="text-right font-semibold text-gray-600 px-4 py-3">Coût total</th>
                       <th className="text-left font-semibold text-gray-600 px-4 py-3">Date</th>
@@ -330,9 +345,10 @@ export function EntreeRecette() {
                           {h.fiche_technique?.code ? `[${h.fiche_technique.code}] ` : ''}{h.fiche_technique?.nom || '-'}
                         </td>
                         <td className="px-4 py-3 text-gray-600">{h.partenaire?.nom || '-'}</td>
-                        <td className="px-4 py-3 text-right font-mono text-gray-700">{h.nombre_passages}</td>
+                        <td className="px-4 py-3 text-right font-mono text-gray-700">{h.nombre_portions ?? 0}</td>
+                        <td className="px-4 py-3 text-right font-mono text-gray-400">{h.nombre_passages}</td>
                         <td className="px-4 py-3 text-right font-mono font-medium text-gray-900">
-                          {formatCurrency((Number(h.fiche_technique?.cout_total) || 0) * h.nombre_passages)}
+                          {formatCurrency((Number(h.fiche_technique?.cout_unitaire) || 0) * (Number(h.nombre_portions) || 0))}
                         </td>
                         <td className="px-4 py-3 text-gray-600">
                           {h.date_production ? new Date(h.date_production).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-'}

@@ -39,8 +39,9 @@ const formatDate = (d: string) =>
   d ? new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-';
 
 export function RapportEntreeRecettePDF({ recettes }: { recettes: EntreeRecette[] }) {
+  const totalPortions = recettes.reduce((s, r) => s + (Number(r.nombre_portions) || 0), 0);
   const totalPassages = recettes.reduce((s, r) => s + (Number(r.nombre_passages) || 0), 0);
-  const totalCout = recettes.reduce((s, r) => s + (Number(r.fiche_technique?.cout_total) || 0) * (Number(r.nombre_passages) || 0), 0);
+  const totalCout = recettes.reduce((s, r) => s + (Number(r.fiche_technique?.cout_unitaire) || 0) * (Number(r.nombre_portions) || 0), 0);
 
   return (
     <Document>
@@ -59,6 +60,10 @@ export function RapportEntreeRecettePDF({ recettes }: { recettes: EntreeRecette[
             <Text style={styles.statLabel}>Entrées</Text>
           </View>
           <View style={styles.statBox}>
+            <Text style={styles.statValue}>{totalPortions}</Text>
+            <Text style={styles.statLabel}>Portions</Text>
+          </View>
+          <View style={styles.statBox}>
             <Text style={styles.statValue}>{totalPassages}</Text>
             <Text style={styles.statLabel}>Passages</Text>
           </View>
@@ -75,7 +80,7 @@ export function RapportEntreeRecettePDF({ recettes }: { recettes: EntreeRecette[
             <Text style={[styles.tableHeaderCell, styles.colDate]}>Date</Text>
             <Text style={[styles.tableHeaderCell, styles.colClient]}>Client</Text>
             <Text style={[styles.tableHeaderCell, styles.colRecette]}>Recette</Text>
-            <Text style={[styles.tableHeaderCell, styles.colPassages]}>Passages</Text>
+            <Text style={[styles.tableHeaderCell, styles.colPassages]}>Portions</Text>
             <Text style={[styles.tableHeaderCell, styles.colCout]}>Coût total</Text>
           </View>
           {recettes.map((r, i) => (
@@ -84,8 +89,8 @@ export function RapportEntreeRecettePDF({ recettes }: { recettes: EntreeRecette[
               <Text style={[styles.tableCell, styles.colDate]}>{formatDate(r.date_production)}</Text>
               <Text style={[styles.tableCell, styles.colClient]}>{r.partenaire?.nom || '-'}</Text>
               <Text style={[styles.tableCell, styles.colRecette]}>{r.fiche_technique?.nom || '-'}</Text>
-              <Text style={[styles.tableCellRight, styles.colPassages]}>{r.nombre_passages}</Text>
-              <Text style={[styles.tableCellRight, styles.colCout]}>{formatCurrency((Number(r.fiche_technique?.cout_total) || 0) * (Number(r.nombre_passages) || 0))}</Text>
+              <Text style={[styles.tableCellRight, styles.colPassages]}>{r.nombre_portions ?? 0}</Text>
+              <Text style={[styles.tableCellRight, styles.colCout]}>{formatCurrency((Number(r.fiche_technique?.cout_unitaire) || 0) * (Number(r.nombre_portions) || 0))}</Text>
             </View>
           ))}
         </View>
@@ -94,6 +99,10 @@ export function RapportEntreeRecettePDF({ recettes }: { recettes: EntreeRecette[
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Total entrées:</Text>
             <Text style={styles.totalValue}>{recettes.length}</Text>
+          </View>
+          <View style={styles.totalRow}>
+            <Text style={styles.totalLabel}>Total portions:</Text>
+            <Text style={styles.totalValue}>{totalPortions}</Text>
           </View>
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Total passages:</Text>

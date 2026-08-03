@@ -82,12 +82,15 @@ class EntreeRecetteController extends Controller
             $validated = $request->validate([
                 'id_fiche_technique' => 'required|exists:fiche_technique,id',
                 'id_partenaire' => 'required|exists:partenaires,id',
-                'nombre_passages' => 'required|integer|min:1',
+                'nombre_portions' => 'required|integer|min:1',
                 'date_production' => 'nullable|date',
                 'commentaire' => 'nullable|string',
             ]);
 
             $fiche = FicheTechnique::with('lignes.ingredient')->findOrFail($validated['id_fiche_technique']);
+
+            // 1 portion = 1 passager. Nombre de passages (batchs) nécessaires pour produire ces portions.
+            $nombrePassages = (int) max(1, ceil($validated['nombre_portions'] / max((int) $fiche->rendement, 1)));
 
             DB::beginTransaction();
 
@@ -95,7 +98,8 @@ class EntreeRecetteController extends Controller
                 $recette = EntreeRecette::create([
                     'id_fiche_technique' => $fiche->id,
                     'id_partenaire' => $validated['id_partenaire'],
-                    'nombre_passages' => $validated['nombre_passages'],
+                    'nombre_portions' => $validated['nombre_portions'],
+                    'nombre_passages' => $nombrePassages,
                     'date_production' => $validated['date_production'] ?? now()->toDateString(),
                     'commentaire' => $validated['commentaire'] ?? null,
                     'id_utilisateur' => Auth::id(),
@@ -105,13 +109,14 @@ class EntreeRecetteController extends Controller
 
                 $recette->load(['ficheTechnique', 'partenaire']);
 
-                $coutTotal = $fiche->cout_total * $recette->nombre_passages;
+                $coutTotal = (float) $fiche->cout_unitaire * $recette->nombre_portions;
 
                 return response()->json([
                     'success' => true,
                     'data' => [
                         'recette' => $recette,
                         'fiche_technique' => $fiche,
+                        'nombre_portions' => $recette->nombre_portions,
                         'nombre_passages' => $recette->nombre_passages,
                         'cout_total' => $coutTotal,
                         'cout_unitaire' => $fiche->cout_unitaire,

@@ -50,6 +50,8 @@ class RolePermissionSeeder extends Seeder
                 'config:retours:view', 'config:retours:create', 'config:retours:validate',
                 // Fiches techniques (view + création + modification)
                 'config:fiche_technique:view', 'config:fiche_technique:create', 'config:fiche_technique:update',
+                // Fiches techniques (menus) (view + création + modification)
+                'config:fiche_technique_menu:view', 'config:fiche_technique_menu:create', 'config:fiche_technique_menu:update',
                 // Recette (production)
                 'config:recette:view', 'config:recette:create', 'config:recette:delete',
                 // Partenaires (view)
@@ -106,6 +108,8 @@ class RolePermissionSeeder extends Seeder
                 'config:retours:view', 'config:retours:create',
                 // Fiches techniques (view)
                 'config:fiche_technique:view',
+                // Fiches techniques (menus) (view)
+                'config:fiche_technique_menu:view',
                 // Recette (production)
                 'config:recette:view', 'config:recette:create',
                 // Notifications
@@ -127,6 +131,7 @@ class RolePermissionSeeder extends Seeder
                 'config:periode_inventaire:view', 'config:inventaire:view',
                 'config:bon_commande:view', 'config:retours:view',
                 'config:fiche_technique:view', 'config:recette:view', 'config:partenaires:view',
+                'config:fiche_technique_menu:view',
                 'config:historique_prix:view',
                 'facturation:avoir:view',
                 'config:notifications:view',

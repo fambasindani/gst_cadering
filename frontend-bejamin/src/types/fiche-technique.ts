@@ -19,8 +19,6 @@ export interface FicheTechnique {
   code: string;
   nom: string;
   description: string | null;
-  id_produit_fini: number | null;
-  produitFini?: { id: number; nom: string; code_article: string } | null;
   rendement: number;
   poids_portion: number;
   unite_poids_portion: string;
@@ -76,7 +74,7 @@ export interface FicheTechniqueResponse {
 export interface EntreeRecettePayload {
   id_fiche_technique: number;
   id_partenaire: number;
-  nombre_passages: number;
+  nombre_portions: number;
   date_production: string;
   commentaire?: string;
 }
@@ -85,6 +83,7 @@ export interface EntreeRecette {
   id: number;
   id_fiche_technique: number;
   id_partenaire: number;
+  nombre_portions: number;
   nombre_passages: number;
   date_production: string;
   commentaire: string | null;
@@ -99,6 +98,7 @@ export interface EntreeRecetteResponse {
   data: {
     recette: EntreeRecette;
     fiche_technique: FicheTechnique;
+    nombre_portions: number;
     nombre_passages: number;
     cout_total: number;
     cout_unitaire: number;

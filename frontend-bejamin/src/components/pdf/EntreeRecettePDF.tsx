@@ -22,22 +22,6 @@ const styles = StyleSheet.create({
   summaryCard: { flex: 1, border: '1 solid #e0e0e0', borderRadius: 4, padding: 6, backgroundColor: '#fafafa' },
   summaryCardTitle: { fontSize: 7, color: '#999', marginBottom: 2 },
   summaryCardValue: { fontSize: 10, fontWeight: 'bold', color: '#1e3a5f' },
-  table: { marginTop: 4 },
-  tableHeader: { flexDirection: 'row', backgroundColor: '#1e3a5f', padding: 5 },
-  tableHeaderCell: { color: '#fff', fontSize: 7, fontWeight: 'bold' },
-  colIngredient: { width: '22%' },
-  colDesignation: { width: '26%' },
-  colUnite: { width: '8%', textAlign: 'center' },
-  colRend: { width: '8%', textAlign: 'right' },
-  colPu: { width: '12%', textAlign: 'right' },
-  colPoidsNet: { width: '10%', textAlign: 'right' },
-  colPoidsBrut: { width: '10%', textAlign: 'right' },
-  colCout: { width: '12%', textAlign: 'right' },
-  tableRow: { flexDirection: 'row', padding: 4, borderBottom: '1 solid #f0f0f0', alignItems: 'center' },
-  tableRowAlt: { backgroundColor: '#f9f9f9' },
-  tableCell: { fontSize: 7, color: '#333' },
-  tableCellRight: { fontSize: 7, color: '#333', textAlign: 'right' },
-  tableCellCenter: { fontSize: 7, color: '#333', textAlign: 'center' },
   totalSection: { marginTop: 10, borderTop: '1 solid #ddd', paddingTop: 6, alignItems: 'flex-end' },
   totalRow: { flexDirection: 'row', marginBottom: 2 },
   totalLabel: { fontSize: 9, color: '#666', marginRight: 15, width: 120, textAlign: 'right' },
@@ -48,11 +32,10 @@ const styles = StyleSheet.create({
 
 export function EntreeRecettePDF({ recette }: { recette: EntreeRecette }) {
   const fiche = recette.fiche_technique;
-  const lignes = fiche?.lignes || [];
-  const coutTotalFiche = Number(fiche?.cout_total) || 0;
-  const coutTotalPassages = coutTotalFiche * (recette.nombre_passages || 0);
+  const nombrePortions = Number(recette.nombre_portions) || 0;
+  const nombrePassages = Number(recette.nombre_passages) || 0;
   const coutUnitaire = Number(fiche?.cout_unitaire) || 0;
-  const prixKg = Number(fiche?.prix_kg) || 0;
+  const coutTotalPortions = coutUnitaire * nombrePortions;
   const dateFormatee = recette.date_production
     ? new Date(recette.date_production).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' })
     : '-';
@@ -72,7 +55,7 @@ export function EntreeRecettePDF({ recette }: { recette: EntreeRecette }) {
           </View>
           <View style={styles.infoBox}>
             <Text style={styles.infoText}>Client: {recette.partenaire?.nom || '-'}</Text>
-            <Text style={styles.infoText}>Passages: {recette.nombre_passages}</Text>
+            <Text style={styles.infoText}>Portions (passagers): {nombrePortions}</Text>
           </View>
         </View>
 
@@ -82,74 +65,39 @@ export function EntreeRecettePDF({ recette }: { recette: EntreeRecette }) {
             <Text style={styles.summaryCardValue}>{fiche?.nom || '-'}</Text>
           </View>
           <View style={styles.summaryCard}>
+            <Text style={styles.summaryCardTitle}>Portions</Text>
+            <Text style={styles.summaryCardValue}>{nombrePortions}</Text>
+          </View>
+          <View style={styles.summaryCard}>
             <Text style={styles.summaryCardTitle}>Passages</Text>
-            <Text style={styles.summaryCardValue}>{recette.nombre_passages}</Text>
+            <Text style={styles.summaryCardValue}>{nombrePassages}</Text>
           </View>
           <View style={styles.summaryCard}>
             <Text style={styles.summaryCardTitle}>Coût total</Text>
-            <Text style={styles.summaryCardValue}>{formatCurrency(coutTotalPassages)}</Text>
+            <Text style={styles.summaryCardValue}>{formatCurrency(coutTotalPortions)}</Text>
           </View>
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Informations</Text>
           <View style={styles.row}><Text style={styles.label}>Client:</Text><Text style={styles.value}>{recette.partenaire?.nom || '-'}</Text></View>
-          <View style={styles.row}><Text style={styles.label}>Fiche technique:</Text><Text style={styles.value}>{fiche?.code ? `[${fiche.code}] ` : ''}{fiche?.nom || '-'}</Text></View>
-          <View style={styles.row}><Text style={styles.label}>Nombre de passages:</Text><Text style={styles.value}>{recette.nombre_passages}</Text></View>
+          <View style={styles.row}><Text style={styles.label}>Fiche recette:</Text><Text style={styles.value}>{fiche?.code ? `[${fiche.code}] ` : ''}{fiche?.nom || '-'}</Text></View>
+          <View style={styles.row}><Text style={styles.label}>Nombre de portions:</Text><Text style={styles.value}>{nombrePortions}</Text></View>
+          <View style={styles.row}><Text style={styles.label}>Nombre de passages:</Text><Text style={styles.value}>{nombrePassages}</Text></View>
           <View style={styles.row}><Text style={styles.label}>Date production:</Text><Text style={styles.value}>{dateFormatee}</Text></View>
           {recette.commentaire ? (
             <View style={styles.row}><Text style={styles.label}>Commentaire:</Text><Text style={styles.value}>{recette.commentaire}</Text></View>
           ) : null}
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Ingrédients</Text>
-          {lignes.length === 0 ? (
-            <Text style={{ fontSize: 8, color: '#999', marginTop: 8 }}>Aucun ingrédient</Text>
-          ) : (
-            <View style={styles.table}>
-              <View style={styles.tableHeader}>
-                <Text style={[styles.tableHeaderCell, styles.colIngredient]}>Code</Text>
-                <Text style={[styles.tableHeaderCell, styles.colDesignation]}>Désignation</Text>
-                <Text style={[styles.tableHeaderCell, styles.colUnite]}>Unité</Text>
-                <Text style={[styles.tableHeaderCell, styles.colRend]}>Rend %</Text>
-                <Text style={[styles.tableHeaderCell, styles.colPu]}>Coût achat net</Text>
-                <Text style={[styles.tableHeaderCell, styles.colPoidsNet]}>Poids net</Text>
-                <Text style={[styles.tableHeaderCell, styles.colPoidsBrut]}>Poids brut</Text>
-                <Text style={[styles.tableHeaderCell, styles.colCout]}>Coût matière</Text>
-              </View>
-              {lignes.map((l, i) => (
-                <View key={l.id} style={[styles.tableRow, i % 2 === 1 ? styles.tableRowAlt : {}]}>
-                  <Text style={[styles.tableCell, styles.colIngredient]}>{l.ingredient?.code_article || '-'}</Text>
-                  <Text style={[styles.tableCell, styles.colDesignation]}>{l.ingredient?.nom || '-'}</Text>
-                  <Text style={[styles.tableCellCenter, styles.colUnite]}>{l.unite?.symbole || '-'}</Text>
-                  <Text style={[styles.tableCellRight, styles.colRend]}>{Number(l.rendement) || 0}</Text>
-                  <Text style={[styles.tableCellRight, styles.colPu]}>{formatCurrency(l.prix_unitaire)}</Text>
-                  <Text style={[styles.tableCellRight, styles.colPoidsNet]}>{Number(l.poids_net) || 0}</Text>
-                  <Text style={[styles.tableCellRight, styles.colPoidsBrut]}>{Number(l.poids_brut) || 0}</Text>
-                  <Text style={[styles.tableCellRight, styles.colCout]}>{formatCurrency(l.cout_total)}</Text>
-                </View>
-              ))}
-            </View>
-          )}
-        </View>
-
         <View style={styles.totalSection}>
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Coût total recette:</Text>
-            <Text style={styles.totalValue}>{formatCurrency(coutTotalFiche)}</Text>
-          </View>
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Coût unitaire:</Text>
             <Text style={styles.totalValue}>{formatCurrency(coutUnitaire)}</Text>
           </View>
           <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Coût / kg:</Text>
-            <Text style={styles.totalValue}>{formatCurrency(prixKg)}</Text>
-          </View>
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>Coût total ({recette.nombre_passages} passages):</Text>
-            <Text style={styles.totalValue}>{formatCurrency(coutTotalPassages)}</Text>
+            <Text style={styles.totalLabel}>Coût total ({nombrePortions} portions):</Text>
+            <Text style={styles.totalValue}>{formatCurrency(coutTotalPortions)}</Text>
           </View>
         </View>
 

@@ -72,8 +72,8 @@ export function RapportRecette() {
 
   const handlePageSizeChange = (size: number) => { setPageSize(size); setCurrentPage(1); };
 
-  const totalPassages = data.reduce((s, r) => s + (Number(r.nombre_passages) || 0), 0);
-  const totalCout = data.reduce((s, r) => s + (Number(r.fiche_technique?.cout_total) || 0) * (Number(r.nombre_passages) || 0), 0);
+  const totalPortions = data.reduce((s, r) => s + (Number(r.nombre_portions) || 0), 0);
+  const totalCout = data.reduce((s, r) => s + (Number(r.fiche_technique?.cout_unitaire) || 0) * (Number(r.nombre_portions) || 0), 0);
 
   const resetFilters = () => {
     setSearchInput(''); setSearchTerm(''); setDateFrom(''); setDateTo('');
@@ -187,8 +187,8 @@ export function RapportRecette() {
                 <Repeat className="w-5 h-5 text-emerald-700" />
               </div>
               <div>
-                <p className="text-xs text-gray-500 font-medium">Passages (page)</p>
-                <p className="text-xl font-bold text-gray-900">{totalPassages}</p>
+                <p className="text-xs text-gray-500 font-medium">Portions (passagers, page)</p>
+                <p className="text-xl font-bold text-gray-900">{totalPortions}</p>
               </div>
             </div>
           </CardContent>
@@ -250,7 +250,7 @@ export function RapportRecette() {
                       <th className="text-left font-semibold text-gray-600 px-4 py-3">Date</th>
                       <th className="text-left font-semibold text-gray-600 px-4 py-3">Client</th>
                       <th className="text-left font-semibold text-gray-600 px-4 py-3">Recette</th>
-                      <th className="text-right font-semibold text-gray-600 px-4 py-3">Passages</th>
+                      <th className="text-right font-semibold text-gray-600 px-4 py-3">Portions</th>
                       <th className="text-right font-semibold text-gray-600 px-4 py-3">Coût total</th>
                     </tr>
                   </thead>
@@ -263,9 +263,9 @@ export function RapportRecette() {
                         <td className="px-4 py-3 font-medium text-gray-900">
                           {r.fiche_technique?.code ? `[${r.fiche_technique.code}] ` : ''}{r.fiche_technique?.nom || '-'}
                         </td>
-                        <td className="px-4 py-3 text-right font-mono text-gray-700">{r.nombre_passages}</td>
+                        <td className="px-4 py-3 text-right font-mono text-gray-700">{r.nombre_portions ?? 0}</td>
                         <td className="px-4 py-3 text-right font-mono font-medium text-gray-900">
-                          {formatCurrency((Number(r.fiche_technique?.cout_total) || 0) * (Number(r.nombre_passages) || 0))}
+                          {formatCurrency((Number(r.fiche_technique?.cout_unitaire) || 0) * (Number(r.nombre_portions) || 0))}
                         </td>
                       </tr>
                     ))}

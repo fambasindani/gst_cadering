@@ -7,6 +7,11 @@ interface Option {
   id: number;
   nom: string;
   sousTitre?: string;
+  value?: string;
+}
+
+function getOptionValue(opt: Option): string {
+  return opt.value !== undefined ? opt.value : String(opt.id);
 }
 
 interface SearchableSelectProps {
@@ -47,7 +52,7 @@ export function SearchableSelect({
   const inputRef = useRef<HTMLInputElement>(null);
   const instanceId = useRef(`ss_${++instanceCounter}`);
 
-  const selected = options.find(o => String(o.id) === value);
+  const selected = options.find(o => getOptionValue(o) === value);
 
   const filtered = search.trim()
     ? options.filter(o =>
@@ -123,7 +128,7 @@ export function SearchableSelect({
   }, [open]);
 
   const handleSelect = (opt: Option) => {
-    onValueChange(String(opt.id));
+    onValueChange(getOptionValue(opt));
     setOpen(false);
     setSearch('');
   };
@@ -194,14 +199,14 @@ export function SearchableSelect({
                   onClick={() => handleSelect(opt)}
                   className={cn(
                     'flex items-center gap-2 px-3 py-2 text-sm cursor-pointer transition-colors',
-                    String(opt.id) === value
+                    getOptionValue(opt) === value
                       ? 'bg-royal-50 text-royal-700 font-medium'
                       : 'text-gray-700 hover:bg-gray-50'
                   )}
                 >
                   <span className="flex-1 truncate">{opt.nom}</span>
                   {opt.sousTitre && <span className="text-xs text-gray-400 shrink-0">{opt.sousTitre}</span>}
-                  {String(opt.id) === value && <Check className="w-4 h-4 shrink-0 text-royal-600" />}
+                  {getOptionValue(opt) === value && <Check className="w-4 h-4 shrink-0 text-royal-600" />}
                 </div>
               ))
             )}

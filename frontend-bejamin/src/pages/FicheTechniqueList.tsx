@@ -60,11 +60,12 @@ export function FicheTechniqueList() {
     if (!deleteTarget) return;
     try {
       await ficheTechniqueService.delete(deleteTarget.id);
-      toast('Fiche technique supprimée', 'success');
+      toast('Fiche recette supprimée', 'success');
       setDeleteTarget(null);
       fetchData();
-    } catch {
-      toast('Erreur lors de la suppression', 'error');
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      toast(error.message || 'Erreur lors de la suppression', 'error');
     }
   };
 
@@ -72,7 +73,7 @@ export function FicheTechniqueList() {
     try {
       const res = await ficheTechniqueService.duplicate(id);
       if (res.success) {
-        toast('Fiche technique dupliquée', 'success');
+        toast('Fiche recette dupliquée', 'success');
         fetchData();
       }
     } catch {
@@ -86,7 +87,7 @@ export function FicheTechniqueList() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Fiches techniques</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Fiches recette</h1>
           <p className="text-sm text-gray-500 mt-1">{loading ? '...' : `${total} fiche${total > 1 ? 's' : ''}`}</p>
         </div>
         <div className="flex items-center gap-2">
@@ -189,7 +190,7 @@ export function FicheTechniqueList() {
           ) : data.length === 0 ? (
             <div className="text-center py-12 text-gray-500">
               <FileText className="w-12 h-12 mx-auto text-gray-300 mb-3" />
-              <p className="text-lg font-medium text-gray-700">Aucune fiche technique</p>
+              <p className="text-lg font-medium text-gray-700">Aucune fiche recette</p>
               <p className="text-sm mt-1">Cliquez sur "Nouvelle fiche" pour créer une recette</p>
             </div>
           ) : (
@@ -198,17 +199,17 @@ export function FicheTechniqueList() {
                 <Table>
                   <TableHeader className="bg-gray-50">
                     <TableRow>
-                      <TableHead className="font-semibold text-gray-600">Code</TableHead>
-                      <TableHead className="font-semibold text-gray-600">Nom</TableHead>
-                      <TableHead className="text-right font-semibold text-gray-600">Portions</TableHead>
-                      <TableHead className="text-right font-semibold text-gray-600">Poids/port.</TableHead>
-                      <TableHead className="text-right font-semibold text-gray-600">Coût unit.</TableHead>
-                      <TableHead className="text-right font-semibold text-gray-600">Coût / kg</TableHead>
-                      <TableHead className="text-center font-semibold text-gray-600">Actif</TableHead>
-                      <TableHead className="text-center w-28 font-semibold text-gray-600">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
+                    <TableHead className="font-semibold text-gray-600">Code</TableHead>
+                    <TableHead className="font-semibold text-gray-600">Nom</TableHead>
+                    <TableHead className="text-right font-semibold text-gray-600">Portions</TableHead>
+                    <TableHead className="text-right font-semibold text-gray-600">Poids/port.</TableHead>
+                    <TableHead className="text-right font-semibold text-gray-600">Coût unit.</TableHead>
+                    <TableHead className="text-right font-semibold text-gray-600">Coût / kg</TableHead>
+                    <TableHead className="text-center font-semibold text-gray-600">Actif</TableHead>
+                    <TableHead className="text-center w-28 font-semibold text-gray-600">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
                     {data.map((f, i) => (
                       <TableRow key={f.id} className={cn('hover:bg-royal-50/50 transition-colors', i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50')}>
                         <TableCell className="font-mono text-sm font-medium text-royal-700">{f.code}</TableCell>
@@ -276,7 +277,7 @@ export function FicheTechniqueList() {
         isOpen={Boolean(deleteTarget)}
         onClose={() => setDeleteTarget(null)}
         onConfirm={handleDelete}
-        title="Supprimer la fiche technique"
+        title="Supprimer la fiche recette"
         message={`Supprimer "${deleteTarget?.nom}" ? Cette action est irréversible.`}
         variant="danger"
         confirmLabel="Supprimer"
