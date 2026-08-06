@@ -60,7 +60,7 @@ const statutColors: Record<string, string> = {
   ENVOYÉ: '#3b82f6',
   'REÇU PARTIELLEMENT': '#8b5cf6',
   REÇU: '#10b981',
-  ANNULE: '#ef4444',
+  CLOTURE: '#ef4444',
 };
 
 const statutLabels: Record<string, string> = {
@@ -68,7 +68,7 @@ const statutLabels: Record<string, string> = {
   ENVOYÉ: 'Envoyé',
   'REÇU PARTIELLEMENT': 'Reçu partiellement',
   REÇU: 'Reçu',
-  ANNULE: 'Annulé',
+  CLOTURE: 'Clôturé',
 };
 
 export function BonCommandePDF({ bon }: Props) {

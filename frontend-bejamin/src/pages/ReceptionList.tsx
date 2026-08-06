@@ -21,7 +21,7 @@ const statutConfig: Record<string, { label: string; color: string }> = {
   'REÇU PARTIELLEMENT': { label: 'Reçu partiellement', color: 'bg-purple-100 text-purple-800 border-purple-200' },
   BROUILLON: { label: 'Brouillon', color: 'bg-amber-100 text-amber-800 border-amber-200' },
   REÇU: { label: 'Reçu', color: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
-  ANNULE: { label: 'Annulé', color: 'bg-red-100 text-red-800 border-red-200' },
+  CLOTURE: { label: 'Clôturé', color: 'bg-red-100 text-red-800 border-red-200' },
 };
 
 export function ReceptionList() {

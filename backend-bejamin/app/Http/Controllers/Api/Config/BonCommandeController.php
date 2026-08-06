@@ -377,7 +377,7 @@ class BonCommandeController extends Controller
                 'statut_validation' => 'REJETÉ',
                 'valide_par' => Auth::id(),
                 'date_validation' => now(),
-                'statut' => 'ANNULE',
+                'statut' => 'CLOTURE',
             ]);
 
             // Mettre à jour les notifications existantes
@@ -641,33 +641,33 @@ class BonCommandeController extends Controller
     }
 
     /**
-     * Annuler un bon de commande
+     * Clôturer un bon de commande
      */
-    public function cancel($id)
+    public function cloturer($id)
     {
         try {
             $bonCommande = BonCommande::findOrFail($id);
 
-            if (in_array($bonCommande->statut, ['REÇU', 'ANNULE'])) {
+            if (in_array($bonCommande->statut, ['REÇU', 'CLOTURE'])) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Ce bon ne peut plus être annulé'
+                    'message' => 'Ce bon ne peut plus être clôturé'
                 ], 403);
             }
 
-            $bonCommande->statut = 'ANNULE';
+            $bonCommande->statut = 'CLOTURE';
             $bonCommande->save();
 
             return response()->json([
                 'success' => true,
                 'data' => $bonCommande,
-                'message' => 'Bon de commande annulé avec succès'
+                'message' => 'Bon de commande clôturé avec succès'
             ]);
 
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur lors de l\'annulation',
+                'message' => 'Erreur lors de la clôture',
                 'error' => $e->getMessage()
             ], 500);
         }

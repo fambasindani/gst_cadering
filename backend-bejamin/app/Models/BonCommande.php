@@ -125,7 +125,7 @@ class BonCommande extends Model
             'ENVOYÉ' => 'Envoyé',
             'REÇU PARTIELLEMENT' => 'Reçu partiellement',
             'REÇU' => 'Reçu',
-            'ANNULE' => 'Annulé'
+            'CLOTURE' => 'Clôturé'
         ];
         return $statuts[$this->statut] ?? $this->statut;
     }

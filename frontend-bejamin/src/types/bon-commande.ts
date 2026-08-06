@@ -7,7 +7,7 @@ export interface BonCommande {
   magasin_destination?: { id: number; nom: string } | null;
   date_commande: string;
   date_livraison_prevue: string | null;
-  statut: 'BROUILLON' | 'ENVOYÉ' | 'REÇU PARTIELLEMENT' | 'REÇU' | 'ANNULE';
+  statut: 'BROUILLON' | 'ENVOYÉ' | 'REÇU PARTIELLEMENT' | 'REÇU' | 'CLOTURE';
   montant_total_ht: number;
   id_devise: number | null;
   devise?: { id: number; code: string; nom: string; symbole: string } | null;

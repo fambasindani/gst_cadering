@@ -236,7 +236,7 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
         Route::patch('bons-commande/{id}/valider', [BonCommandeController::class, 'validateBon'])->middleware('permission:config:bon_commande:validate');
         Route::patch('bons-commande/{id}/rejeter', [BonCommandeController::class, 'rejectBon'])->middleware('permission:config:bon_commande:validate');
         Route::patch('bons-commande/{id}/recevoir', [BonCommandeController::class, 'receive'])->middleware('permission:config:bon_commande:receive');
-        Route::patch('bons-commande/{id}/annuler', [BonCommandeController::class, 'cancel'])->middleware('permission:config:bon_commande:update');
+        Route::patch('bons-commande/{id}/cloturer', [BonCommandeController::class, 'cloturer'])->middleware('permission:config:bon_commande:update');
 
         // ---------- Retours ----------
         Route::get('retours', [RetourController::class, 'index'])->middleware('permission:config:retours:view');

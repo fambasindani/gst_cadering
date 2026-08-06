@@ -22,7 +22,7 @@ const statutConfig: Record<string, { label: string; color: string }> = {
   ENVOYÉ: { label: 'Envoyé', color: 'bg-blue-100 text-blue-800' },
   'REÇU PARTIELLEMENT': { label: 'Reçu partiellement', color: 'bg-purple-100 text-purple-800' },
   REÇU: { label: 'Reçu', color: 'bg-emerald-100 text-emerald-800' },
-  ANNULE: { label: 'Annulé', color: 'bg-red-100 text-red-800' },
+  CLOTURE: { label: 'Clôturé', color: 'bg-red-100 text-red-800' },
 };
 
 const validationStatutConfig: Record<string, { label: string; color: string }> = {

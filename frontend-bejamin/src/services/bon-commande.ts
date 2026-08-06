@@ -23,8 +23,8 @@ export const bonCommandeService = {
   reject: (id: number) =>
     api.patch<BonCommandeResponse>(`/config/bons-commande/${id}/rejeter`),
 
-  cancel: (id: number) =>
-    api.patch<BonCommandeResponse>(`/config/bons-commande/${id}/annuler`),
+  cloturer: (id: number) =>
+    api.patch<BonCommandeResponse>(`/config/bons-commande/${id}/cloturer`),
 
   getPartenaires: (params?: Record<string, string>) =>
     api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/partenaires', { params: { ...params, per_page: '200' } }),

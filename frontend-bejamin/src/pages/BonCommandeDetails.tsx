@@ -25,7 +25,7 @@ const statutConfig: Record<string, { label: string; color: string; icon: typeof 
   ENVOYÉ: { label: 'Envoyé', color: 'bg-blue-100 text-blue-800 border-blue-200', icon: Truck },
   'REÇU PARTIELLEMENT': { label: 'Reçu partiellement', color: 'bg-purple-100 text-purple-800 border-purple-200', icon: Truck },
   REÇU: { label: 'Reçu', color: 'bg-emerald-100 text-emerald-800 border-emerald-200', icon: CheckCircle },
-  ANNULE: { label: 'Annulé', color: 'bg-red-100 text-red-800 border-red-200', icon: Ban },
+  CLOTURE: { label: 'Clôturé', color: 'bg-red-100 text-red-800 border-red-200', icon: Ban },
 };
 
 export function BonCommandeDetails() {
@@ -270,7 +270,7 @@ export function BonCommandeDetails() {
                 <Button onClick={() => setConfirmCancel(true)}
                   disabled={actionLoading} variant="outline" className="w-full justify-start border-red-200 text-red-700 hover:bg-red-50">
                   {actionLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Ban className="w-4 h-4 mr-2" />}
-                  Annuler
+                  Clôturer
                 </Button>
               ) : null}
 
@@ -325,12 +325,12 @@ export function BonCommandeDetails() {
         onClose={() => setConfirmCancel(false)}
         onConfirm={async () => {
           setConfirmCancel(false);
-          await doAction('annulation', () => bonCommandeService.cancel(Number(id)), 'Bon annulé');
+          await doAction('clôture', () => bonCommandeService.cloturer(Number(id)), 'Bon clôturé');
         }}
-        title="Annuler le bon"
-        message={`Confirmer l'annulation du bon "${bon?.numero_commande || ''}" ?`}
+        title="Clôturer le bon"
+        message={`Confirmer la clôture du bon "${bon?.numero_commande || ''}" ?`}
         variant="danger"
-        confirmLabel="Annuler"
+        confirmLabel="Clôturer"
         loading={actionLoading}
       />
     </div>

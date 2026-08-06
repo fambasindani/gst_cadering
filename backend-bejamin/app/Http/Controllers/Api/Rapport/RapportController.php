@@ -43,7 +43,7 @@ class RapportController extends Controller
             $achatsLessiviels = 0;
 
             $bcs = BonCommande::with('lignes.produit.categorie')
-                ->where('statut', '!=', 'ANNULE');
+                ->where('statut', '!=', 'CLOTURE');
             if ($dateDebut) {
                 $bcs->whereDate('date_commande', '>=', $dateDebut);
             }
@@ -687,7 +687,7 @@ class RapportController extends Controller
                     if ($dateFin) {
                         $q->whereDate('date_commande', '<=', $dateFin);
                     }
-                    $q->where('statut', '!=', 'ANNULE');
+                    $q->where('statut', '!=', 'CLOTURE');
                 },
                 'bonCommandes.lignes.produit.unite',
             ])->where('type_client', 'aerien');
