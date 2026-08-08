@@ -26,11 +26,22 @@ export interface TopProduit {
   total_vendu: number;
 }
 
-export interface TopClient {
+export interface TopFournisseur {
   id: number;
   nom: string;
   total_commandes: number;
   total_montant: number;
+}
+
+export interface VariationPrix {
+  id: number;
+  nom: string;
+  ancien_prix: number;
+  nouveau_prix: number;
+  variation: number;
+  pourcentage: number;
+  type: 'hausse' | 'baisse';
+  date: string;
 }
 
 export interface RepartitionCategorie {
@@ -70,11 +81,12 @@ export interface DashboardData {
   statistiques: DashboardStats;
   evolution_commandes: EvolutionCommande[];
   top_produits: TopProduit[];
-  top_clients: TopClient[];
+  top_fournisseurs: TopFournisseur[];
   repartition_categorie: RepartitionCategorie[];
   alertes: {
     stock_bas: AlerteStockBas[];
     peremption_proche: AlertePeremption[];
+    variations_prix: VariationPrix[];
   };
   activites_recentes: ActiviteRecente[];
 }

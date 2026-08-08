@@ -18,7 +18,7 @@ export interface Lot {
   devise?: { id: number; code: string; nom: string; symbole: string } | null;
   valide_par: number | null;
   date_validation: string | null;
-  statut_validation: 'EN ATTENTE' | 'VALIDÉ' | 'REJETÉ';
+  statut_validation: 'BROUILLON' | 'EN ATTENTE' | 'VALIDÉ' | 'REJETÉ';
   commentaire: string | null;
 }
 

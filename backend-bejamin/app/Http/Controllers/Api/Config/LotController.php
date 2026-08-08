@@ -26,6 +26,8 @@ class LotController extends Controller
             $statut = $request->input('statut');
             $dateDebut = $request->input('date_debut');
             $dateFin = $request->input('date_fin');
+            $peremptionProche = $request->input('peremption_proche');
+            $joursPeremption = (int) $request->input('jours', 7);
             $sortBy = $request->input('sort_by', 'id');
             $sortOrder = $request->input('sort_order', 'desc');
 
@@ -60,6 +62,14 @@ class LotController extends Controller
 
             if ($dateFin) {
                 $query->whereDate('date_reception', '<=', $dateFin);
+            }
+
+            if (in_array($peremptionProche, ['1', 'true', 'oui', 'on'])) {
+                $query->where('quantite_disponible', '>', 0)
+                    ->where('statut_validation', 'VALIDÉ')
+                    ->whereBetween('date_peremption', [now(), now()->addDays($joursPeremption)]);
+                $sortBy = 'date_peremption';
+                $sortOrder = 'asc';
             }
 
             $data = $query->orderBy($sortBy, $sortOrder)->paginate($perPage);
@@ -122,6 +132,8 @@ class LotController extends Controller
                 'commentaire' => $validated['commentaire'] ?? null,
                 'statut_validation' => 'EN ATTENTE',
             ]);
+
+            $lot->enregistrerHistoriquePrix('Réception de lot');
 
             // Créer le mouvement d'entrée
             MouvementStock::create([
@@ -217,7 +229,25 @@ class LotController extends Controller
                 $validated['quantite_disponible'] = max(0, $lot->quantite_disponible + ($validated['quantite_recue'] - $lot->quantite_recue));
             }
 
+            // Si le prix ou la devise change, enregistrer la variation dans l'historique
+            $prixAvant = $lot->prix_achat_ht_unitaire;
+            $deviseAvant = $lot->id_devise;
+
             $lot->update($validated);
+
+            if (isset($validated['prix_achat_ht_unitaire'], $validated['id_devise'])) {
+                $nouveauPrix = $validated['prix_achat_ht_unitaire'];
+                $nouvelleDevise = $validated['id_devise'];
+            } else {
+                $nouveauPrix = $validated['prix_achat_ht_unitaire'] ?? $prixAvant;
+                $nouvelleDevise = $validated['id_devise'] ?? $deviseAvant;
+            }
+
+            if ($nouveauPrix !== null && $nouvelleDevise !== null
+                && ((float) $nouveauPrix != (float) $prixAvant || $nouvelleDevise != $deviseAvant)) {
+                $lot->refresh();
+                $lot->enregistrerHistoriquePrix('Modification du lot ' . $lot->numero_lot);
+            }
 
             $champs = array_keys($validated);
             $message = 'Lot mis à jour avec succès';

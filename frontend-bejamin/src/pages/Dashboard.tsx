@@ -12,13 +12,13 @@ import type { MenuItem } from '../types';
 import {
   Package, ArrowRight, AlertTriangle, Users, Warehouse, PackageX, FileText,
   TrendingUp, PieChart as PieChartIcon, Trophy, Crown, Bell, Activity,
-  Layers, ShoppingCart, CalendarClock, Filter, RotateCcw,
+  Layers, ShoppingCart, CalendarClock, Filter, RotateCcw, ArrowUpRight, ArrowDownRight,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { formatCurrency } from '../lib/format';
 import { dashboardService } from '../services/dashboard';
 import type {
-  DashboardData, ActiviteRecente, TopProduit, TopClient,
+  DashboardData, ActiviteRecente, TopProduit, TopFournisseur, VariationPrix,
 } from '../types/dashboard';
 import Skeleton from 'react-loading-skeleton';
 import 'react-loading-skeleton/dist/skeleton.css';
@@ -263,7 +263,7 @@ export function Dashboard() {
             <SummaryItem icon={Layers} label="Stock total" value={`${stats.stock_total} unités`} color="text-blue-600" />
             <SummaryItem icon={TrendingUp} label="Valeur du stock" value={formatCurrency(stats.valeur_stock)} color="text-emerald-600" />
             <SummaryItem icon={ShoppingCart} label="Commandes validées" value={stats.commandes_validees} color="text-purple-600" />
-            <SummaryItem icon={CalendarClock} label="Péremption ≤ 7 j" value={stats.lots_peremption_proche} color="text-orange-600" />
+            <SummaryItem icon={CalendarClock} label="Péremption 7 j" value={stats.lots_peremption_proche} color="text-orange-600" />
           </div>
         </div>
       )}
@@ -354,8 +354,8 @@ export function Dashboard() {
         </Card>
       </div>
 
-      {/* Top produits / Top clients / Alertes */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      {/* Top produits / Top fournisseurs / Alertes / Variations de prix */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="border-gray-100 shadow-sm">
           <CardHeader className="pb-3 border-b border-gray-100">
             <CardTitle className="text-lg font-bold text-gray-800 flex items-center gap-2">
@@ -380,17 +380,17 @@ export function Dashboard() {
           <CardHeader className="pb-3 border-b border-gray-100">
             <CardTitle className="text-lg font-bold text-gray-800 flex items-center gap-2">
               <span className="p-2 rounded-lg bg-emerald-50 text-emerald-600"><Crown className="w-4 h-4" /></span>
-              Top clients
+              Top fournisseurs
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-5 space-y-4">
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} height={32} />)
-            ) : !data?.top_clients?.length ? (
-              <div className="text-center py-10 text-gray-400 text-sm">Aucun client</div>
+            ) : !data?.top_fournisseurs?.length ? (
+              <div className="text-center py-10 text-gray-400 text-sm">Aucun fournisseur</div>
             ) : (
-              data.top_clients.slice(0, 5).map((c: TopClient, idx: number) => (
-                <TopClientRow key={c.id} client={c} rank={idx} />
+              data.top_fournisseurs.slice(0, 5).map((f: TopFournisseur, idx: number) => (
+                <TopFournisseurRow key={f.id} fournisseur={f} rank={idx} />
               ))
             )}
           </CardContent>
@@ -417,23 +417,47 @@ export function Dashboard() {
                   label="Stock bas"
                   count={data?.alertes?.stock_bas?.length ?? 0}
                   className="bg-orange-50 text-orange-700"
+                  onClick={() => navigate('/rapports/stock-bas')}
                 />
                 <AlerteBadge
                   label="Péremption proche"
                   count={data?.alertes?.peremption_proche?.length ?? 0}
                   className="bg-red-50 text-red-700"
+                  onClick={() => navigate('/stock/lot-serie?peremption_proche=1')}
                 />
                 <AlerteBadge
                   label="Retours en attente"
                   count={stats?.retours_en_attente ?? 0}
                   className="bg-purple-50 text-purple-700"
+                  onClick={() => navigate('/stock/retour?statut=EN%20ATTENTE')}
                 />
                 <AlerteBadge
                   label="Commandes à valider"
                   count={stats?.commandes_en_attente ?? 0}
                   className="bg-blue-50 text-blue-700"
+                  onClick={() => navigate('/validation/bon-commande')}
                 />
               </>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="border-gray-100 shadow-sm">
+          <CardHeader className="pb-3 border-b border-gray-100">
+            <CardTitle className="text-lg font-bold text-gray-800 flex items-center gap-2">
+              <span className="p-2 rounded-lg bg-blue-50 text-blue-600"><TrendingUp className="w-4 h-4" /></span>
+              Variations de prix
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-5 space-y-2">
+            {loading ? (
+              Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} height={32} />)
+            ) : !data?.alertes?.variations_prix?.length ? (
+              <div className="text-center py-10 text-gray-400 text-sm">Aucune variation de prix</div>
+            ) : (
+              data.alertes.variations_prix.slice(0, 5).map((v: VariationPrix) => (
+                <VariationPrixRow key={v.id} variation={v} onClick={() => navigate(`/produits/${v.id}`)} />
+              ))
             )}
           </CardContent>
         </Card>
@@ -540,7 +564,7 @@ function TopProduitRow({ produit, rank, max }: { produit: TopProduit; rank: numb
   );
 }
 
-function TopClientRow({ client, rank }: { client: TopClient; rank: number }) {
+function TopFournisseurRow({ fournisseur, rank }: { fournisseur: TopFournisseur; rank: number }) {
   return (
     <div className="flex items-center gap-3">
       <span className={cn(
@@ -550,11 +574,40 @@ function TopClientRow({ client, rank }: { client: TopClient; rank: number }) {
         {rank + 1}
       </span>
       <div className="flex-1 min-w-0">
-        <p className="truncate text-sm font-medium text-gray-800">{client.nom}</p>
-        <p className="text-xs text-gray-400">{client.total_commandes} commande{client.total_commandes > 1 ? 's' : ''}</p>
+        <p className="truncate text-sm font-medium text-gray-800">{fournisseur.nom}</p>
+        <p className="text-xs text-gray-400">{fournisseur.total_commandes} bon{fournisseur.total_commandes > 1 ? 's' : ''} de commande</p>
       </div>
-      <span className="text-sm font-bold text-emerald-600">{formatCurrency(client.total_montant)}</span>
+      <span className="text-sm font-bold text-emerald-600">{formatCurrency(fournisseur.total_montant)}</span>
     </div>
+  );
+}
+
+function VariationPrixRow({ variation, onClick }: { variation: VariationPrix; onClick: () => void }) {
+  const isHausse = variation.type === 'hausse';
+  const Icon = isHausse ? ArrowUpRight : ArrowDownRight;
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full flex items-center gap-3 px-2 py-1.5 rounded-lg bg-gray-50 transition-all hover:bg-gray-100 hover:shadow-sm active:scale-[0.99] cursor-pointer group text-left"
+    >
+      <span className={cn(
+        'flex h-6 w-6 shrink-0 items-center justify-center rounded-full',
+        isHausse ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700',
+      )}>
+        <Icon className="w-3.5 h-3.5" />
+      </span>
+      <div className="flex-1 min-w-0">
+        <p className="truncate text-sm font-medium text-gray-800">{variation.nom}</p>
+        <p className="text-xs text-gray-400">
+          {formatCurrency(variation.ancien_prix)} → {formatCurrency(variation.nouveau_prix)}
+        </p>
+      </div>
+      <span className={cn('text-xs font-bold', isHausse ? 'text-emerald-600' : 'text-red-600')}>
+        {isHausse ? '+' : ''}{variation.pourcentage}%
+      </span>
+      <ArrowRight className="w-3.5 h-3.5 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+    </button>
   );
 }
 
@@ -581,11 +634,18 @@ function ActiviteItem({ activity }: { activity: ActiviteRecente }) {
   );
 }
 
-function AlerteBadge({ label, count, className }: { label: string; count: number; className: string }) {
+function AlerteBadge({ label, count, className, onClick }: { label: string; count: number; className: string; onClick: () => void }) {
   return (
-    <div className={cn('flex items-center justify-between px-3 py-2 rounded-lg', className)}>
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn('w-full flex items-center justify-between px-3 py-2 rounded-lg transition-all hover:brightness-95 active:scale-[0.99] cursor-pointer group', className)}
+    >
       <span className="text-sm font-medium">{label}</span>
-      <span className="text-sm font-bold">{count}</span>
-    </div>
+      <span className="flex items-center gap-1.5">
+        <span className="text-sm font-bold">{count}</span>
+        <ArrowRight className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+      </span>
+    </button>
   );
 }

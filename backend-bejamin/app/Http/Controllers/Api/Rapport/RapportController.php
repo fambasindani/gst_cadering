@@ -1400,6 +1400,7 @@ class RapportController extends Controller
             foreach ($produits as $produit) {
                 $lots = $produit->lots()
                     ->with('magasin')
+                    ->where('statut_validation', 'VALIDÉ')
                     ->when($magasinId, fn($q) => $q->where('id_magasin', $magasinId))
                     ->get();
 

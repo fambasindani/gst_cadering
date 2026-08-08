@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -20,6 +20,7 @@ import {
 import { cn } from '../lib/utils';
 
 const validationConfig: Record<string, { label: string; color: string }> = {
+  'BROUILLON': { label: 'En attente', color: 'bg-gray-100 text-gray-700 border border-gray-300' },
   'EN ATTENTE': { label: 'En attente', color: 'bg-amber-100 text-amber-800' },
   'VALIDÉ': { label: 'Validé', color: 'bg-emerald-100 text-emerald-800' },
   'REJETÉ': { label: 'Rejeté', color: 'bg-red-100 text-red-800' },
@@ -39,7 +40,10 @@ function isPerime(datePeremption: string): boolean {
 export function StockLotSerie() {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const isAdmin = useIsAdmin();
+
+  const [peremptionProche, setPeremptionProche] = useState(searchParams.get('peremption_proche') === '1');
 
   const [data, setData] = useState<Lot[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,6 +70,7 @@ export function StockLotSerie() {
       if (searchTerm) params.search = searchTerm;
       if (dateDebut) params.date_debut = dateDebut;
       if (dateFin) params.date_fin = dateFin;
+      if (peremptionProche) params.peremption_proche = '1';
       const res = await lotService.list(params);
       if (res.success) {
         setData(res.data.data);
@@ -77,7 +82,7 @@ export function StockLotSerie() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, searchTerm, dateDebut, dateFin, pageSize]);
+  }, [currentPage, searchTerm, dateDebut, dateFin, pageSize, peremptionProche]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -137,7 +142,7 @@ export function StockLotSerie() {
           <p className="text-sm text-gray-500 mt-1">{loading ? '...' : `${total} lot${total > 1 ? 's' : ''}`}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => { setSearchInput(''); setSearchTerm(''); setDateDebut(''); setDateFin(''); setCurrentPage(1); }} className="border-gray-300 text-gray-700 hover:bg-gray-50" title="Actualiser">
+          <Button variant="outline" onClick={() => { setSearchInput(''); setSearchTerm(''); setDateDebut(''); setDateFin(''); setPeremptionProche(false); setSearchParams({}); setCurrentPage(1); }} className="border-gray-300 text-gray-700 hover:bg-gray-50" title="Actualiser">
             <RefreshCw className={cn('h-4 w-4 mr-2', loading && 'animate-spin')} />
             Actualiser
           </Button>
@@ -177,9 +182,27 @@ export function StockLotSerie() {
         </div>
       </div>
 
+      {peremptionProche && (
+        <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-red-50 border border-red-200">
+          <div className="flex items-center gap-2 text-sm font-medium text-red-700">
+            <Calendar className="w-4 h-4" />
+            Lots proches de la péremption (7 jours ou moins)
+          </div>
+          <button
+            type="button"
+            onClick={() => { setPeremptionProche(false); setSearchParams({}); setCurrentPage(1); }}
+            className="text-xs font-semibold text-red-600 hover:text-red-800 hover:underline"
+          >
+            Afficher tous les lots
+          </button>
+        </div>
+      )}
+
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-semibold">Liste des lots</CardTitle>
+          <CardTitle className="text-lg font-semibold">
+            {peremptionProche ? 'Lots proches de la péremption' : 'Liste des lots'}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (

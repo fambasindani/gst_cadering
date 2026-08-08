@@ -209,6 +209,8 @@ export function ProduitDetails() {
 
   const historique = produit.historique_prix || [];
   const latestPrice = historique[0];
+  const prixPondere = stock?.prix_pondere ?? null;
+  const devisePonderee = stock?.devise_ponderee ?? null;
 
   return (
     <div className="space-y-6">
@@ -268,12 +270,14 @@ export function ProduitDetails() {
                 <DetailItem icon={<Scale className="w-4 h-4" />} label="Unité" value={produit.unite ? `${produit.unite.nom} (${produit.unite.symbole})` : '-'} />
                 <DetailItem icon={<Building2 className="w-4 h-4" />} label="Fournisseur" value={produit.partenaire_principal?.nom || '-'} />
                 <DetailItem icon={<AlertCircle className="w-4 h-4" />} label="Seuil d'alerte" value={String(produit.seuil_alerte ?? 0)} />
-                {latestPrice ? (
+                {(prixPondere != null || latestPrice) ? (
                   <>
                     <DetailItem
                       icon={<DollarSign className="w-4 h-4" />}
-                      label="Prix d'achat HT"
-                      value={formatCurrency(latestPrice.prix_achat_ht, latestPrice.devise?.code)}
+                      label="Prix moy. pondéré"
+                      value={prixPondere != null
+                        ? formatCurrency(prixPondere, devisePonderee?.code || latestPrice?.devise?.code)
+                        : formatCurrency(latestPrice!.prix_achat_ht, latestPrice!.devise?.code)}
                     />
                   </>
                 ) : null}
@@ -432,27 +436,31 @@ export function ProduitDetails() {
             </CardContent>
           </Card>
 
-          {latestPrice ? (
+          {(prixPondere != null || latestPrice) ? (
             <Card className="border-0 shadow-sm">
               <CardHeader className="pb-3 border-b border-gray-100">
                 <CardTitle className="text-lg font-semibold flex items-center gap-2">
                   <DollarSign className="w-5 h-5 text-royal-600" />
-                  Dernier prix
+                  Prix moyen pondéré
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
                 <div>
                   <div className="text-sm text-gray-500">Prix d'achat HT</div>
                   <div className="text-2xl font-bold text-gray-900 font-mono">
-                    {formatCurrency(latestPrice.prix_achat_ht)}
-                    <span className="text-sm font-medium text-gray-500 ml-1">{latestPrice.devise?.code || ''}</span>
+                    {prixPondere != null
+                      ? formatCurrency(prixPondere)
+                      : formatCurrency(latestPrice!.prix_achat_ht)}
+                    <span className="text-sm font-medium text-gray-500 ml-1">
+                      {devisePonderee?.code || latestPrice?.devise?.code || ''}
+                    </span>
                   </div>
                 </div>
                 <div className="text-xs text-gray-400 pt-2 border-t border-gray-100">
                   <Calendar className="w-3 h-3 inline mr-1" />
-                  Depuis le {latestPrice.date_application
-                    ? new Date(latestPrice.date_application).toLocaleDateString('fr-FR')
-                    : '-'
+                  {prixPondere != null
+                    ? 'Calculé sur les lots disponibles'
+                    : 'Aucun lot en stock — dernier prix historique'
                   }
                 </div>
               </CardContent>

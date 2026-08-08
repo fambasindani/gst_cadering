@@ -44,7 +44,7 @@ export function EntreeStockForm() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const params: Record<string, string> = { per_page: String(pageSize), page: String(currentPage), sort_by: 'date_mouvement', sort_order: 'desc', sens: '1' };
+      const params: Record<string, string> = { per_page: String(pageSize), page: String(currentPage), sort_by: 'date_mouvement', sort_order: 'desc', sens: '1', en_attente_premier: '1' };
       if (searchTerm) params.search = searchTerm;
       const res = await mouvementStockService.list(params);
       if (res.success) {

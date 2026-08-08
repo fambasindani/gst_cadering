@@ -40,7 +40,8 @@ class BonCommandeController extends Controller
                 'devise',
                 'utilisateur',
                 'validePar',
-                'lignes.produit'
+                'lignes.produit',
+                'lignes.produit.historiquePrix'
             ]);
 
             if ($search) {
@@ -72,6 +73,24 @@ class BonCommandeController extends Controller
             }
 
             $data = $query->orderBy($sortBy, $sortOrder)->paginate($perPage);
+
+            // Ajouter le prix actuel (dernier prix d'achat) et le montant recalculé au prix actuel
+            foreach ($data as $bon) {
+                $montantActuel = 0;
+                foreach ($bon->lignes as $ligne) {
+                    $produit = $ligne->produit;
+                    $dernierPrix = $produit && $produit->historiquePrix
+                        ? $produit->historiquePrix
+                            ->filter(fn($h) => $h->prix_achat_ht !== null)
+                            ->sortByDesc('date_application')
+                            ->first()
+                        : null;
+                    $prixActuel = $dernierPrix ? (float) $dernierPrix->prix_achat_ht : (float) $ligne->prix_unitaire_ht;
+                    $ligne->prix_actuel = $prixActuel;
+                    $montantActuel += $ligne->quantite_commandee * $prixActuel;
+                }
+                $bon->montant_actuel = round($montantActuel, 2);
+            }
 
             return response()->json([
                 'success' => true,
@@ -213,6 +232,67 @@ class BonCommandeController extends Controller
                 'lignes.produit',
                 'lignes.devise'
             ])->findOrFail($id);
+
+            // Montant reçu au prix de réception (somme lot × quantité × prix_achat du lot)
+            // + détail de chaque réception (traçabilité) : date, lot, quantité, prix, montant
+            $receptionsParReference = [];
+            foreach ($bonCommande->lignes as $ligne) {
+                $mouvements = MouvementStock::where('reference_document', $bonCommande->numero_commande)
+                    ->whereHas('lot', function($q) use ($ligne) {
+                        $q->where('id_produit', $ligne->id_produit);
+                    })
+                    ->with('lot')
+                    ->orderBy('id', 'asc')
+                    ->get();
+                $montantRecu = 0;
+                $receptions = [];
+                foreach ($mouvements as $mouv) {
+                    if (!$mouv->lot) continue;
+                    $prix = $mouv->lot->prix_achat_ht_unitaire ?? $ligne->prix_unitaire_ht;
+                    $montantRecu += $mouv->quantite * $prix;
+                    $dateReception = $mouv->date_mouvement ? $mouv->date_mouvement->format('Y-m-d') : null;
+                    $receptions[] = [
+                        'id' => $mouv->id,
+                        'reference_reception' => $mouv->reference_reception,
+                        'date' => $dateReception,
+                        'numero_lot' => $mouv->lot->numero_lot,
+                        'quantite' => $mouv->quantite,
+                        'prix_unitaire' => round((float) $prix, 2),
+                        'montant' => round($mouv->quantite * $prix, 2),
+                        'statut' => $mouv->statut_validation,
+                    ];
+                    $cle = $mouv->reference_reception
+                        ?: ('LEGACY-' . ($mouv->date_mouvement ? $mouv->date_mouvement->format('Y-m-d H:i:s') : $mouv->id));
+                    $receptionsParReference[$cle][] = [
+                        'id' => $mouv->id,
+                        'date' => $dateReception,
+                        'id_ligne' => $ligne->id,
+                        'produit' => $ligne->produit->nom ?? '',
+                        'code_article' => $ligne->produit->code_article ?? '',
+                        'numero_lot' => $mouv->lot->numero_lot,
+                        'quantite' => $mouv->quantite,
+                        'prix_unitaire' => round((float) $prix, 2),
+                        'montant' => round($mouv->quantite * $prix, 2),
+                        'statut' => $mouv->statut_validation,
+                    ];
+                }
+                $ligne->montant_recu = round($montantRecu, 2);
+                $ligne->receptions = $receptions;
+            }
+            $bonCommande->receptions_liste = collect($receptionsParReference)
+                ->map(function ($items, $ref) {
+                    $montant = collect($items)->sum('montant');
+                    $quantite = collect($items)->sum('quantite');
+                    return [
+                        'reference_reception' => $ref,
+                        'date' => $items[0]['date'] ?? null,
+                        'quantite' => $quantite,
+                        'montant' => round($montant, 2),
+                        'lignes' => $items,
+                    ];
+                })
+                ->sortByDesc(fn($r) => $r['date'])
+                ->values();
 
             return response()->json([
                 'success' => true,
@@ -438,6 +518,8 @@ class BonCommandeController extends Controller
                 'receptions.*.numero_lot' => 'nullable|string|max:50',
                 'receptions.*.date_peremption' => 'required|date|after_or_equal:today',
                 'receptions.*.prix_achat_ht_unitaire' => 'nullable|numeric|min:0',
+                'receptions.*.date_reception' => 'nullable|date',
+                'receptions.*.reference_document' => 'nullable|string|max:100',
                 'corrections' => 'nullable|array',
                 'corrections.*.id_ligne_commande' => 'required|exists:ligne_commande,id',
                 'corrections.*.nouvelle_quantite_recue' => 'required|integer|min:0',
@@ -450,9 +532,33 @@ class BonCommandeController extends Controller
                 ], 422);
             }
 
+            // Déterminer si le bon restera partiel (REÇU PARTIELLEMENT) après cette opération.
+            // Si oui, les lots créés seront en BROUILLON et à valider dans la page « Entrée stock ».
+            $quantitesApres = [];
+            foreach ($bonCommande->lignes as $ligne) {
+                $quantitesApres[$ligne->id] = $ligne->quantite_recue;
+            }
+            foreach ($validated['corrections'] ?? [] as $correction) {
+                $quantitesApres[$correction['id_ligne_commande']] = (int) $correction['nouvelle_quantite_recue'];
+            }
+            foreach ($validated['receptions'] ?? [] as $reception) {
+                $idLigne = $reception['id_ligne_commande'];
+                $quantitesApres[$idLigne] = ($quantitesApres[$idLigne] ?? 0) + (int) $reception['quantite_recue'];
+            }
+            $restePartiel = false;
+            foreach ($bonCommande->lignes as $ligne) {
+                if (($quantitesApres[$ligne->id] ?? 0) < $ligne->quantite_commandee) {
+                    $restePartiel = true;
+                    break;
+                }
+            }
+
             DB::beginTransaction();
 
             try {
+                // Référence unique de cette opération de réception (traçabilité PDF)
+                $referenceReception = 'REC-' . date('ym') . '-' . str_pad((int) MouvementStock::where('reference_reception', 'LIKE', 'REC-' . date('ym') . '-%')->count() + 1, 4, '0', STR_PAD_LEFT);
+
                 // 1. Appliquer les corrections (ADMIN) : ajuster la quantité reçue + rééquilibrer le stock
                 foreach ($validated['corrections'] ?? [] as $correction) {
                     $ligne = LigneCommande::findOrFail($correction['id_ligne_commande']);
@@ -484,7 +590,7 @@ class BonCommandeController extends Controller
                             $mouv->quantite += $delta;
                             $mouv->save();
                         } else {
-                            $this->creerLotReception($bonCommande, $ligne, $delta, null, now()->toDateString(), null);
+                            $this->creerLotReception($bonCommande, $ligne, $delta, null, now()->toDateString(), null, null, null, $restePartiel, $referenceReception);
                         }
                     } else {
                         // Diminution : retirer du stock des lots de réception (du plus récent au plus ancien)
@@ -545,7 +651,11 @@ class BonCommandeController extends Controller
                         $reception['quantite_recue'],
                         $reception['numero_lot'] ?? null,
                         $reception['date_peremption'],
-                        $reception['prix_achat_ht_unitaire'] ?? null
+                        $reception['prix_achat_ht_unitaire'] ?? null,
+                        $reception['date_reception'] ?? null,
+                        $reception['reference_document'] ?? null,
+                        $restePartiel,
+                        $referenceReception
                     );
 
                     // Mettre à jour la ligne de commande
@@ -564,9 +674,12 @@ class BonCommandeController extends Controller
 
                 DB::commit();
 
+                $data = $bonCommande->load(['partenaire', 'magasinDestination', 'lignes'])->toArray();
+                $data['reference_reception'] = $referenceReception;
+
                 return response()->json([
                     'success' => true,
-                    'data' => $bonCommande->load(['partenaire', 'magasinDestination', 'lignes']),
+                    'data' => $data,
                     'message' => 'Réception effectuée avec succès'
                 ]);
 
@@ -591,11 +704,15 @@ class BonCommandeController extends Controller
     }
 
     /**
-     * Créer un lot de réception + son mouvement d'entrée
+     * Créer un lot de réception + son mouvement d'entrée.
+     * Si $brouillon = true (bon partiellement reçu), le lot est créé en 'BROUILLON'
+     * et le mouvement en 'EN ATTENTE' : il devra être validé dans la page « Entrée stock ».
      */
-    private function creerLotReception(BonCommande $bonCommande, LigneCommande $ligne, int $quantite, ?string $numeroLot, string $datePeremption, $prixAchat)
+    private function creerLotReception(BonCommande $bonCommande, LigneCommande $ligne, int $quantite, ?string $numeroLot, string $datePeremption, $prixAchat, $dateReception = null, $referenceDocument = null, bool $brouillon = false, $referenceReception = null)
     {
         $numeroLot = $numeroLot ?: CodeGenerator::lot();
+        $dateReception = $dateReception ?: now()->toDateTimeString();
+        $referenceDocument = $referenceDocument ?: $bonCommande->numero_commande;
 
         $lot = Lot::create([
             'id_produit' => $ligne->id_produit,
@@ -605,23 +722,34 @@ class BonCommandeController extends Controller
             'quantite_recue' => $quantite,
             'quantite_disponible' => $quantite,
             'date_peremption' => $datePeremption,
-            'date_reception' => now(),
+            'date_reception' => $dateReception,
             'id_partenaire' => $bonCommande->id_partenaire,
             'prix_achat_ht_unitaire' => $prixAchat ?? $ligne->prix_unitaire_ht,
             'id_devise' => $ligne->id_devise,
-            'statut_validation' => 'EN ATTENTE',
+            'statut_validation' => $brouillon ? 'BROUILLON' : 'VALIDÉ',
+            'valide_par' => $brouillon ? null : Auth::id(),
+            'date_validation' => $brouillon ? null : now(),
         ]);
 
         MouvementStock::create([
             'id_lot' => $lot->id,
             'id_type_mouvement' => 1, // Entrée réception
             'quantite' => $quantite,
-            'date_mouvement' => now(),
+            'date_mouvement' => $dateReception,
             'id_utilisateur' => Auth::id(),
-            'reference_document' => $bonCommande->numero_commande,
+            'reference_document' => $referenceDocument,
+            'reference_reception' => $referenceReception,
             'commentaire' => 'Réception du bon de commande #' . $bonCommande->numero_commande,
-            'statut_validation' => 'EN ATTENTE',
+            'statut_validation' => $brouillon ? 'EN ATTENTE' : 'VALIDÉ',
+            'valide_par' => $brouillon ? null : Auth::id(),
+            'date_validation' => $brouillon ? null : now(),
         ]);
+
+        // Enregistrer le prix reçu dans l'historique des prix du produit
+        // (pour un brouillon, l'historique est enregistré à la validation dans « Entrée stock »)
+        if (!$brouillon) {
+            $lot->enregistrerHistoriquePrix('Réception du bon de commande #' . $bonCommande->numero_commande);
+        }
 
         return $lot;
     }

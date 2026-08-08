@@ -21,6 +21,7 @@ class MouvementStock extends Model
         'date_mouvement',
         'id_utilisateur',
         'reference_document',
+        'reference_reception',
         'commentaire',
         'id_periode_inventaire',
         'valide_par',

@@ -86,6 +86,8 @@ export interface StockResponse {
     stock_par_magasin: StockParMagasin[];
     seuil_alerte: number;
     statut: string;
+    prix_pondere: number | null;
+    devise_ponderee?: { id: number; code: string; nom: string; symbole: string } | null;
   };
   message: string;
 }

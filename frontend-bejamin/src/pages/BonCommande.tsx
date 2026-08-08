@@ -187,7 +187,8 @@ export function BonCommande() {
                     <TableHead className="font-semibold text-gray-600">Partenaire</TableHead>
                     <TableHead className="hidden md:table-cell font-semibold text-gray-600">Destination</TableHead>
                     <TableHead className="hidden lg:table-cell font-semibold text-gray-600">Date</TableHead>
-                    <TableHead className="text-right font-semibold text-gray-600">Montant</TableHead>
+                    <TableHead className="text-right font-semibold text-gray-600">Montant (saisi)</TableHead>
+                    <TableHead className="text-right font-semibold text-gray-600">Montant (prix actuel)</TableHead>
                     <TableHead className="text-center font-semibold text-gray-600">Statut</TableHead>
                     <TableHead className="text-center font-semibold text-gray-600">Actions</TableHead>
                   </TableRow>
@@ -199,6 +200,7 @@ export function BonCommande() {
                       <TableCell><div className="h-5 w-32 bg-gray-200 rounded" /></TableCell>
                       <TableCell className="hidden md:table-cell"><div className="h-5 w-24 bg-gray-200 rounded" /></TableCell>
                       <TableCell className="hidden lg:table-cell"><div className="h-5 w-20 bg-gray-200 rounded" /></TableCell>
+                      <TableCell className="text-right"><div className="h-5 w-16 bg-gray-200 rounded ml-auto" /></TableCell>
                       <TableCell className="text-right"><div className="h-5 w-16 bg-gray-200 rounded ml-auto" /></TableCell>
                       <TableCell className="text-center"><div className="h-6 w-20 bg-gray-200 rounded-full mx-auto" /></TableCell>
                       <TableCell className="text-center"><div className="h-8 w-24 bg-gray-200 rounded mx-auto" /></TableCell>
@@ -223,7 +225,8 @@ export function BonCommande() {
                       <TableHead className="font-semibold text-gray-600">Partenaire</TableHead>
                       <TableHead className="hidden md:table-cell font-semibold text-gray-600">Destination</TableHead>
                       <TableHead className="hidden lg:table-cell font-semibold text-gray-600">Date</TableHead>
-                      <TableHead className="text-right font-semibold text-gray-600">Montant</TableHead>
+                      <TableHead className="text-right font-semibold text-gray-600">Montant (saisi)</TableHead>
+                      <TableHead className="text-right font-semibold text-gray-600">Montant (prix actuel)</TableHead>
                       <TableHead className="text-center font-semibold text-gray-600">Statut</TableHead>
                       <TableHead className="text-center font-semibold text-gray-600">Actions</TableHead>
                     </TableRow>
@@ -233,14 +236,24 @@ export function BonCommande() {
                       const sc = statutConfig[b.statut] || { label: b.statut, color: 'bg-gray-100 text-gray-600' };
                       const lignes = b.lignes || [];
                       const totalMt = lignes.reduce((s, l) => s + l.quantite_commandee * l.prix_unitaire_ht, 0);
+                      const totalActuel = b.montant_actuel ?? lignes.reduce((s, l) => s + l.quantite_commandee * (l.prix_actuel ?? l.prix_unitaire_ht), 0);
+                      const diff = Math.abs(totalActuel - totalMt) > 0.005;
                       return (
                         <TableRow key={b.id} className={cn('hover:bg-royal-50/50 transition-colors', i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50')}>
                           <TableCell className="font-mono text-sm font-medium text-gray-900">{b.numero_commande}</TableCell>
                           <TableCell className="font-medium text-gray-900">{b.partenaire?.nom || '-'}</TableCell>
                           <TableCell className="hidden md:table-cell text-sm text-gray-600">{b.magasin_destination?.nom || '-'}</TableCell>
                           <TableCell className="hidden lg:table-cell text-sm text-gray-600">{b.date_commande ? new Date(b.date_commande).toLocaleDateString('fr-FR') : '-'}</TableCell>
-                          <TableCell className="text-right font-mono text-sm font-medium text-gray-900">
+                          <TableCell className="text-right font-mono text-sm font-medium text-gray-400 line-through decoration-gray-300">
                             {formatCurrency(totalMt, b.devise?.code)}
+                          </TableCell>
+                          <TableCell className="text-right font-mono text-sm font-bold text-royal-700">
+                            {formatCurrency(totalActuel, b.devise?.code)}
+                            {diff && (
+                              <span className="block text-[11px] font-medium text-amber-600">
+                                {totalActuel > totalMt ? '+' : ''}{formatCurrency(totalActuel - totalMt, b.devise?.code)}
+                              </span>
+                            )}
                           </TableCell>
                           <TableCell className="text-center">
                             <span className={cn('inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium', sc.color)}>

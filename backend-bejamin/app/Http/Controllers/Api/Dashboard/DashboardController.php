@@ -148,20 +148,21 @@ class DashboardController extends Controller
                 ->get();
 
             // ============================================================
-            // 4. TOP CLIENTS (par nombre de commandes)
+            // 4. TOP FOURNISSEURS (par nombre de bons de commande => produits les plus consommés)
             // ============================================================
-            $topClients = Partenaire::select(
+            $topFournisseurs = Partenaire::select(
                     'partenaires.id',
                     'partenaires.nom',
                     DB::raw('COUNT(bon_commande.id) as total_commandes'),
                     DB::raw('SUM(bon_commande.montant_total_ht) as total_montant')
                 )
                 ->leftJoin('bon_commande', 'partenaires.id', '=', 'bon_commande.id_partenaire')
-                ->where('partenaires.type_client', 'aerien')
+                ->whereIn('partenaires.type', ['fournisseur', 'both'])
                 ->where('bon_commande.statut', 'REÇU')
                 ->whereBetween('bon_commande.date_commande', [$dateDebut, $dateFin])
                 ->groupBy('partenaires.id', 'partenaires.nom')
                 ->orderBy('total_commandes', 'desc')
+                ->orderBy('total_montant', 'desc')
                 ->limit(5)
                 ->get();
 
@@ -202,7 +203,58 @@ class DashboardController extends Controller
                 ->get();
 
             // ============================================================
-            // 7. ACTIVITÉS RÉCENTES (mouvements de la période)
+            // 7. TOP 5 VARIATIONS DE PRIX (hausse / baisse des produits)
+            // ============================================================
+            // Compare les deux derniers prix d'achat de chaque produit (via historique_prix).
+            // Top 5 des plus fortes variations (augmentation ou baisse) sur la période.
+            $derniersPrix = DB::table('historique_prix')
+                ->join('produits', 'historique_prix.id_produit', '=', 'produits.id')
+                ->where('produits.actif', true)
+                ->whereNull('historique_prix.deleted_at')
+                ->whereNotNull('historique_prix.prix_achat_ht')
+                ->where('historique_prix.date_application', '<=', $dateFin)
+                ->orderBy('historique_prix.date_application', 'desc')
+                ->orderBy('historique_prix.id', 'desc')
+                ->get(['historique_prix.id_produit', 'historique_prix.prix_achat_ht', 'historique_prix.date_application', 'produits.nom']);
+
+            $variationsPrix = collect($derniersPrix)
+                ->groupBy('id_produit')
+                ->map(function ($entrees) {
+                    $entrees = $entrees->values();
+                    $nouveau = $entrees->first();
+                    $ancien = $entrees->get(1);
+                    if (!$ancien) {
+                        return null;
+                    }
+                    $ancienPrix = (float) $ancien->prix_achat_ht;
+                    $nouveauPrix = (float) $nouveau->prix_achat_ht;
+                    $variation = $nouveauPrix - $ancienPrix;
+                    if (abs($variation) < 0.0001) {
+                        return null;
+                    }
+                    return [
+                        'id' => (int) $nouveau->id_produit,
+                        'nom' => $nouveau->nom,
+                        'ancien_prix' => $ancienPrix,
+                        'nouveau_prix' => $nouveauPrix,
+                        'variation' => round($variation, 2),
+                        'pourcentage' => $ancienPrix != 0 ? round(($variation / $ancienPrix) * 100, 1) : 0,
+                        'type' => $variation > 0 ? 'hausse' : 'baisse',
+                        'date' => Carbon::parse($nouveau->date_application)->format('d/m/Y'),
+                        'date_application' => $nouveau->date_application,
+                    ];
+                })
+                ->filter()
+                ->sortByDesc(fn($item) => $item['date_application'])
+                ->take(5)
+                ->map(function ($item) {
+                    unset($item['date_application']);
+                    return $item;
+                })
+                ->values();
+
+            // ============================================================
+            // 8. ACTIVITÉS RÉCENTES (mouvements de la période)
             // ============================================================
             $activitesRecentes = MouvementStock::with([
                     'lot.produit',
@@ -250,13 +302,14 @@ class DashboardController extends Controller
                     // Graphiques / Tendances
                     'evolution_commandes' => $evolutionCommandes,
                     'top_produits' => $topProduits,
-                    'top_clients' => $topClients,
+                    'top_fournisseurs' => $topFournisseurs,
                     'repartition_categorie' => $repartitionCategorie,
 
                     // Alertes
                     'alertes' => [
                         'stock_bas' => $produitsStockBas,
                         'peremption_proche' => $lotsPerimesProches,
+                        'variations_prix' => $variationsPrix,
                     ],
 
                     // Activités récentes

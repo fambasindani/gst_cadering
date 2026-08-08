@@ -48,6 +48,8 @@ export interface ReceptionItem {
   numero_lot: string;
   date_peremption: string;
   prix_achat_ht_unitaire?: number;
+  date_reception?: string;
+  reference_document?: string;
 }
 
 export interface CorrectionItem {

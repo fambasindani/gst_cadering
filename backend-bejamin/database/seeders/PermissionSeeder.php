@@ -51,6 +51,14 @@ class PermissionSeeder extends Seeder
             ['nom' => 'Supprimer une devise', 'code' => 'config:devises:delete'],
 
             // ============================================================
+            // CONFIG - Taux de conversion
+            // ============================================================
+            ['nom' => 'Voir les taux de conversion', 'code' => 'config:taux_conversion:view'],
+            ['nom' => 'Créer un taux de conversion', 'code' => 'config:taux_conversion:create'],
+            ['nom' => 'Modifier un taux de conversion', 'code' => 'config:taux_conversion:update'],
+            ['nom' => 'Supprimer un taux de conversion', 'code' => 'config:taux_conversion:delete'],
+
+            // ============================================================
             // CONFIG - Utilisateurs
             // ============================================================
             ['nom' => 'Voir les utilisateurs', 'code' => 'config:utilisateurs:view'],

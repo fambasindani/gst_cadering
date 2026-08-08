@@ -21,6 +21,8 @@ export interface BonCommande {
   created_at?: string;
   updated_at?: string;
   deleted_at?: string | null;
+  montant_actuel?: number;
+  receptions_liste?: ReceptionListe[];
 }
 
 export interface LigneCommande {
@@ -33,6 +35,39 @@ export interface LigneCommande {
   id_devise: number;
   devise?: { id: number; code: string; nom: string; symbole: string } | null;
   quantite_recue: number;
+  prix_actuel?: number;
+  montant_recu?: number;
+  receptions?: Array<{
+    id: number;
+    reference_reception: string | null;
+    date: string | null;
+    numero_lot: string;
+    quantite: number;
+    prix_unitaire: number;
+    montant: number;
+    statut: string;
+  }>;
+}
+
+export interface ReceptionLigne {
+  id: number;
+  date: string | null;
+  id_ligne: number;
+  produit: string;
+  code_article: string;
+  numero_lot: string;
+  quantite: number;
+  prix_unitaire: number;
+  montant: number;
+  statut: string;
+}
+
+export interface ReceptionListe {
+  reference_reception: string;
+  date: string | null;
+  quantite: number;
+  montant: number;
+  lignes: ReceptionLigne[];
 }
 
 export interface BonCommandeFormData {

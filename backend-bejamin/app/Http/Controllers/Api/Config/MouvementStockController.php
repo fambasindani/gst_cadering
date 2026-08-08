@@ -88,6 +88,10 @@ class MouvementStockController extends Controller
                 });
             }
 
+            if ($request->boolean('en_attente_premier')) {
+                $query->orderByRaw("CASE WHEN statut_validation = 'EN ATTENTE' THEN 0 ELSE 1 END");
+            }
+
             $data = $query->orderBy($sortBy, $sortOrder)->paginate($perPage);
 
             return response()->json([
@@ -411,6 +415,17 @@ public function show($id)
                     'date_validation' => now(),
                 ]);
 
+                // Si le lot lié est un brouillon de réception partielle, le valider aussi
+                // et enregistrer son prix dans l'historique.
+                if ($lot && $lot->statut_validation === 'BROUILLON') {
+                    $lot->update([
+                        'statut_validation' => 'VALIDÉ',
+                        'valide_par' => Auth::id(),
+                        'date_validation' => now(),
+                    ]);
+                    $lot->enregistrerHistoriquePrix('Validation en entrée stock du lot ' . $lot->numero_lot);
+                }
+
                 DB::commit();
 
                 return response()->json([
@@ -462,6 +477,17 @@ public function show($id)
                 'valide_par' => Auth::id(),
                 'date_validation' => now(),
             ]);
+
+            // Si le lot lié est un brouillon de réception partielle, le rejeter aussi
+            // pour qu'il ne compte pas dans le stock disponible.
+            $lot = $mouvement->lot;
+            if ($lot && $lot->statut_validation === 'BROUILLON') {
+                $lot->update([
+                    'statut_validation' => 'REJETÉ',
+                    'valide_par' => Auth::id(),
+                    'date_validation' => now(),
+                ]);
+            }
 
             return response()->json([
                 'success' => true,

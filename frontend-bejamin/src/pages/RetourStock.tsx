@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -25,8 +25,12 @@ const validationConfig: Record<string, { label: string; color: string }> = {
 
 export function RetourStock() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const isAdmin = useIsAdmin();
+
+  const statutParam = searchParams.get('statut');
+  const statutFiltre = statutParam === 'EN ATTENTE' ? 'EN ATTENTE' : null;
 
   const [data, setData] = useState<Retour[]>([]);
   const [loading, setLoading] = useState(true);
@@ -48,6 +52,7 @@ export function RetourStock() {
     try {
       const params: Record<string, string> = { per_page: String(pageSize), page: String(currentPage), sort_by: 'id', sort_order: 'desc' };
       if (searchTerm) params.search = searchTerm;
+      if (statutFiltre) params.statut = statutFiltre;
       const res = await retourService.list(params);
       if (res.success) {
         setData(res.data.data);
@@ -59,7 +64,7 @@ export function RetourStock() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, searchTerm]);
+  }, [currentPage, searchTerm, pageSize, statutFiltre]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -126,11 +131,11 @@ export function RetourStock() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Retour stock</h1>
-          <p className="text-sm text-gray-500 mt-1">{loading ? '...' : `${total} retour${total > 1 ? 's' : ''}`}</p>
+          <h1 className="text-2xl font-bold text-gray-900">{statutFiltre ? 'Retours en attente' : 'Retour stock'}</h1>
+          <p className="text-sm text-gray-500 mt-1">{loading ? '...' : `${total} retour${total > 1 ? 's' : ''}${statutFiltre ? ' en attente' : ''}`}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => { setSearchInput(''); setSearchTerm(''); setCurrentPage(1); }} className="border-gray-300 text-gray-700 hover:bg-gray-50" title="Actualiser">
+          <Button variant="outline" onClick={() => { setSearchInput(''); setSearchTerm(''); setSearchParams({}); setCurrentPage(1); }} className="border-gray-300 text-gray-700 hover:bg-gray-50" title="Actualiser">
             <RefreshCw className={cn('h-4 w-4 mr-2', loading && 'animate-spin')} />
             Actualiser
           </Button>
@@ -161,9 +166,27 @@ export function RetourStock() {
         </div>
       </div>
 
+      {statutFiltre && (
+        <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-amber-50 border border-amber-200">
+          <div className="flex items-center gap-2 text-sm font-medium text-amber-800">
+            <RotateCcw className="w-4 h-4" />
+            Retours en attente de validation
+          </div>
+          <button
+            type="button"
+            onClick={() => { setSearchParams({}); setCurrentPage(1); }}
+            className="text-xs font-semibold text-amber-700 hover:text-amber-900 hover:underline"
+          >
+            Afficher tous les retours
+          </button>
+        </div>
+      )}
+
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-semibold">Liste des retours</CardTitle>
+          <CardTitle className="text-lg font-semibold">
+            {statutFiltre ? 'Retours en attente' : 'Liste des retours'}
+          </CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -134,10 +134,31 @@ export function SortieForm() {
 
   const selectedLot = (id_lot: string) => lots.find(x => x.id === Number(id_lot));
 
+  // Prix moyen pondéré par produit : Σ(prix × quantité) / Σ quantité sur les lots avec le même prix
+  const prixPondereParProduit = useMemo(() => {
+    const map = new Map<number, { valeur: number; qte: number }>();
+    for (const lot of lots) {
+      if (!lot.quantite_disponible || lot.quantite_disponible <= 0) continue;
+      const prix = lot.prix_achat_ht_unitaire || 0;
+      const cur = map.get(lot.id_produit) || { valeur: 0, qte: 0 };
+      cur.valeur += prix * lot.quantite_disponible;
+      cur.qte += lot.quantite_disponible;
+      map.set(lot.id_produit, cur);
+    }
+    const res = new Map<number, number>();
+    for (const [idProduit, v] of map) {
+      res.set(idProduit, v.qte > 0 ? v.valeur / v.qte : 0);
+    }
+    return res;
+  }, [lots]);
+
+  const prixPondere = (idProduit?: number): number =>
+    idProduit != null && prixPondereParProduit.has(idProduit) ? prixPondereParProduit.get(idProduit)! : 0;
+
   const totalQte = lignes.reduce((s, l) => s + (Number(l.quantite) || 0), 0);
   const totalPrix = lignes.reduce((s, l) => {
     const lot = selectedLot(l.id_lot);
-    return s + (Number(l.quantite) || 0) * (lot?.prix_achat_ht_unitaire || 0);
+    return s + (Number(l.quantite) || 0) * (lot ? prixPondere(lot.id_produit) : 0);
   }, 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -343,7 +364,7 @@ export function SortieForm() {
                       <TableRow>
                         <TableHead className="font-semibold text-gray-600">Lot *</TableHead>
                         <TableHead className="text-right font-semibold text-gray-600">Quantité *</TableHead>
-                        <TableHead className="text-right font-semibold text-gray-600">Prix unit.</TableHead>
+                        <TableHead className="text-right font-semibold text-gray-600">Prix moy. pond.</TableHead>
                         <TableHead className="text-right font-semibold text-gray-600">Montant</TableHead>
                         {!isEdit && <TableHead className="text-center w-12" />}
                       </TableRow>
@@ -368,7 +389,7 @@ export function SortieForm() {
                                   <span>Péremption: <span className={cn('font-medium', lot.date_peremption && new Date(lot.date_peremption) < new Date() ? 'text-red-600' : 'text-gray-700')}>
                                     {lot.date_peremption ? new Date(lot.date_peremption).toLocaleDateString('fr-FR') : '-'}
                                   </span></span>
-                                  <span>Prix unit.: <span className="font-medium text-gray-700">{lot.prix_achat_ht_unitaire != null ? formatCurrency(lot.prix_achat_ht_unitaire, '$') : '-'}</span></span>
+                                  <span>Prix moy. pond.: <span className="font-medium text-gray-700">{lot ? (prixPondere(lot.id_produit) != null ? formatCurrency(prixPondere(lot.id_produit), '$') : '-') : '-'}</span></span>
                                 </div>
                               )}
                             </TableCell>
@@ -379,10 +400,10 @@ export function SortieForm() {
                               {fieldErrors[`lignes.${i}.quantite`] && <p className="text-xs text-red-500 mt-1">{fieldErrors[`lignes.${i}.quantite`]}</p>}
                             </TableCell>
                             <TableCell className="text-right font-mono text-sm text-gray-600">
-                              {lot && lot.prix_achat_ht_unitaire != null ? formatCurrency(lot.prix_achat_ht_unitaire, '$') : '-'}
+                              {lot ? formatCurrency(prixPondere(lot.id_produit), '$') : '-'}
                             </TableCell>
                             <TableCell className="text-right font-mono text-sm font-medium text-gray-900">
-                              {lot && lot.prix_achat_ht_unitaire != null ? formatCurrency((Number(l.quantite) || 0) * lot.prix_achat_ht_unitaire, '$') : '-'}
+                              {lot ? formatCurrency((Number(l.quantite) || 0) * prixPondere(lot.id_produit), '$') : '-'}
                             </TableCell>
                             {!isEdit && (
                               <TableCell className="text-center w-12">

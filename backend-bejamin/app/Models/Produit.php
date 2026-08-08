@@ -82,12 +82,15 @@ class Produit extends Model
 
     public function getStockTotal()
     {
-        return $this->lots()->sum('quantite_disponible');
+        return $this->lots()
+                    ->where('statut_validation', 'VALIDÉ')
+                    ->sum('quantite_disponible');
     }
 
     public function getStockParMagasin($magasinId)
     {
         return $this->lots()
+                    ->where('statut_validation', 'VALIDÉ')
                     ->where('id_magasin', $magasinId)
                     ->sum('quantite_disponible');
     }

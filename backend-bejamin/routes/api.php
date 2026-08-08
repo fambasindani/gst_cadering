@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\Config\{
     DepartementController,
     CategorieController,
     DeviseController,
+    TauxConversionController,
     UtilisateurController,
     RoleController,
     PermissionController,
@@ -116,6 +117,15 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
         Route::put('devises/{id}', [DeviseController::class, 'update'])->middleware('permission:config:devises:update');
         Route::delete('devises/{id}', [DeviseController::class, 'destroy'])->middleware('permission:config:devises:delete');
         Route::patch('devises/{id}/toggle', [DeviseController::class, 'toggleActif'])->middleware('permission:config:devises:update');
+
+        // ---------- Taux de conversion ----------
+        Route::get('taux-conversion', [TauxConversionController::class, 'index'])->middleware('permission:config:taux_conversion:view');
+        Route::post('taux-conversion', [TauxConversionController::class, 'store'])->middleware('permission:config:taux_conversion:create');
+        Route::get('taux-conversion/taux-actuel', [TauxConversionController::class, 'tauxActuel'])->middleware('permission:config:taux_conversion:view');
+        Route::get('taux-conversion/{id}', [TauxConversionController::class, 'show'])->middleware('permission:config:taux_conversion:view');
+        Route::put('taux-conversion/{id}', [TauxConversionController::class, 'update'])->middleware('permission:config:taux_conversion:update');
+        Route::delete('taux-conversion/{id}', [TauxConversionController::class, 'destroy'])->middleware('permission:config:taux_conversion:delete');
+        Route::patch('taux-conversion/{id}/toggle', [TauxConversionController::class, 'toggleActif'])->middleware('permission:config:taux_conversion:update');
 
         // ---------- Utilisateurs ----------
         Route::get('utilisateurs', [UtilisateurController::class, 'index'])->middleware('permission:config:utilisateurs:view');

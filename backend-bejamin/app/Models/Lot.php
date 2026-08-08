@@ -135,4 +135,39 @@ class Lot extends Model
     {
         return 'QR-' . $numeroLot . '-' . uniqid();
     }
+
+    /**
+     * Enregistre le prix du lot dans l'historique des prix du produit.
+     * N'enregistre rien si le prix (et la devise) est identique au dernier prix
+     * déjà en historique (pas de doublon pour une même valeur).
+     * Renseigne id_utilisateur via Auth quand disponible.
+     */
+    public function enregistrerHistoriquePrix(?string $commentaire = null)
+    {
+        if ($this->prix_achat_ht_unitaire === null || $this->id_devise === null) {
+            return null;
+        }
+
+        // Si le dernier prix enregistré est identique (même prix + même devise),
+        // on ne crée pas de nouvelle entrée.
+        $dernier = HistoriquePrix::where('id_produit', $this->id_produit)
+            ->orderBy('date_application', 'desc')
+            ->orderBy('id', 'desc')
+            ->first();
+
+        if ($dernier
+            && (float) $dernier->prix_achat_ht === (float) $this->prix_achat_ht_unitaire
+            && $dernier->id_devise == $this->id_devise) {
+            return null;
+        }
+
+        return HistoriquePrix::create([
+            'id_produit' => $this->id_produit,
+            'prix_achat_ht' => $this->prix_achat_ht_unitaire,
+            'id_devise' => $this->id_devise,
+            'date_application' => $this->date_reception ? $this->date_reception->toDateString() : now()->toDateString(),
+            'commentaire' => $commentaire,
+            'id_utilisateur' => auth()->id(),
+        ]);
+    }
 }

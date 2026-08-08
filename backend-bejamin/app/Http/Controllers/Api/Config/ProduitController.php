@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Produit;
 use App\Models\HistoriquePrix;
 use App\Models\Magasin;
+use App\Models\Devise;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
@@ -245,6 +246,20 @@ public function getStock($id)
         // Stock total
         $stockTotal = $produit->getStockTotal();
         
+        // Prix moyen pondéré : Σ(prix_achat × quantite_disponible) / Σ(quantite_disponible) sur les lots VALIDÉ en stock
+        $lots = $produit->lots()->where('statut_validation', 'VALIDÉ')->where('quantite_disponible', '>', 0)->get();
+        $qteTotale = 0;
+        $valeurTotale = 0;
+        $devisePonderee = null;
+        foreach ($lots as $lot) {
+            $qteTotale += (int) $lot->quantite_disponible;
+            $valeurTotale += (float) $lot->prix_achat_ht_unitaire * (int) $lot->quantite_disponible;
+            if (!$devisePonderee && $lot->id_devise) {
+                $devisePonderee = $lot->id_devise;
+            }
+        }
+        $prixPondere = $qteTotale > 0 ? round($valeurTotale / $qteTotale, 4) : null;
+        
         // Stock par magasin
         $magasins = Magasin::where('actif', true)->get();
         $stockParMagasin = [];
@@ -269,7 +284,9 @@ public function getStock($id)
                 'stock_total' => $stockTotal,
                 'stock_par_magasin' => $stockParMagasin,
                 'seuil_alerte' => $produit->seuil_alerte,
-                'statut' => $stockTotal <= $produit->seuil_alerte ? '⚠️ Stock bas' : '✅ Stock normal'
+                'statut' => $stockTotal <= $produit->seuil_alerte ? '⚠️ Stock bas' : '✅ Stock normal',
+                'prix_pondere' => $prixPondere,
+                'devise_ponderee' => $devisePonderee ? Devise::find($devisePonderee) : null,
             ],
             'message' => 'Stock du produit récupéré avec succès'
         ]);

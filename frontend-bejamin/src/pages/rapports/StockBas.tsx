@@ -130,7 +130,7 @@ export function StockBas() {
 
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-semibold">Produits avec stock bas (0 &lt; stock ≤ seuil d'alerte)</CardTitle>
+          <CardTitle className="text-lg font-semibold">Produits avec stock bas (stock supérieur à zéro et inférieur ou égal au seuil d'alerte)</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (

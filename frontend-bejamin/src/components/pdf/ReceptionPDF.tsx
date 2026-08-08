@@ -1,6 +1,5 @@
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer';
 import type { BonCommande } from '../../types/bon-commande';
-import { formatCurrency } from '../../lib/format';
 
 function formatDate(dateStr: string | null | undefined): string {
   if (!dateStr) return '-';
@@ -10,6 +9,12 @@ function formatDate(dateStr: string | null | undefined): string {
     return `${d}/${m}/${y}`;
   }
   return dateStr;
+}
+
+function formatMontant(value: number, currency?: string): string {
+  const num = Number(value) || 0;
+  const formatted = num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  return currency ? `${formatted} ${currency}` : formatted;
 }
 
 const styles = StyleSheet.create({
@@ -26,17 +31,16 @@ const styles = StyleSheet.create({
   section: { marginBottom: 12 },
   sectionTitle: { fontSize: 9, fontWeight: 'bold', color: '#1e3a5f', marginBottom: 5, paddingBottom: 3, borderBottom: '1 solid #ddd' },
   row: { flexDirection: 'row', marginBottom: 2 },
-  label: { width: 100, fontSize: 8, color: '#888' },
+  label: { width: 110, fontSize: 8, color: '#888' },
   value: { flex: 1, fontSize: 8, color: '#333' },
   table: { marginTop: 4 },
   tableHeader: { flexDirection: 'row', backgroundColor: '#1e3a5f', padding: 6, borderRadius: 2 },
   tableHeaderCell: { color: '#fff', fontSize: 7.5, fontWeight: 'bold' },
-  colCode: { width: '17%' },
-  colProduit: { width: '28%' },
-  colQte: { width: '11%', textAlign: 'right' },
-  colRecu: { width: '11%', textAlign: 'right' },
-  colPrix: { width: '15%', textAlign: 'right' },
-  colRecuTotal: { width: '18%', textAlign: 'right' },
+  colCode: { width: '18%' },
+  colProduit: { width: '34%' },
+  colLot: { width: '20%' },
+  colQte: { width: '10%', textAlign: 'right' },
+  colPrix: { width: '18%', textAlign: 'right' },
   tableRow: { flexDirection: 'row', padding: 5, borderBottom: '1 solid #f0f0f0', alignItems: 'center' },
   tableRowAlt: { backgroundColor: '#f9f9f9' },
   tableCell: { fontSize: 7.5, color: '#333' },
@@ -47,36 +51,38 @@ const styles = StyleSheet.create({
   totalValue: { fontSize: 9, fontWeight: 'bold', color: '#1e3a5f', width: 120, textAlign: 'right' },
   footer: { position: 'absolute', bottom: 30, left: 35, right: 35, borderTop: '1 solid #ddd', paddingTop: 8, flexDirection: 'row', justifyContent: 'space-between' },
   footerText: { fontSize: 7, color: '#999' },
-  statutBadge: { fontSize: 7.5, padding: '2 6', borderRadius: 2, color: '#fff', marginTop: 3, alignSelf: 'flex-start' },
 });
+
+export interface ReceptionLigne {
+  id: number;
+  date: string | null;
+  id_ligne: number;
+  produit: string;
+  code_article: string;
+  numero_lot: string;
+  quantite: number;
+  prix_unitaire: number;
+  montant: number;
+  statut: string;
+}
+
+export interface ReceptionPDFData {
+  reference_reception: string;
+  date: string | null;
+  quantite: number;
+  montant: number;
+  lignes: ReceptionLigne[];
+}
 
 interface Props {
   bon: BonCommande;
+  reception: ReceptionPDFData;
 }
 
-const statutColors: Record<string, string> = {
-  BROUILLON: '#f59e0b',
-  ENVOYÉ: '#3b82f6',
-  'REÇU PARTIELLEMENT': '#8b5cf6',
-  REÇU: '#10b981',
-  CLOTURE: '#ef4444',
-};
-
-const statutLabels: Record<string, string> = {
-  BROUILLON: 'Brouillon',
-  ENVOYÉ: 'Envoyé',
-  'REÇU PARTIELLEMENT': 'Reçu partiellement',
-  REÇU: 'Reçu',
-  CLOTURE: 'Clôturé',
-};
-
-export function BonCommandePDF({ bon }: Props) {
-  const lignes = (bon.lignes || []).filter((l) => (Number(l.quantite_recue) || 0) > 0);
-  const totalRecu = lignes.reduce(
-    (sum, l) => sum + (l.montant_recu !== undefined ? l.montant_recu : (Number(l.quantite_recue) || 0) * l.prix_unitaire_ht),
-    0,
-  );
-  const deviseCode = bon.devise?.code || lignes[0]?.devise?.code || 'USD';
+export function ReceptionPDF({ bon, reception }: Props) {
+  const deviseCode = bon.devise?.code || 'USD';
+  const totalQte = reception.quantite;
+  const totalMontant = reception.montant;
 
   return (
     <Document>
@@ -91,17 +97,13 @@ export function BonCommandePDF({ bon }: Props) {
 
         <View style={styles.titleSection}>
           <View style={styles.titleBox}>
-            <Text style={styles.title}>Bon de Commande</Text>
-            <Text style={styles.subtitle}>N° {bon.numero_commande}</Text>
+            <Text style={styles.title}>Bon de Réception</Text>
+            <Text style={styles.subtitle}>N° {reception.reference_reception}</Text>
           </View>
           <View style={styles.infoBox}>
-            <Text style={styles.infoText}>Date: {formatDate(bon.date_commande)}</Text>
-            {bon.date_livraison_prevue ? (
-              <Text style={styles.infoText}>Livraison prévue: {formatDate(bon.date_livraison_prevue)}</Text>
-            ) : null}
-            <Text style={[styles.statutBadge, { backgroundColor: statutColors[bon.statut] || '#999' }]}>
-              {statutLabels[bon.statut] || bon.statut}
-            </Text>
+            <Text style={styles.infoText}>Date: {formatDate(reception.date)}</Text>
+            <Text style={styles.infoText}>Bon de commande: {bon.numero_commande}</Text>
+            <Text style={styles.infoText}>Statut: {bon.statut}</Text>
           </View>
         </View>
 
@@ -115,40 +117,35 @@ export function BonCommandePDF({ bon }: Props) {
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Lignes de commande</Text>
+          <Text style={styles.sectionTitle}>Produits reçus</Text>
           <View style={styles.table}>
             <View style={styles.tableHeader}>
               <Text style={[styles.tableHeaderCell, styles.colCode]}>Code</Text>
               <Text style={[styles.tableHeaderCell, styles.colProduit]}>Produit</Text>
+              <Text style={[styles.tableHeaderCell, styles.colLot]}>Lot</Text>
               <Text style={[styles.tableHeaderCell, styles.colQte]}>Qté</Text>
-              <Text style={[styles.tableHeaderCell, styles.colRecu]}>Reçu</Text>
               <Text style={[styles.tableHeaderCell, styles.colPrix]}>Prix unit.</Text>
-              <Text style={[styles.tableHeaderCell, styles.colRecuTotal]}>Montant total</Text>
             </View>
-            {lignes.map((l, i) => {
-              const recu = Number(l.quantite_recue) || 0;
-              const montantRecu = l.montant_recu !== undefined ? Number(l.montant_recu) || 0 : recu * l.prix_unitaire_ht;
-              const prixRecu = recu > 0 ? montantRecu / recu : 0;
-              return (
-                <View key={l.id} style={[styles.tableRow, i % 2 === 1 ? styles.tableRowAlt : {}]}>
-                  <Text style={[styles.tableCell, styles.colCode]}>{l.produit?.code_article || '-'}</Text>
-                  <Text style={[styles.tableCell, styles.colProduit]}>{l.produit?.nom || '-'}</Text>
-                  <Text style={[styles.tableCellRight, styles.colQte]}>{l.quantite_commandee}</Text>
-                  <Text style={[styles.tableCellRight, styles.colRecu]}>{recu}</Text>
-                  <Text style={[styles.tableCellRight, styles.colPrix]}>{formatCurrency(prixRecu)}</Text>
-                  <Text style={[styles.tableCellRight, styles.colRecuTotal]}>
-                    {formatCurrency(montantRecu, l.devise?.code || deviseCode)}
-                  </Text>
-                </View>
-              );
-            })}
+            {reception.lignes.map((l, i) => (
+              <View key={l.id} style={[styles.tableRow, i % 2 === 1 ? styles.tableRowAlt : {}]}>
+                <Text style={[styles.tableCell, styles.colCode]}>{l.code_article || '-'}</Text>
+                <Text style={[styles.tableCell, styles.colProduit]}>{l.produit || '-'}</Text>
+                <Text style={[styles.tableCell, styles.colLot]}>{l.numero_lot || '-'}</Text>
+                <Text style={[styles.tableCellRight, styles.colQte]}>{l.quantite}</Text>
+                <Text style={[styles.tableCellRight, styles.colPrix]}>{formatMontant(l.prix_unitaire, deviseCode)}</Text>
+              </View>
+            ))}
           </View>
         </View>
 
         <View style={styles.totalSection}>
           <View style={styles.totalRow}>
+            <Text style={styles.totalLabel}>Quantité totale:</Text>
+            <Text style={styles.totalValue}>{totalQte}</Text>
+          </View>
+          <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Montant total:</Text>
-            <Text style={styles.totalValue}>{formatCurrency(totalRecu, deviseCode)}</Text>
+            <Text style={styles.totalValue}>{formatMontant(totalMontant, deviseCode)}</Text>
           </View>
         </View>
 
