@@ -31,12 +31,13 @@ const styles = StyleSheet.create({
   table: { marginTop: 4 },
   tableHeader: { flexDirection: 'row', backgroundColor: '#1e3a5f', padding: 6, borderRadius: 2 },
   tableHeaderCell: { color: '#fff', fontSize: 7.5, fontWeight: 'bold' },
-  colCode: { width: '17%' },
-  colProduit: { width: '28%' },
-  colQte: { width: '11%', textAlign: 'right' },
-  colRecu: { width: '11%', textAlign: 'right' },
-  colPrix: { width: '15%', textAlign: 'right' },
-  colRecuTotal: { width: '18%', textAlign: 'right' },
+  colCode: { width: '13%' },
+  colProduit: { width: '18%' },
+  colQte: { width: '8%', textAlign: 'right' },
+  colRecu: { width: '8%', textAlign: 'right' },
+  colPrix: { width: '12%', textAlign: 'right' },
+  colRecuTotal: { width: '14%', textAlign: 'right' },
+  colCdf: { width: '27%', textAlign: 'right' },
   tableRow: { flexDirection: 'row', padding: 5, borderBottom: '1 solid #f0f0f0', alignItems: 'center' },
   tableRowAlt: { backgroundColor: '#f9f9f9' },
   tableCell: { fontSize: 7.5, color: '#333' },
@@ -52,6 +53,7 @@ const styles = StyleSheet.create({
 
 interface Props {
   bon: BonCommande;
+  tauxCdf?: number | null;
 }
 
 const statutColors: Record<string, string> = {
@@ -70,12 +72,13 @@ const statutLabels: Record<string, string> = {
   CLOTURE: 'Clôturé',
 };
 
-export function BonCommandePDF({ bon }: Props) {
+export function BonCommandePDF({ bon, tauxCdf }: Props) {
   const lignes = (bon.lignes || []).filter((l) => (Number(l.quantite_recue) || 0) > 0);
   const totalRecu = lignes.reduce(
     (sum, l) => sum + (l.montant_recu !== undefined ? l.montant_recu : (Number(l.quantite_recue) || 0) * l.prix_unitaire_ht),
     0,
   );
+  const totalRecuCdf = tauxCdf != null ? totalRecu * tauxCdf : null;
   const deviseCode = bon.devise?.code || lignes[0]?.devise?.code || 'USD';
 
   return (
@@ -124,11 +127,13 @@ export function BonCommandePDF({ bon }: Props) {
               <Text style={[styles.tableHeaderCell, styles.colRecu]}>Reçu</Text>
               <Text style={[styles.tableHeaderCell, styles.colPrix]}>Prix unit.</Text>
               <Text style={[styles.tableHeaderCell, styles.colRecuTotal]}>Montant total</Text>
+              {tauxCdf != null ? <Text style={[styles.tableHeaderCell, styles.colCdf]}>Montant (CDF)</Text> : null}
             </View>
             {lignes.map((l, i) => {
               const recu = Number(l.quantite_recue) || 0;
               const montantRecu = l.montant_recu !== undefined ? Number(l.montant_recu) || 0 : recu * l.prix_unitaire_ht;
               const prixRecu = recu > 0 ? montantRecu / recu : 0;
+              const montantCdf = tauxCdf != null ? montantRecu * tauxCdf : null;
               return (
                 <View key={l.id} style={[styles.tableRow, i % 2 === 1 ? styles.tableRowAlt : {}]}>
                   <Text style={[styles.tableCell, styles.colCode]}>{l.produit?.code_article || '-'}</Text>
@@ -139,6 +144,11 @@ export function BonCommandePDF({ bon }: Props) {
                   <Text style={[styles.tableCellRight, styles.colRecuTotal]}>
                     {formatCurrency(montantRecu, l.devise?.code || deviseCode)}
                   </Text>
+                  {montantCdf != null ? (
+                    <Text style={[styles.tableCellRight, styles.colCdf]}>
+                      {formatCurrency(montantCdf, 'CDF')}
+                    </Text>
+                  ) : null}
                 </View>
               );
             })}

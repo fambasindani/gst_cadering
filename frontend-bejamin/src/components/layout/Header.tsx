@@ -51,6 +51,7 @@ export function Header({ onMenuToggle }: HeaderProps) {
       '/configuration/departement': 'Départements',
       '/configuration/categorie': 'Catégories',
       '/configuration/devise': 'Devises',
+      '/configuration/taux-change': 'Taux de change',
       '/configuration/purge-stock': 'Purge stock',
       '/configuration/unite': 'Unités',
       '/configuration/type-mouvement': 'Types mouvement',

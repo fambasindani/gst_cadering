@@ -33,6 +33,7 @@ import { PartenaireDetails } from './pages/PartenaireDetails';
 import { ConfigurationMagasin } from './pages/ConfigurationMagasin';
 import { ConfigurationDepartement } from './pages/ConfigurationDepartement';
 import { ConfigurationDevise } from './pages/ConfigurationDevise';
+import { ConfigurationTauxConversion } from './pages/ConfigurationTauxConversion';
 import { ConfigurationCategorie } from './pages/ConfigurationCategorie';
 import { PurgeStock } from './pages/PurgeStock';
 import { ConfigurationUtilisateurs } from './pages/ConfigurationUtilisateurs';
@@ -108,6 +109,7 @@ function App() {
           <Route path="configuration/magasin" element={<ConfigurationMagasin />} />
           <Route path="configuration/departement" element={<ConfigurationDepartement />} />
           <Route path="configuration/devise" element={<ConfigurationDevise />} />
+          <Route path="configuration/taux-change" element={<ConfigurationTauxConversion />} />
           <Route path="configuration/categorie" element={<ConfigurationCategorie />} />
           <Route path="configuration/purge-stock" element={<PurgeStock />} />
           <Route path="partenaire" element={<Partenaires />} />
