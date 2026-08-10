@@ -9,6 +9,7 @@ import { RapportEntreeRecettePDF } from '../components/pdf/RapportEntreeRecetteP
 import { entreeRecetteService } from '../services/entree-recette';
 import { ficheTechniqueService } from '../services/fiche-technique';
 import { partenaireService } from '../services/partenaire';
+import { tauxConversionService } from '../services/taux-conversion';
 import type { EntreeRecette, FicheTechnique } from '../types/fiche-technique';
 import { Search, RefreshCw, FileText, DollarSign, Repeat, Download, Loader2 } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -32,6 +33,7 @@ export function RapportRecette() {
   const [lastPage, setLastPage] = useState(1);
   const [total, setTotal] = useState(0);
   const [pageSize, setPageSize] = useState(20);
+  const [tauxCdf, setTauxCdf] = useState<number | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -48,6 +50,8 @@ export function RapportRecette() {
         setTotal(res.data.total);
         setLastPage(res.data.last_page);
       }
+      const tres = await tauxConversionService.getActuel();
+      if (tres.success && tres.data) setTauxCdf(tres.data.taux);
     } catch {
       //
     } finally {
@@ -201,7 +205,7 @@ export function RapportRecette() {
               </div>
               <div>
                 <p className="text-xs text-gray-500 font-medium">Coût total (page)</p>
-                <p className="text-xl font-bold text-gray-900 font-mono">{formatCurrency(totalCout)}</p>
+                <p className="text-xl font-bold text-gray-900 font-mono">{formatCurrency(totalCout, '$')}</p>
               </div>
             </div>
           </CardContent>
@@ -218,7 +222,7 @@ export function RapportRecette() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-gray-50">
-                    {Array.from({ length: 6 }).map((_, j) => (
+                    {Array.from({ length: 7 }).map((_, j) => (
                       <th key={j} className="px-4 py-3"><div className="h-4 bg-gray-200 rounded" /></th>
                     ))}
                   </tr>
@@ -226,7 +230,7 @@ export function RapportRecette() {
                 <tbody>
                   {Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i} className="animate-pulse">
-                      {Array.from({ length: 6 }).map((_, j) => (
+                      {Array.from({ length: 7 }).map((_, j) => (
                         <td key={j} className="px-4 py-3"><div className="h-5 bg-gray-200 rounded" style={{ width: `${60 + j * 20}px` }} /></td>
                       ))}
                     </tr>
@@ -252,10 +256,13 @@ export function RapportRecette() {
                       <th className="text-left font-semibold text-gray-600 px-4 py-3">Recette</th>
                       <th className="text-right font-semibold text-gray-600 px-4 py-3">Portions</th>
                       <th className="text-right font-semibold text-gray-600 px-4 py-3">Coût total</th>
+                      <th className="text-right font-semibold text-gray-600 px-4 py-3">Coût total (CDF)</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {data.map((r, i) => (
+                    {data.map((r, i) => {
+                      const cout = (Number(r.fiche_technique?.cout_unitaire) || 0) * (Number(r.nombre_portions) || 0);
+                      return (
                       <tr key={r.id} className={cn('hover:bg-royal-50/50 transition-colors', i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50')}>
                         <td className="px-4 py-3 font-mono text-sm text-royal-700">{r.id}</td>
                         <td className="px-4 py-3 text-gray-600">{formatDate(r.date_production)}</td>
@@ -265,10 +272,14 @@ export function RapportRecette() {
                         </td>
                         <td className="px-4 py-3 text-right font-mono text-gray-700">{r.nombre_portions ?? 0}</td>
                         <td className="px-4 py-3 text-right font-mono font-medium text-gray-900">
-                          {formatCurrency((Number(r.fiche_technique?.cout_unitaire) || 0) * (Number(r.nombre_portions) || 0))}
+                          {formatCurrency(cout, '$')}
+                        </td>
+                        <td className="px-4 py-3 text-right font-mono text-gray-700">
+                          {tauxCdf != null ? formatCurrency(cout * tauxCdf, 'CDF') : '—'}
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

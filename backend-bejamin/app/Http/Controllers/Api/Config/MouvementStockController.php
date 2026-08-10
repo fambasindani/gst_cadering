@@ -35,6 +35,7 @@ class MouvementStockController extends Controller
             $query = MouvementStock::with([
                 'lot.produit',
                 'lot.magasin',
+                'lot.partenaire',
                 'typeMouvement',
                 'partenaire',
                 'magasin',
@@ -203,6 +204,7 @@ public function show($id)
         $mouvement = MouvementStock::with([
             'lot.produit',
             'lot.magasin',
+            'lot.partenaire',
             'typeMouvement',
             'partenaire',
             'magasin',

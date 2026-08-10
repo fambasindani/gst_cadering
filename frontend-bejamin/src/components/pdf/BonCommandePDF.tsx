@@ -160,6 +160,12 @@ export function BonCommandePDF({ bon, tauxCdf }: Props) {
             <Text style={styles.totalLabel}>Montant total:</Text>
             <Text style={styles.totalValue}>{formatCurrency(totalRecu, deviseCode)}</Text>
           </View>
+          {totalRecuCdf != null ? (
+            <View style={styles.totalRow}>
+              <Text style={styles.totalLabel}>Montant total (CDF):</Text>
+              <Text style={styles.totalValue}>{formatCurrency(totalRecuCdf, 'CDF')}</Text>
+            </View>
+          ) : null}
         </View>
 
         <View style={styles.footer}>

@@ -8,6 +8,7 @@ import { PDFDownloadLink } from '@react-pdf/renderer';
 import { RapportTablePDF } from '../../components/pdf/RapportTablePDF';
 import type { Column } from '../../components/pdf/RapportTablePDF';
 import { rapportService } from '../../services/rapport';
+import { tauxConversionService } from '../../services/taux-conversion';
 import type { FournisseurRapport } from '../../types/rapport';
 import { RefreshCw, FileText, Download, DollarSign, Users } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -19,6 +20,7 @@ export function RapportFournisseur() {
   const [loading, setLoading] = useState(true);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [tauxCdf, setTauxCdf] = useState<number | null>(null);
 
   const totalCommandes = data.reduce((s, f) => s + f.statistiques.total_commandes, 0);
   const totalMontant = data.reduce((s, f) => s + f.statistiques.total_montant, 0);
@@ -38,6 +40,8 @@ export function RapportFournisseur() {
       if (res.success) {
         setData(res.data);
       }
+      const tres = await tauxConversionService.getActuel();
+      if (tres.success && tres.data) setTauxCdf(tres.data.taux);
     } catch {
       //
     } finally {
@@ -48,19 +52,21 @@ export function RapportFournisseur() {
   useEffect(() => { fetchData(); }, [dateFrom, dateTo]);
 
   const pdfColumns: Column[] = [
-    { key: 'fournisseur', label: 'Fournisseur', width: '24%', render: (r) => r.fournisseur },
-    { key: 'commandes', label: 'N° commandes', width: '18%', align: 'right', render: (r) => r.commandes },
-    { key: 'montant', label: 'Montant total', width: '22%', align: 'right', render: (r) => r.montant },
-    { key: 'produits', label: 'Produits', width: '16%', align: 'right', render: (r) => r.produits },
-    { key: 'moyenne', label: 'Moyenne/commande', width: '20%', align: 'right', render: (r) => r.moyenne },
+    { key: 'fournisseur', label: 'Fournisseur', width: '20%', render: (r) => r.fournisseur },
+    { key: 'commandes', label: 'N° commandes', width: '14%', align: 'right', render: (r) => r.commandes },
+    { key: 'montant', label: 'Montant total', width: '16%', align: 'right', render: (r) => r.montant },
+    { key: 'produits', label: 'Produits', width: '12%', align: 'right', render: (r) => r.produits },
+    { key: 'moyenne', label: 'Moyenne/commande', width: '16%', align: 'right', render: (r) => r.moyenne },
+    { key: 'montant_cdf', label: 'Montant (CDF)', width: '16%', align: 'right', render: (r) => r.montant_cdf },
   ];
 
   const pdfRows = data.map((f) => ({
     fournisseur: f.fournisseur.nom,
     commandes: String(f.statistiques.total_commandes),
-    montant: formatCurrency(f.statistiques.total_montant),
+    montant: formatCurrency(f.statistiques.total_montant, '$'),
     produits: String(f.statistiques.total_produits),
-    moyenne: formatCurrency(f.statistiques.moyenne_par_commande),
+    moyenne: formatCurrency(f.statistiques.moyenne_par_commande, '$'),
+    montant_cdf: tauxCdf != null ? formatCurrency(f.statistiques.total_montant * tauxCdf, 'CDF') : '—',
   }));
 
   return (
@@ -82,11 +88,12 @@ export function RapportFournisseur() {
                   stats={[
                     { label: 'Total fournisseurs', value: String(data.length) },
                     { label: 'Total commandes', value: String(totalCommandes) },
-                    { label: 'Montant total', value: formatCurrency(totalMontant) },
+                    { label: 'Montant total', value: formatCurrency(totalMontant, '$') },
                   ]}
                   totals={[
                     { label: 'Total commandes', value: String(totalCommandes) },
-                    { label: 'Montant total', value: formatCurrency(totalMontant) },
+                    { label: 'Montant total', value: formatCurrency(totalMontant, '$') },
+                    { label: 'Montant total (CDF)', value: tauxCdf != null ? formatCurrency(totalMontant * tauxCdf, 'CDF') : '—' },
                   ]}
                 />
               }
@@ -174,7 +181,7 @@ export function RapportFournisseur() {
               </div>
               <div>
                 <p className="text-xs text-gray-500 font-medium">Montant total</p>
-                <p className="text-xl font-bold text-gray-900 font-mono">{formatCurrency(totalMontant)}</p>
+                <p className="text-xl font-bold text-gray-900 font-mono">{formatCurrency(totalMontant, '$')}</p>
               </div>
             </div>
           </CardContent>
@@ -196,12 +203,13 @@ export function RapportFournisseur() {
                     <TableHead className="text-right font-semibold text-gray-600">Montant total</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Produits</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Moyenne/commande</TableHead>
+                    <TableHead className="text-right font-semibold text-gray-600">Montant (CDF)</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {Array.from({ length: 5 }).map((_, i) => (
                     <TableRow key={i} className="animate-pulse">
-                      {Array.from({ length: 5 }).map((_, j) => (
+                      {Array.from({ length: 6 }).map((_, j) => (
                         <TableCell key={j}><div className="h-5 bg-gray-200 rounded" style={{ width: `${60 + j * 15}px` }} /></TableCell>
                       ))}
                     </TableRow>
@@ -225,6 +233,7 @@ export function RapportFournisseur() {
                     <TableHead className="text-right font-semibold text-gray-600">Montant total</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Produits</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Moyenne/commande</TableHead>
+                    <TableHead className="text-right font-semibold text-gray-600">Montant (CDF)</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -232,9 +241,10 @@ export function RapportFournisseur() {
                     <TableRow key={f.fournisseur.id} className={cn('hover:bg-royal-50/50 transition-colors', i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50')}>
                       <TableCell className="font-medium text-gray-900">{f.fournisseur.nom}</TableCell>
                       <TableCell className="text-right font-mono text-sm text-gray-600">{f.statistiques.total_commandes}</TableCell>
-                      <TableCell className="text-right font-mono text-sm font-semibold text-gray-900">{formatCurrency(f.statistiques.total_montant)}</TableCell>
+                      <TableCell className="text-right font-mono text-sm font-semibold text-gray-900">{formatCurrency(f.statistiques.total_montant, '$')}</TableCell>
                       <TableCell className="text-right font-mono text-sm text-gray-600">{f.statistiques.total_produits}</TableCell>
-                      <TableCell className="text-right font-mono text-sm text-gray-600">{formatCurrency(f.statistiques.moyenne_par_commande)}</TableCell>
+                      <TableCell className="text-right font-mono text-sm text-gray-600">{formatCurrency(f.statistiques.moyenne_par_commande, '$')}</TableCell>
+                      <TableCell className="text-right font-mono text-sm text-gray-700">{tauxCdf != null ? formatCurrency(f.statistiques.total_montant * tauxCdf, 'CDF') : '—'}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

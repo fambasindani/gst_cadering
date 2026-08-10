@@ -339,7 +339,8 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
         Route::get('inventaire-valorisee', [RapportController::class, 'inventaireTheoriqueValorisee'])->middleware('permission:rapport:inventaire');
         Route::get('consommations-clients', [RapportController::class, 'consommationsClients'])->middleware('permission:rapport:client');
         Route::get('rupture-stock', [RapportController::class, 'ruptureStock'])->middleware('permission:rapport:stock');
-        Route::get('stock-bas', [RapportController::class, 'stockBas'])->middleware('permission:rapport:stock');
+        // Stock bas visible par tout utilisateur authentifié (pas de permission requise)
+        Route::get('stock-bas', [RapportController::class, 'stockBas']);
     });
 
     // ============================================================

@@ -5,6 +5,8 @@ export interface FicheTechniqueMenuItemData {
   fiche_technique?: { id: number; code: string; nom: string; cout_unitaire: number; rendement: number } | null;
   id_produit: number | null;
   produit?: { id: number; code_article: string; nom: string; prix_unitaire?: number; unite?: { id: number; nom: string; symbole: string } | null } | null;
+  id_partenaire: number | null;
+  partenaire?: { id: number; nom: string } | null;
   designation: string | null;
   pourcentage: number;
   ordre: number;
@@ -32,6 +34,8 @@ export interface FicheTechniqueMenu {
   magasin?: { id: number; nom: string } | null;
   actif: boolean;
   nombre_parties?: number;
+  nombre_items?: number;
+  clients?: Array<{ id: number; nom: string }>;
   parties?: FicheTechniqueMenuPartieData[];
   created_at?: string;
   updated_at?: string;
@@ -44,13 +48,14 @@ export interface FicheTechniqueMenuFormData {
   cycle: string;
   periodicite: string;
   validite: string;
-  id_partenaire: string;
+  id_partenaire: number | null;
   id_magasin: string;
   actif: boolean;
   items: Array<{
     nom_partie: string;
     id_fiche_technique: number | null;
     id_produit: number | null;
+    id_partenaire: number | null;
     pourcentage: number;
   }>;
 }
@@ -90,6 +95,7 @@ export interface RapportItem {
   designation: string;
   code: string;
   type?: 'recette' | 'produit';
+  client?: { id: number; nom: string } | null;
   pourcentage: number;
   coutParPassager: number;
   coutTotal: number;

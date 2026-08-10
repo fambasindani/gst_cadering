@@ -126,8 +126,7 @@ export function FicheTechniqueMenuList() {
                     <TableHead className="font-semibold text-gray-600">Nom</TableHead>
                     <TableHead className="font-semibold text-gray-600">Cycle</TableHead>
                     <TableHead className="font-semibold text-gray-600">Périodicité</TableHead>
-                    <TableHead className="text-center font-semibold text-gray-600">Parties</TableHead>
-                    <TableHead className="font-semibold text-gray-600">Client</TableHead>
+                    <TableHead className="font-semibold text-gray-600">Clients</TableHead>
                     <TableHead className="text-center font-semibold text-gray-600">Actif</TableHead>
                     <TableHead className="text-center w-32 font-semibold text-gray-600">Actions</TableHead>
                   </TableRow>
@@ -139,8 +138,7 @@ export function FicheTechniqueMenuList() {
                       <TableCell><div className="h-5 w-36 bg-gray-200 rounded" /></TableCell>
                       <TableCell><div className="h-5 w-10 bg-gray-200 rounded" /></TableCell>
                       <TableCell><div className="h-5 w-32 bg-gray-200 rounded" /></TableCell>
-                      <TableCell className="text-center"><div className="h-5 w-8 bg-gray-200 rounded mx-auto" /></TableCell>
-                      <TableCell><div className="h-5 w-28 bg-gray-200 rounded" /></TableCell>
+                      <TableCell><div className="h-5 w-32 bg-gray-200 rounded" /></TableCell>
                       <TableCell className="text-center"><div className="h-6 w-14 bg-gray-200 rounded-full mx-auto" /></TableCell>
                       <TableCell className="text-center"><div className="h-8 w-24 bg-gray-200 rounded mx-auto" /></TableCell>
                     </TableRow>
@@ -164,8 +162,7 @@ export function FicheTechniqueMenuList() {
                       <TableHead className="font-semibold text-gray-600">Nom</TableHead>
                       <TableHead className="font-semibold text-gray-600">Cycle</TableHead>
                       <TableHead className="font-semibold text-gray-600">Périodicité</TableHead>
-                      <TableHead className="text-center font-semibold text-gray-600">Parties</TableHead>
-                      <TableHead className="font-semibold text-gray-600">Client</TableHead>
+                      <TableHead className="font-semibold text-gray-600">Clients</TableHead>
                       <TableHead className="text-center font-semibold text-gray-600">Actif</TableHead>
                       <TableHead className="text-center w-32 font-semibold text-gray-600">Actions</TableHead>
                     </TableRow>
@@ -177,10 +174,20 @@ export function FicheTechniqueMenuList() {
                         <TableCell className="font-medium text-gray-900">{f.nom}</TableCell>
                         <TableCell className="text-gray-600">{f.cycle || '-'}</TableCell>
                         <TableCell className="text-gray-600">{f.periodicite || '-'}</TableCell>
-                        <TableCell className="text-center">
-                          <Badge variant="secondary" className="text-xs">{f.nombre_parties ?? 0}</Badge>
+                        <TableCell>
+                          {(f.clients ?? []).length === 0 ? (
+                            <span className="text-gray-400">—</span>
+                          ) : (
+                            <div className="flex flex-wrap gap-1 max-w-xs">
+                              {(f.clients ?? []).slice(0, 3).map((c) => (
+                                <Badge key={c.id} variant="secondary" className="text-xs">{c.nom}</Badge>
+                              ))}
+                              {(f.clients ?? []).length > 3 && (
+                                <Badge variant="outline" className="text-xs">+{(f.clients ?? []).length - 3}</Badge>
+                              )}
+                            </div>
+                          )}
                         </TableCell>
-                        <TableCell className="text-gray-600">{f.partenaire?.nom || '-'}</TableCell>
                         <TableCell className="text-center">
                           <Badge variant={f.actif ? 'success' : 'secondary'} className="text-xs">
                             {f.actif ? 'Oui' : 'Non'}

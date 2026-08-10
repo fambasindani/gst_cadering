@@ -80,6 +80,27 @@ class Produit extends Model
                     ->first();
     }
 
+    public function getPrixPondereAchat()
+    {
+        $lots = $this->lots()
+                    ->where('statut_validation', 'VALIDÉ')
+                    ->where('quantite_disponible', '>', 0)
+                    ->get();
+
+        $qteTotale = 0;
+        $valeurTotale = 0;
+        foreach ($lots as $lot) {
+            $qteTotale += (int) $lot->quantite_disponible;
+            $valeurTotale += (float) $lot->prix_achat_ht_unitaire * (int) $lot->quantite_disponible;
+        }
+
+        if ($qteTotale > 0) {
+            return round($valeurTotale / $qteTotale, 4);
+        }
+
+        return (float) ($this->getDernierPrixAchat()->prix_achat_ht ?? 0);
+    }
+
     public function getStockTotal()
     {
         return $this->lots()

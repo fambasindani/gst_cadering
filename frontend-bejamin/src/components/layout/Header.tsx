@@ -59,7 +59,7 @@ export function Header({ onMenuToggle }: HeaderProps) {
       '/configuration/permissions': 'Permissions',
       '/configuration/utilisateurs': 'Utilisateurs',
       '/rapports/stock': 'Rapport stock',
-      '/rapports/stock/bas': 'Stock bas',
+      '/rapports/stock-bas': 'Stock bas',
       '/rapports/stock/rupture': 'Rupture stock',
       '/rapports/inventaire-theorique': 'Inventaire théorique',
       '/rapports/bon-commande': 'Rapport commandes',

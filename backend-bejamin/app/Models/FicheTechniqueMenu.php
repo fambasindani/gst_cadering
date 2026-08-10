@@ -43,6 +43,11 @@ class FicheTechniqueMenu extends Model
             ->orderBy('ordre');
     }
 
+    public function items()
+    {
+        return $this->hasManyThrough(FicheTechniqueMenuItem::class, FicheTechniqueMenuPartie::class, 'id_fiche_technique_menu', 'id_partie');
+    }
+
     public function entreeFicheTechniques()
     {
         return $this->hasMany(EntreeFicheTechnique::class, 'id_fiche_technique_menu');

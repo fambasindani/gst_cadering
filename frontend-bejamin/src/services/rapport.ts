@@ -39,6 +39,8 @@ export const rapportService = {
       stock_initial_lessiviels: number;
       achats_lessiviels: number;
       conso_food: number;
+      conso_aerienne: number;
+      conso_non_aerienne: number;
     }>>('/rapports/variation-stock/calcul', { params }),
 
   rapportClient: (params?: Record<string, string>) =>

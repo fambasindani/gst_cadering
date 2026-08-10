@@ -156,6 +156,7 @@ export interface RapportSortieLigne {
   quantite: number;
   valeur: number;
   local: string;
+  client?: string;
   numero_lot: string;
 }
 
@@ -168,6 +169,31 @@ export interface RapportSortieData {
   };
 }
 
+export interface RapportAchatLigne {
+  numero: number;
+  date: string;
+  fournisseur: string;
+  article: string;
+  code_article: string;
+  unite: string;
+  prix_unitaire: number;
+  devise: string;
+  quantite: number;
+  valeur: number;
+  numero_lot: string;
+  numero_commande: string;
+}
+
+export interface RapportAchatData {
+  lignes: RapportAchatLigne[];
+  statistiques: {
+    total_lignes: number;
+    total_quantite: number;
+    total_valeur: number;
+    total_fournisseurs: number;
+  };
+}
+
 export interface FournisseurStat {
   fournisseur: Partenaire;
   total_commandes: number;
@@ -176,11 +202,12 @@ export interface FournisseurStat {
 }
 
 export interface AchatFullData {
-  achats: BonCommande[];
+  lignes: RapportAchatLigne[];
   statistiques: {
-    total_achats: number;
-    total_montant: number;
-    par_fournisseur: FournisseurStat[];
+    total_lignes: number;
+    total_quantite: number;
+    total_valeur: number;
+    total_fournisseurs: number;
   };
 }
 

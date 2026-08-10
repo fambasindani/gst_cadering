@@ -12,6 +12,7 @@ import { useIsAdmin } from '../hooks/useIsAdmin';
 import { ConfirmModal } from '../components/ui/confirm-modal';
 import { Modal } from '../components/ui/modal';
 import { bonCommandeService } from '../services/bon-commande';
+import { tauxConversionService } from '../services/taux-conversion';
 import { BonCommandePDF } from '../components/pdf/BonCommandePDF';
 import { ReceptionPDF } from '../components/pdf/ReceptionPDF';
 import type { BonCommande, ReceptionListe } from '../types/bon-commande';
@@ -38,6 +39,7 @@ export function BonCommandeDetails() {
 
   const [bon, setBon] = useState<BonCommande | null>(null);
   const [loading, setLoading] = useState(true);
+  const [tauxCdf, setTauxCdf] = useState<number | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [confirmValidate, setConfirmValidate] = useState(false);
   const [confirmReject, setConfirmReject] = useState(false);
@@ -52,6 +54,12 @@ export function BonCommandeDetails() {
     try {
       const res = await bonCommandeService.get(Number(id));
       if (res.success) setBon(res.data);
+      try {
+        const taux = await tauxConversionService.getActuel();
+        if (taux.success && taux.data) setTauxCdf(Number(taux.data.taux));
+      } catch {
+        // taux indisponible
+      }
     } catch {
       //
     } finally {
@@ -138,7 +146,7 @@ export function BonCommandeDetails() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <PDFDownloadLink document={<BonCommandePDF bon={bon} />} fileName={`BC-${bon.numero_commande}.pdf`}>
+          <PDFDownloadLink document={<BonCommandePDF bon={bon} tauxCdf={tauxCdf} />} fileName={`BC-${bon.numero_commande}.pdf`}>
             {({ loading: pdfLoading }) => (
               <Button variant="outline" className="border-gray-200 text-gray-700 hover:bg-gray-50" disabled={pdfLoading}>
                 <Printer className="w-4 h-4 mr-2" />
@@ -303,6 +311,9 @@ export function BonCommandeDetails() {
                   {bon.statut === 'REÇU PARTIELLEMENT' || bon.statut === 'REÇU' ? (
                     <div className="text-sm text-gray-500 mt-1">Reçu (prix réception): {formatCurrency(totalRecu, deviseCode)}</div>
                   ) : null}
+                  {tauxCdf != null ? (
+                    <div className="text-sm text-gray-500 mt-1">Total (CDF): {formatCurrency(totalRecu * tauxCdf, 'CDF')}</div>
+                  ) : null}
                 </div>
               </div>
             </CardContent>
@@ -419,7 +430,7 @@ export function BonCommandeDetails() {
                 </Button>
               ) : null}
 
-              <PDFDownloadLink document={<BonCommandePDF bon={bon} />} fileName={`BC-${bon.numero_commande}.pdf`}>
+              <PDFDownloadLink document={<BonCommandePDF bon={bon} tauxCdf={tauxCdf} />} fileName={`BC-${bon.numero_commande}.pdf`}>
                 {({ loading: pdfLoading }) => (
                   <Button variant="outline" disabled={pdfLoading} className="w-full justify-start border-gray-200 text-gray-700 hover:bg-gray-50">
                     <Printer className="w-4 h-4 mr-2" />

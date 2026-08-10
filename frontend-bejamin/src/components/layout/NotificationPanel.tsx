@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, CheckCheck, Loader2, Clock, FileText, RotateCcw, AlertTriangle } from 'lucide-react';
+import { Bell, CheckCheck, Loader2, Clock, FileText, RotateCcw, AlertTriangle, PackageMinus } from 'lucide-react';
 import { notificationService } from '../../services/notification';
 import type { NotificationItem } from '../../types/notification';
 import { cn } from '../../lib/utils';
@@ -9,12 +9,14 @@ const typeIcons: Record<string, React.ElementType> = {
   bon_commande_en_attente: FileText,
   retour_en_attente: RotateCcw,
   lot_peremption_proche: AlertTriangle,
+  stock_bas: PackageMinus,
 };
 
 const typeColors: Record<string, string> = {
   bon_commande_en_attente: 'text-amber-600 bg-amber-50',
   retour_en_attente: 'text-blue-600 bg-blue-50',
   lot_peremption_proche: 'text-red-600 bg-red-50',
+  stock_bas: 'text-orange-600 bg-orange-50',
 };
 
 function timeAgo(dateStr: string) {
@@ -100,6 +102,7 @@ export function NotificationPanel() {
       bon_commande_en_attente: '/bon-commande',
       retour_en_attente: '/stock/retour',
       lot_peremption_proche: '/stock/lot-serie',
+      stock_bas: '/rapports/stock-bas',
     };
     const route = typeRoutes[n.type];
     if (route) {

@@ -30,12 +30,16 @@ export function RapportFicheTechniqueView({ data }: { data: RapportFicheTechniqu
             <span className="text-sm text-gray-500 font-mono">N° {data.rapport.id}</span>
           </div>
         </div>
+        <div className="rounded-xl border border-royal-200 bg-royal-50/40 px-5 py-4 mb-4 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <p className="text-[11px] text-royal-700 font-medium uppercase tracking-wide">Client</p>
+            <p className="text-lg font-bold text-gray-900">{data.rapport.partenaire?.nom || menu.partenaire?.nom || '-'}</p>
+          </div>
+        </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           <InfoItem label="Cycle" value={menu.cycle || '-'} />
           <InfoItem label="Périodicité" value={menu.periodicite || '-'} />
           <InfoItem label="Validité" value={menu.validite || '-'} />
-          <InfoItem label="Client" value={menu.partenaire?.nom || '-'} />
-          <InfoItem label="Compagnie" value={data.rapport.partenaire?.nom || '-'} />
           <InfoItem label="Date" value={formatDate(data.rapport.date_rapport)} />
           <InfoItem label="Magasin" value={menu.magasin?.nom || '-'} />
           <InfoItem label="Passagers" value={fmt(passagers, 0)} />
@@ -63,6 +67,7 @@ export function RapportFicheTechniqueView({ data }: { data: RapportFicheTechniqu
                     <tr className="bg-gray-50">
                       <th className="text-left font-semibold text-gray-600 px-5 py-2">Code article</th>
                       <th className="text-left font-semibold text-gray-600 px-5 py-2">Désignation</th>
+                      <th className="text-left font-semibold text-gray-600 px-5 py-2">Client</th>
                       <th className="text-right font-semibold text-gray-600 px-5 py-2">% passagers</th>
                       <th className="text-right font-semibold text-gray-600 px-5 py-2">Coût total</th>
                     </tr>
@@ -72,6 +77,7 @@ export function RapportFicheTechniqueView({ data }: { data: RapportFicheTechniqu
                       <tr key={item.id} className="border-t border-gray-100">
                         <td className="px-5 py-2.5 font-mono text-xs text-royal-700">{item.code}</td>
                         <td className="px-5 py-2.5 text-gray-800 font-medium">{item.designation}</td>
+                        <td className="px-5 py-2.5 text-gray-600">{item.client?.nom || 'Tous'}</td>
                         <td className="px-5 py-2.5 text-right text-gray-600">{fmt(item.pourcentage)} %</td>
                         <td className="px-5 py-2.5 text-right font-mono font-semibold text-royal-700">{formatCurrency(item.coutTotal)}</td>
                       </tr>

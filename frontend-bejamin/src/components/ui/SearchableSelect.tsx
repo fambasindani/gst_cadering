@@ -157,6 +157,7 @@ export function SearchableSelect({
           <Search className="w-4 h-4 shrink-0 text-gray-400" />
         )}
         <span className={cn('flex-1 truncate', !selected && 'text-gray-400')}>
+          {selected?.sousTitre && <span className="mr-1 text-xs font-mono text-gray-500">{selected.sousTitre}</span>}
           {selected ? selected.nom : placeholder}
         </span>
         {value ? (

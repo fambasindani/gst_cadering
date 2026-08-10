@@ -6,6 +6,7 @@ use App\Models\BonCommande;
 use App\Models\Notification;
 use App\Models\Retour;
 use App\Models\Lot;
+use App\Models\Produit;
 use App\Models\Utilisateur;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
@@ -20,6 +21,7 @@ class GenerateNotifications extends Command
         $this->notifyBonsCommandeEnAttente();
         $this->notifyRetoursEnAttente();
         $this->notifyLotsPeremptionProche();
+        $this->notifyStockBas();
         $this->info('Notifications générées avec succès.');
     }
 
@@ -98,6 +100,47 @@ class GenerateNotifications extends Command
                 'message' => "{$lots} lot(s) arrivant à expiration dans les 30 jours",
                 'id_utilisateur' => $user->id,
                 'reference_type' => Lot::class,
+                'reference_id' => null,
+            ]);
+        }
+    }
+
+    private function notifyStockBas()
+    {
+        $produits = Produit::with(['categorie', 'unite'])
+            ->where('actif', true)
+            ->get();
+
+        $stockBas = 0;
+        foreach ($produits as $produit) {
+            $lots = $produit->lots()
+                ->where('statut_validation', 'VALIDÉ')
+                ->get();
+
+            $quantiteTotale = $lots->sum('quantite_disponible');
+            $seuil = $produit->seuil_alerte ?? 0;
+
+            if ($seuil > 0 && $quantiteTotale > 0 && $quantiteTotale <= $seuil) {
+                $stockBas++;
+            }
+        }
+
+        if ($stockBas === 0) return;
+
+        // Le stock bas est visible par tout le monde (aucune vérification de permission)
+        $users = Utilisateur::actif()->get();
+        foreach ($users as $user) {
+            $existing = Notification::where('type', 'stock_bas')
+                ->where('id_utilisateur', $user->id)
+                ->whereNull('read_at')
+                ->exists();
+            if ($existing) continue;
+
+            Notification::create([
+                'type' => 'stock_bas',
+                'message' => "{$stockBas} produit(s) en stock bas (sous le seuil d'alerte)",
+                'id_utilisateur' => $user->id,
+                'reference_type' => Produit::class,
                 'reference_id' => null,
             ]);
         }

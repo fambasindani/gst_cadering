@@ -5,6 +5,7 @@ import { Card, CardContent } from '../../components/ui/card';
 import { ConfirmModal } from '../../components/ui/confirm-modal';
 import { useToast } from '../../hooks/useToast';
 import { avoirService } from '../../services/avoir';
+import { tauxConversionService } from '../../services/taux-conversion';
 import type { Avoir } from '../../types/facturation';
 import { formatCurrency } from '../../lib/format';
 import {
@@ -25,6 +26,7 @@ export function AvoirDetails() {
 
   const [avoir, setAvoir] = useState<Avoir | null>(null);
   const [loading, setLoading] = useState(true);
+  const [tauxCdf, setTauxCdf] = useState<number | null>(null);
 
   const fetchData = useCallback(async () => {
     if (!id) return;
@@ -32,6 +34,8 @@ export function AvoirDetails() {
     try {
       const res = await avoirService.get(Number(id));
       if (res.success) setAvoir(res.data);
+      const tres = await tauxConversionService.getActuel();
+      if (tres.success && tres.data) setTauxCdf(tres.data.taux);
     } catch {
       toast('Erreur de chargement', 'error');
     } finally {
@@ -128,6 +132,10 @@ export function AvoirDetails() {
               <div>
                 <div className="text-sm text-gray-500">Montant HT</div>
                 <div className="text-xl font-semibold text-red-600">{formatCurrency(avoir.montant_ht, avoir.devise?.code)}</div>
+              </div>
+              <div>
+                <div className="text-sm text-gray-500">Montant (CDF)</div>
+                <div className="text-lg font-semibold text-gray-800">{tauxCdf != null ? formatCurrency(avoir.montant_ht * tauxCdf, 'CDF') : '—'}</div>
               </div>
             </CardContent>
           </Card>

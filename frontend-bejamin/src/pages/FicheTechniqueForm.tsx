@@ -58,6 +58,16 @@ const getDernierPrix = async (produitId: number): Promise<number> => {
   return 0;
 };
 
+const getPrixPondere = async (produitId: number): Promise<number> => {
+  try {
+    const res = await produitService.getStock(produitId);
+    if (res.success && res.data && res.data.prix_pondere != null) {
+      return Number(res.data.prix_pondere) || 0;
+    }
+  } catch { /* */ }
+  return getDernierPrix(produitId);
+};
+
 export function FicheTechniqueForm() {
   const { id, action } = useParams<{ id: string; action: string }>();
   const isEdit = action === 'modifier';
@@ -130,12 +140,23 @@ export function FicheTechniqueForm() {
   };
 
   const updateIngredient = (key: string, field: string, value: string | boolean) => {
-    setIngredients(prev => prev.map(r => r.key === key ? { ...r, [field]: value } : r));
+    setIngredients(prev => prev.map(r => {
+      if (r.key !== key) return r;
+      const next = { ...r, [field]: value };
+      if (field === 'poids_net' || field === 'rendement') {
+        const poidsNet = Number(next.poids_net) || 0;
+        const rend = Number(next.rendement) || 0;
+        if (poidsNet > 0 && rend > 0) {
+          next.poids_brut = String(Math.round((poidsNet * 100) / rend * 100) / 100);
+        }
+      }
+      return next;
+    }));
   };
 
   const handleIngredientChange = async (key: string, produitId: string) => {
     updateIngredient(key, 'id_produit_ingredient', produitId);
-    const prix = await getDernierPrix(Number(produitId));
+    const prix = await getPrixPondere(Number(produitId));
     setIngredients(prev => prev.map(r => r.key === key ? { ...r, prix_unitaire: prix } : r));
   };
 
@@ -143,8 +164,8 @@ export function FicheTechniqueForm() {
   const addIngredient = () => setIngredients(prev => [...prev, newRow()]);
 
   const coutMatiereTotal = ingredients.reduce((sum, r) => {
-    const poidsNet = Number(r.poids_net) || 0;
-    return sum + poidsNet * r.prix_unitaire;
+    const poidsBrut = Number(r.poids_brut) || Number(r.poids_net) || 0;
+    return sum + poidsBrut * r.prix_unitaire;
   }, 0);
   const coutUnitaire = values.rendement && Number(values.rendement) > 0 ? coutMatiereTotal / Number(values.rendement) : 0;
   const poidsTotal = ingredients.reduce((sum, r) => sum + (Number(r.poids_net) || 0), 0);
@@ -361,7 +382,7 @@ export function FicheTechniqueForm() {
             </div>
 
             <div className="rounded-lg border border-gray-200 overflow-x-auto">
-              <Table className="min-w-[1000px]">
+              <Table className="min-w-[1100px]">
                 <TableHeader className="bg-gray-50">
                   <TableRow>
                     <TableHead className="font-semibold text-gray-600">Désignation *</TableHead>
@@ -378,7 +399,7 @@ export function FicheTechniqueForm() {
                 </TableHeader>
                 <TableBody>
                   {ingredients.map((r, i) => {
-                    const coutMatiere = (Number(r.poids_net) || 0) * r.prix_unitaire;
+                    const coutMatiere = (Number(r.poids_brut) || Number(r.poids_net) || 0) * r.prix_unitaire;
                     return (
                       <TableRow key={r.key} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
                         <TableCell className="min-w-[200px]">
@@ -401,7 +422,7 @@ export function FicheTechniqueForm() {
                             disabled={isView}
                           />
                         </TableCell>
-                        <TableCell className="w-28">
+                        <TableCell className="w-32">
                           <div className="relative">
                             <Input type="number" min="0" max="100" step="0.01" value={r.rendement}
                               onChange={(e) => updateIngredient(r.key, 'rendement', e.target.value)}
@@ -415,12 +436,12 @@ export function FicheTechniqueForm() {
                             {formatCurrency(r.prix_unitaire)}
                           </div>
                         </TableCell>
-                        <TableCell className="w-24">
+                        <TableCell className="w-32">
                           <Input type="number" step="any" min="0" value={r.poids_net}
                             onChange={(e) => updateIngredient(r.key, 'poids_net', e.target.value)}
                             readOnly={isView} className="text-right h-10 border-gray-200 shadow-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />
                         </TableCell>
-                        <TableCell className="w-24">
+                        <TableCell className="w-32">
                           <Input type="number" step="any" min="0" value={r.poids_brut}
                             onChange={(e) => updateIngredient(r.key, 'poids_brut', e.target.value)}
                             readOnly={isView} className="text-right h-10 border-gray-200 shadow-sm [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none" />

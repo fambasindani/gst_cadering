@@ -16,7 +16,7 @@ import { produitService } from '../services/produit';
 import { partenaireService } from '../services/partenaire';
 import {
   ArrowLeft, Save, Loader2, Plus, Trash2, UtensilsCrossed, Hash, CalendarDays,
-  CalendarRange, Users, MapPin, Percent,
+  CalendarRange, MapPin, Percent,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -25,6 +25,7 @@ interface ItemRow {
   nomPartie: string;
   selection: string;
   pourcentage: string;
+  idPartenaire: string;
 }
 
 let rowKeyCounter = 0;
@@ -33,6 +34,7 @@ const newItem = (): ItemRow => ({
   nomPartie: '',
   selection: '',
   pourcentage: '100',
+  idPartenaire: '',
 });
 
 const PARTIES_SUGGESTEES = ['Entrée', 'Plat', 'Pain et beurre', 'Fromage', 'Dessert', 'Extra'];
@@ -57,7 +59,7 @@ export function FicheTechniqueMenuForm() {
 
   const [values, setValues] = useState({
     code: '', nom: '', description: '', cycle: '', periodicite: '', validite: '',
-    id_partenaire: '', id_magasin: '', actif: true,
+    id_magasin: '', actif: true,
   });
 
   const [items, setItems] = useState<ItemRow[]>([newItem()]);
@@ -91,7 +93,6 @@ export function FicheTechniqueMenuForm() {
             setValues({
               code: f.code, nom: f.nom, description: f.description || '',
               cycle: f.cycle || '', periodicite: f.periodicite || '', validite: f.validite || '',
-              id_partenaire: f.id_partenaire ? String(f.id_partenaire) : '',
               id_magasin: String(f.id_magasin), actif: Boolean(f.actif),
             });
             if (f.parties && f.parties.length > 0) {
@@ -103,6 +104,7 @@ export function FicheTechniqueMenuForm() {
                     nomPartie: p.nom,
                     selection: i.id_fiche_technique ? `recette:${i.id_fiche_technique}` : (i.id_produit ? `produit:${i.id_produit}` : ''),
                     pourcentage: String(i.pourcentage),
+                    idPartenaire: i.id_partenaire ? String(i.id_partenaire) : '',
                   });
                 });
               });
@@ -146,21 +148,16 @@ export function FicheTechniqueMenuForm() {
       setSaving(false);
       return;
     }
-    if (!values.id_partenaire) {
-      setFieldErrors({ id_partenaire: 'Le client est requis.' });
-      setSaving(false);
-      return;
-    }
-    const itemsIncomplets = items.some(i => !i.nomPartie.trim() || !i.selection);
+    const itemsIncomplets = items.some(i => !i.nomPartie.trim() || !i.selection || !i.idPartenaire);
     if (itemsIncomplets) {
-      setFieldErrors({ items: 'Chaque ligne doit avoir un nom de partie et une fiche recette ou un produit.' });
+      setFieldErrors({ items: 'Chaque ligne doit avoir un client, un nom de partie et une fiche recette ou un produit.' });
       setSaving(false);
       return;
     }
 
     const payload = {
       ...values,
-      id_partenaire: values.id_partenaire ? Number(values.id_partenaire) : null,
+      id_partenaire: null,
       id_magasin: Number(values.id_magasin),
       items: items.map(i => {
         const [type, itemId] = i.selection.split(':');
@@ -168,6 +165,7 @@ export function FicheTechniqueMenuForm() {
           nom_partie: i.nomPartie.trim(),
           id_fiche_technique: type === 'recette' ? Number(itemId) : null,
           id_produit: type === 'produit' ? Number(itemId) : null,
+          id_partenaire: i.idPartenaire ? Number(i.idPartenaire) : null,
           pourcentage: Number(i.pourcentage) || 0,
         };
       }),
@@ -250,19 +248,6 @@ export function FicheTechniqueMenuForm() {
               </div>
               <div>
                 <Label className="flex items-center gap-1.5 text-sm font-semibold mb-1.5 text-gray-700">
-                  <Users className="w-4 h-4 text-gray-400" /> Client *
-                </Label>
-                <SearchableSelect
-                  options={clients.map(p => ({ id: p.id, nom: p.nom }))}
-                  value={values.id_partenaire}
-                  onValueChange={(v) => set('id_partenaire', v)}
-                  placeholder="Sélectionner un client (compagnie)"
-                  searchPlaceholder="Rechercher un client..."
-                />
-                {fieldErrors.id_partenaire && <p className="text-xs text-red-500 mt-1">{fieldErrors.id_partenaire}</p>}
-              </div>
-              <div>
-                <Label className="flex items-center gap-1.5 text-sm font-semibold mb-1.5 text-gray-700">
                   <MapPin className="w-4 h-4 text-gray-400" /> Magasin *
                 </Label>
                 <SearchableSelect
@@ -289,7 +274,7 @@ export function FicheTechniqueMenuForm() {
         <Card className="border-0 shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg font-semibold">Items du menu</CardTitle>
-            <p className="text-sm text-gray-500">Chaque ligne a son nom de partie (ex. DESSERT, PLAT). Sélectionnez une fiche recette ou un produit. Le pourcentage indique la part des passagers concernés (100 % = tous).</p>
+            <p className="text-sm text-gray-500">Chaque ligne a son client (compagnie), son nom de partie (ex. DESSERT, PLAT), et sa fiche recette ou son produit. Le pourcentage indique la part des passagers concernés (100 % = tous).</p>
           </CardHeader>
           <CardContent className="space-y-4">
             {fieldErrors.items && (
@@ -300,8 +285,9 @@ export function FicheTechniqueMenuForm() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-gray-50">
-                    <th className="text-left font-semibold text-gray-600 px-4 py-2 w-40">Nom de la partie *</th>
-                    <th className="text-left font-semibold text-gray-600 px-4 py-2 w-1/2">Recette ou produit *</th>
+                    <th className="text-left font-semibold text-gray-600 px-4 py-2 w-64">Client *</th>
+                    <th className="text-left font-semibold text-gray-600 px-4 py-2 w-64">Nom de la partie *</th>
+                    <th className="text-left font-semibold text-gray-600 px-4 py-2">Recette ou produit *</th>
                     <th className="text-left font-semibold text-gray-600 px-4 py-2 w-32">Pourcentage (%)</th>
                     <th className="w-10" />
                   </tr>
@@ -310,12 +296,26 @@ export function FicheTechniqueMenuForm() {
                   {items.map((item) => (
                     <tr key={item.key} className="border-t border-gray-100">
                       <td className="px-4 py-2">
-                        <Input
+                        <SearchableSelect
+                          options={clients.map(p => ({ id: p.id, nom: p.nom }))}
+                          value={item.idPartenaire}
+                          onValueChange={(v) => updateItem(item.key, 'idPartenaire', v)}
+                          placeholder="Sélectionner un client"
+                          searchPlaceholder="Rechercher un client..."
+                          triggerClassName="h-10"
+                        />
+                      </td>
+                      <td className="px-4 py-2">
+                        <select
                           value={item.nomPartie}
                           onChange={(e) => updateItem(item.key, 'nomPartie', e.target.value)}
-                          placeholder="Ex : DESSERT"
-                          list={`parties-suggestions`}
-                        />
+                          className="w-full h-10 rounded-lg border border-gray-200 bg-white px-3 text-sm text-gray-900 focus:border-royal-500 focus:ring-1 focus:ring-royal-500 outline-none"
+                        >
+                          <option value="">Sélectionner une partie</option>
+                          {PARTIES_SUGGESTEES.map(s => (
+                            <option key={s} value={s}>{s}</option>
+                          ))}
+                        </select>
                       </td>
                       <td className="px-4 py-2">
                         <SearchableSelect
@@ -356,9 +356,6 @@ export function FicheTechniqueMenuForm() {
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <datalist id={`parties-suggestions`}>
-                {PARTIES_SUGGESTEES.map(s => <option key={s} value={s} />)}
-              </datalist>
               <Button type="button" variant="outline" onClick={addItem} className="border-gray-300 text-gray-700 hover:bg-gray-50">
                 <Plus className="w-4 h-4 mr-1.5" /> Ajouter une ligne
               </Button>

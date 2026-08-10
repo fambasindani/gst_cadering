@@ -45,10 +45,6 @@ export const menuItems: MenuItem[] = [
     subItems: [
       { title: 'Bon de commande', path: '/validation/bon-commande', permission: 'config:bon_commande:validate' },
       { title: 'Entrer stock', path: '/validation/entrer-stock', permission: 'config:mouvements:create' },
-      { title: 'Période inventaire', path: '/validation/periode-inventaire', permission: 'config:periode_inventaire:view' },
-      { title: 'Saisie inventaire', path: '/validation/saisie-inventaire', permission: 'config:inventaire:create' },
-      { title: 'Ajustement', path: '/validation/ajustement', permission: 'config:inventaire:view' },
-      { title: 'Ajustement inventaire', path: '/validation/ajustement-produit', permission: 'config:inventaire:view' },
     ]
   },
   { 
@@ -111,7 +107,19 @@ export const menuItems: MenuItem[] = [
       { title: 'Fournisseur', path: '/partenaire?type=fournisseur', permission: 'config:partenaires:view' },
     ]
   },
-  { title: 'Audit', icon: 'ClipboardList', path: '/audit', permission: 'audit:view' },
+  {
+    title: 'Audit',
+    icon: 'ClipboardList',
+    path: '/audit',
+    permission: 'audit:view',
+    subItems: [
+      { title: 'Journal', path: '/audit', permission: 'audit:view' },
+      { title: 'Période inventaire', path: '/validation/periode-inventaire', permission: 'config:periode_inventaire:view' },
+      { title: 'Saisie inventaire', path: '/validation/saisie-inventaire', permission: 'config:inventaire:create' },
+      { title: 'Ajustement', path: '/validation/ajustement', permission: 'config:inventaire:view' },
+      { title: 'Ajustement inventaire', path: '/validation/ajustement-produit', permission: 'config:inventaire:view' },
+    ]
+  },
   { 
     title: 'Rapports', 
     icon: 'BarChart', 
@@ -128,7 +136,7 @@ export const menuItems: MenuItem[] = [
       { title: 'Rapport Fournisseur', path: '/rapports/fournisseur', permission: 'rapport:stock' },
       { title: 'Inventaire Théorique', path: '/rapports/inventaire-theorique', permission: 'rapport:inventaire' },
       { title: 'Rupture Stock', path: '/rapports/rupture-stock', permission: 'rapport:stock' },
-      { title: 'Stock bas', path: '/rapports/stock-bas', permission: 'rapport:stock' },
+      { title: 'Stock bas', path: '/rapports/stock-bas' },
     ]
   },
 ];

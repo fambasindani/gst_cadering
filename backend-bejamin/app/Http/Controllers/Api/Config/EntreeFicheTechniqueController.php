@@ -82,10 +82,11 @@ class EntreeFicheTechniqueController extends Controller
             $validated = $request->validate([
                 'id_fiche_technique_menu' => 'required|exists:fiche_technique_menu,id',
                 'nombre_passagers' => 'required|integer|min:1',
+                'id_partenaire' => 'nullable|exists:partenaires,id',
             ]);
 
             $menu = $this->chargerMenu($validated['id_fiche_technique_menu']);
-            $detail = $this->calculerRapport($menu, $validated['nombre_passagers']);
+            $detail = $this->calculerRapport($menu, $validated['nombre_passagers'], $validated['id_partenaire'] ?? null);
 
             return response()->json([
                 'success' => true,
@@ -138,7 +139,7 @@ class EntreeFicheTechniqueController extends Controller
 
                 DB::commit();
 
-                $detail = $this->calculerRapport($menu, $validated['nombre_passagers']);
+                $detail = $this->calculerRapport($menu, $validated['nombre_passagers'], $validated['id_partenaire']);
 
                 return response()->json([
                     'success' => true,
@@ -178,7 +179,7 @@ class EntreeFicheTechniqueController extends Controller
                 ->findOrFail($id);
 
             $menu = $this->chargerMenu($rapport->id_fiche_technique_menu);
-            $detail = $this->calculerRapport($menu, $rapport->nombre_passagers);
+            $detail = $this->calculerRapport($menu, $rapport->nombre_passagers, $rapport->id_partenaire);
 
             return response()->json([
                 'success' => true,
@@ -231,13 +232,14 @@ class EntreeFicheTechniqueController extends Controller
             'parties.items.ficheTechnique.lignes.ingredient',
             'parties.items.ficheTechnique.lignes.unite',
             'parties.items.produit.unite',
+            'parties.items.partenaire',
         ])->findOrFail($menuId);
     }
 
     /**
      * Calcule le rapport complet : détail par partie + récapitulatif articles.
      */
-    private function calculerRapport(FicheTechniqueMenu $menu, int $passagers): array
+    private function calculerRapport(FicheTechniqueMenu $menu, int $passagers, ?int $clientId = null): array
     {
         $parties = [];
         $articles = [];
@@ -247,9 +249,18 @@ class EntreeFicheTechniqueController extends Controller
             $items = [];
 
             foreach ($partie->items as $item) {
+                // Filtrer par client du rapport (les items sans client concernent tous les clients)
+                if ($item->id_partenaire !== null && (int) $item->id_partenaire !== (int) $clientId) {
+                    continue;
+                }
+
                 $pourcentage = (float) $item->pourcentage;
                 $pct = $pourcentage / 100;
                 $composants = [];
+
+                $clientItem = $item->partenaire
+                    ? ['id' => $item->partenaire->id, 'nom' => $item->partenaire->nom]
+                    : null;
 
                 // Item = produit (non recette)
                 if ($item->produit) {
@@ -279,6 +290,7 @@ class EntreeFicheTechniqueController extends Controller
                         'designation' => $item->designation ?? $produit->nom,
                         'code' => $produit->code_article,
                         'type' => 'produit',
+                        'client' => $clientItem,
                         'pourcentage' => $pourcentage,
                         'coutParPassager' => round($prixUnitaire * $pct, 2),
                         'coutTotal' => round($coutItem, 2),
@@ -325,11 +337,16 @@ class EntreeFicheTechniqueController extends Controller
                     'designation' => $item->designation ?? $recette->nom,
                     'code' => $recette->code,
                     'type' => 'recette',
+                    'client' => $clientItem,
                     'pourcentage' => $pourcentage,
                     'coutParPassager' => round($coutParPassager, 2),
                     'coutTotal' => round($coutItem, 2),
                     'composants' => $composants,
                 ];
+            }
+
+            if (count($items) === 0) {
+                continue;
             }
 
             $parties[] = [

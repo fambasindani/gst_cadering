@@ -52,8 +52,8 @@ class LigneFicheTechnique extends Model
 
     public function calculateCout()
     {
-        $this->prix_unitaire = $this->ingredient->getDernierPrixAchat()->prix_achat_ht ?? 0;
-        $this->cout_total = $this->poids_net * $this->prix_unitaire;
+        $this->prix_unitaire = $this->ingredient ? $this->ingredient->getPrixPondereAchat() : 0;
+        $this->cout_total = ($this->poids_brut ?: $this->poids_net) * $this->prix_unitaire;
         $this->save();
         return $this->cout_total;
     }

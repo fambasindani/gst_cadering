@@ -199,7 +199,9 @@ export function StockMouvementProduitDetails() {
                             </TableCell>
                             <TableCell className="font-mono text-sm text-gray-700">{m.lot?.numero_lot || '-'}</TableCell>
                             <TableCell className="hidden md:table-cell text-sm text-gray-600">{m.lot?.magasin?.nom || m.magasin?.nom || '-'}</TableCell>
-                            <TableCell className="hidden lg:table-cell text-sm text-gray-600">{m.partenaire?.nom || '-'}</TableCell>
+                            <TableCell className="hidden lg:table-cell text-sm text-gray-600">
+                              {m.partenaire?.nom || (isEntree ? m.lot?.partenaire?.nom : null) || '-'}
+                            </TableCell>
                             <TableCell className={cn('text-right font-mono text-sm font-semibold', isEntree ? 'text-emerald-700' : 'text-red-600')}>
                               {isEntree ? '+' : '-'}{m.quantite}
                             </TableCell>

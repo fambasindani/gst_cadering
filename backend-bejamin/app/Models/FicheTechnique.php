@@ -80,7 +80,7 @@ class FicheTechnique extends Model
 
     public function getPrixKg()
     {
-        $poidsTotal = $this->lignes->sum('poids_net');
+        $poidsTotal = $this->lignes->sum('poids_brut');
         if ($poidsTotal > 0) {
             return $this->cout_total / $poidsTotal;
         }

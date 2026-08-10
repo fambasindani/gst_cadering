@@ -87,7 +87,11 @@ export function RapportFicheTechnique() {
     }
     setComputing(true);
     try {
-      const res = await entreeFicheTechniqueService.apercu({ id_fiche_technique_menu: Number(menuId), nombre_passagers: Number(passagers) });
+      const res = await entreeFicheTechniqueService.apercu({
+        id_fiche_technique_menu: Number(menuId),
+        nombre_passagers: Number(passagers),
+        id_partenaire: compagnieId ? Number(compagnieId) : null,
+      });
       if (res.success) setPreview(res.data);
     } catch {
       toast('Erreur lors du calcul de l\'aperçu', 'error');
@@ -98,7 +102,7 @@ export function RapportFicheTechnique() {
 
   const handleSave = async () => {
     if (!menuId || !compagnieId || !passagers || Number(passagers) < 1) {
-      toast('Renseignez la fiche technique, la compagnie et le nombre de passagers', 'error');
+      toast('Renseignez la fiche technique, le client et le nombre de passagers', 'error');
       return;
     }
     setSaving(true);
@@ -141,7 +145,7 @@ export function RapportFicheTechnique() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Rapport fiche technique</h1>
-        <p className="text-sm text-gray-500 mt-1">Sélectionnez la date, la compagnie, la fiche technique et le nombre de passagers, puis validez pour obtenir le rapport.</p>
+        <p className="text-sm text-gray-500 mt-1">Sélectionnez la date, le client, la fiche technique et le nombre de passagers, puis validez pour obtenir le rapport.</p>
       </div>
 
       <Card className="border-0 shadow-sm">
@@ -163,14 +167,14 @@ export function RapportFicheTechnique() {
             </div>
             <div>
               <Label className="flex items-center gap-1.5 text-sm font-semibold mb-1.5 text-gray-700">
-                <Building2 className="w-4 h-4 text-gray-400" /> Compagnie *
+                <Building2 className="w-4 h-4 text-gray-400" /> Client *
               </Label>
               <SearchableSelect
                 options={compagnies.map(c => ({ id: c.id, nom: c.nom }))}
                 value={compagnieId}
                 onValueChange={setCompagnieId}
-                placeholder="Sélectionner une compagnie"
-                searchPlaceholder="Rechercher une compagnie..."
+                placeholder="Sélectionner un client"
+                searchPlaceholder="Rechercher un client..."
               />
             </div>
             <div>
@@ -261,7 +265,7 @@ export function RapportFicheTechnique() {
                       <th className="text-left font-semibold text-gray-600 px-4 py-3">N°</th>
                       <th className="text-left font-semibold text-gray-600 px-4 py-3">Date</th>
                       <th className="text-left font-semibold text-gray-600 px-4 py-3">Fiche technique</th>
-                      <th className="text-left font-semibold text-gray-600 px-4 py-3">Compagnie</th>
+                      <th className="text-left font-semibold text-gray-600 px-4 py-3">Client</th>
                       <th className="text-right font-semibold text-gray-600 px-4 py-3">Passagers</th>
                       <th className="text-center w-28 font-semibold text-gray-600 px-4 py-3">Actions</th>
                     </tr>

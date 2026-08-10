@@ -112,17 +112,22 @@ class FicheTechniqueController extends Controller
                 // Créer les lignes
                 foreach ($validated['lignes'] as $ligne) {
                     $ingredient = Produit::find($ligne['id_produit_ingredient']);
-                    $prixUnitaire = $ingredient->getDernierPrixAchat()->prix_achat_ht ?? 0;
-                    $coutTotal = $ligne['poids_net'] * $prixUnitaire;
+                        $prixUnitaire = $ingredient ? $ingredient->getPrixPondereAchat() : 0;
+                        $rendLigne = $ligne['rendement'] ?? 100;
+                        $poidsBrut = $ligne['poids_brut'] ?? null;
+                        if ($poidsBrut === null && $rendLigne > 0) {
+                            $poidsBrut = round($ligne['poids_net'] * 100 / $rendLigne, 3);
+                        }
+                        $coutTotal = ($poidsBrut ?? $ligne['poids_net']) * $prixUnitaire;
 
                     LigneFicheTechnique::create([
                         'id_fiche_technique' => $fiche->id,
                         'id_produit_ingredient' => $ligne['id_produit_ingredient'],
                         'id_unite' => $ligne['id_unite'],
-                        'rendement' => $ligne['rendement'] ?? 100,
+                        'rendement' => $rendLigne,
                         'prix_unitaire' => $prixUnitaire,
                         'poids_net' => $ligne['poids_net'],
-                        'poids_brut' => $ligne['poids_brut'] ?? $ligne['poids_net'],
+                        'poids_brut' => $poidsBrut,
                         'cout_total' => $coutTotal,
                         'rendement_apres_cuisson' => $ligne['rendement_apres_cuisson'] ?? false,
                         'commentaire' => $ligne['commentaire'] ?? null,
@@ -235,17 +240,22 @@ class FicheTechniqueController extends Controller
 
                     foreach ($validated['lignes'] as $ligne) {
                         $ingredient = Produit::find($ligne['id_produit_ingredient']);
-                        $prixUnitaire = $ingredient->getDernierPrixAchat()->prix_achat_ht ?? 0;
-                        $coutTotal = $ligne['poids_net'] * $prixUnitaire;
+                    $prixUnitaire = $ingredient ? $ingredient->getPrixPondereAchat() : 0;
+                    $rendLigne = $ligne['rendement'] ?? 100;
+                    $poidsBrut = $ligne['poids_brut'] ?? null;
+                    if ($poidsBrut === null && $rendLigne > 0) {
+                        $poidsBrut = round($ligne['poids_net'] * 100 / $rendLigne, 3);
+                    }
+                    $coutTotal = ($poidsBrut ?? $ligne['poids_net']) * $prixUnitaire;
 
                         LigneFicheTechnique::create([
                             'id_fiche_technique' => $fiche->id,
                             'id_produit_ingredient' => $ligne['id_produit_ingredient'],
                             'id_unite' => $ligne['id_unite'],
-                            'rendement' => $ligne['rendement'] ?? 100,
+                            'rendement' => $rendLigne,
                             'prix_unitaire' => $prixUnitaire,
                             'poids_net' => $ligne['poids_net'],
-                            'poids_brut' => $ligne['poids_brut'] ?? $ligne['poids_net'],
+                            'poids_brut' => $poidsBrut,
                             'cout_total' => $coutTotal,
                             'rendement_apres_cuisson' => $ligne['rendement_apres_cuisson'] ?? false,
                             'commentaire' => $ligne['commentaire'] ?? null,

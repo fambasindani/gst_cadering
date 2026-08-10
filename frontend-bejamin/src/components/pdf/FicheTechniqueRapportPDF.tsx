@@ -74,8 +74,7 @@ export function FicheTechniqueRapportPDF({ data }: { data: RapportFicheTechnique
           <View style={styles.infoBox}><Text style={styles.infoLabel}>Cycle</Text><Text style={styles.infoValue}>{menu.cycle || '-'}</Text></View>
           <View style={styles.infoBox}><Text style={styles.infoLabel}>Périodicité</Text><Text style={styles.infoValue}>{menu.periodicite || '-'}</Text></View>
           <View style={styles.infoBox}><Text style={styles.infoLabel}>Validité</Text><Text style={styles.infoValue}>{menu.validite || '-'}</Text></View>
-          <View style={styles.infoBox}><Text style={styles.infoLabel}>Client</Text><Text style={styles.infoValue}>{menu.partenaire?.nom || '-'}</Text></View>
-          <View style={styles.infoBox}><Text style={styles.infoLabel}>Compagnie</Text><Text style={styles.infoValue}>{data.rapport.partenaire?.nom || '-'}</Text></View>
+          <View style={styles.infoBox}><Text style={styles.infoLabel}>Client</Text><Text style={styles.infoValue}>{data.rapport.partenaire?.nom || menu.partenaire?.nom || '-'}</Text></View>
           <View style={styles.infoBox}><Text style={styles.infoLabel}>Date</Text><Text style={styles.infoValue}>{formatDate(data.rapport.date_rapport)}</Text></View>
           <View style={styles.infoBox}><Text style={styles.infoLabel}>Magasin</Text><Text style={styles.infoValue}>{menu.magasin?.nom || '-'}</Text></View>
           <View style={styles.infoBox}><Text style={styles.infoLabel}>Passagers</Text><Text style={styles.infoValue}>{fmt(passagers, 0)}</Text></View>

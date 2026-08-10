@@ -1,11 +1,13 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent } from '../../components/ui/card';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { VariationStockPDF } from '../../components/pdf/VariationStockPDF';
 import { rapportService } from '../../services/rapport';
-import { RefreshCw, Download, Calendar, Calculator } from 'lucide-react';
+import { partenaireService } from '../../services/partenaire';
+import { SearchableSelect } from '../../components/ui/SearchableSelect';
+import { RefreshCw, Download, Calendar, Calculator, Users, Percent } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 function formatNumber(v: number): string {
@@ -25,6 +27,18 @@ export function VariationStock() {
   const [dateFin, setDateFin] = useState('');
   const [values, setValues] = useState<Record<string, string>>({});
   const [calculating, setCalculating] = useState(false);
+
+  const [clients, setClients] = useState<{ id: number; nom: string }[]>([]);
+  const [clientId, setClientId] = useState('');
+  const [ratioCA, setRatioCA] = useState('');
+  const [ratioResult, setRatioResult] = useState<{ client: string; conso: number; ca: number; ratio: number } | null>(null);
+  const [ratioLoading, setRatioLoading] = useState(false);
+
+  useEffect(() => {
+    partenaireService.getClients({ per_page: '500' })
+      .then((r) => { if (r.success) setClients(r.data.data.map((c) => ({ id: c.id, nom: c.nom }))); })
+      .catch(() => {});
+  }, []);
 
   const set = (key: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setValues((prev) => ({ ...prev, [key]: e.target.value }));
@@ -50,12 +64,44 @@ export function VariationStock() {
           stockInitial2: String(d.stock_initial_lessiviels ?? 0),
           achatsLessiviels: String(d.achats_lessiviels ?? 0),
           consoFood: String(d.conso_food ?? 0),
+          consoAerienne: String(d.conso_aerienne ?? 0),
+          consoNonAerienne: String(d.conso_non_aerienne ?? 0),
         }));
       }
     } catch {
       //
     } finally {
       setCalculating(false);
+    }
+  };
+
+  useEffect(() => {
+    calculer();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const calculerRatio = async () => {
+    if (!clientId) return;
+    setRatioLoading(true);
+    try {
+      const params: Record<string, string> = { client_id: clientId };
+      if (dateDebut) params.date_debut = dateDebut;
+      if (dateFin) params.date_fin = dateFin;
+      const res = await rapportService.rapportClient(params);
+      if (res.success) {
+        const conso = res.data.statistiques?.total_valeur ?? 0;
+        const ca = Number(ratioCA) || 0;
+        setRatioResult({
+          client: res.data.lignes?.[0]?.client || '',
+          conso,
+          ca,
+          ratio: conso > 0 ? ca / conso : 0,
+        });
+      }
+    } catch {
+      //
+    } finally {
+      setRatioLoading(false);
     }
   };
 
@@ -220,6 +266,79 @@ export function VariationStock() {
               </tbody>
             </table>
           </div>
+        </CardContent>
+      </Card>
+
+      <Card className="border-0 shadow-sm">
+        <CardContent className="p-5">
+          <div className="flex items-center gap-2 mb-4">
+            <div className="p-1.5 rounded-lg bg-royal-100 text-royal-700">
+              <Percent className="w-4 h-4" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Ratio d'un client</h2>
+              <p className="text-sm text-gray-500">Chiffre d'affaires / Consommation par période</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div>
+              <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-1.5">
+                <Users className="w-4 h-4 text-gray-400" />
+                Client
+              </label>
+              <SearchableSelect
+                options={clients}
+                value={clientId}
+                onValueChange={setClientId}
+                placeholder="Sélectionner un client"
+                searchPlaceholder="Rechercher un client..."
+                className="w-full"
+              />
+            </div>
+            <div>
+              <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-1.5">
+                <Calendar className="w-4 h-4 text-gray-400" />
+                Periode
+              </label>
+              <div className="flex items-center gap-2">
+                <Input type="date" value={dateDebut} onChange={(e) => setDateDebut(e.target.value)} className="h-11 border-gray-200 shadow-sm" />
+                <span className="text-sm text-gray-600 font-medium">au</span>
+                <Input type="date" value={dateFin} onChange={(e) => setDateFin(e.target.value)} className="h-11 border-gray-200 shadow-sm" />
+              </div>
+            </div>
+            <div>
+              <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-1.5">
+                <Calculator className="w-4 h-4 text-gray-400" />
+                Chiffre d'affaires ($)
+              </label>
+              <Input type="number" value={ratioCA} onChange={(e) => setRatioCA(e.target.value)} placeholder="0.00" className={moneyStyle} />
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <Button onClick={calculerRatio} disabled={!clientId || ratioLoading} className="bg-royal-700 hover:bg-royal-800 text-white shadow-sm font-medium h-11 px-5">
+              <Calculator className="w-4 h-4 mr-2" />
+              {ratioLoading ? 'Calcul...' : 'Calculer le ratio'}
+            </Button>
+          </div>
+
+          {ratioResult && (
+            <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase">Client</p>
+                <p className="mt-1 font-bold text-gray-900">{ratioResult.client || '—'}</p>
+              </div>
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                <p className="text-xs font-semibold text-gray-500 uppercase">Consommation ($)</p>
+                <p className="mt-1 font-bold font-mono text-gray-900">{formatNumber(ratioResult.conso)}</p>
+              </div>
+              <div className="rounded-lg border border-royal-200 bg-royal-50 p-4">
+                <p className="text-xs font-semibold text-royal-700 uppercase">Ratio (CA / Conso)</p>
+                <p className="mt-1 font-bold font-mono text-royal-700">{ratioResult.conso > 0 ? ratioResult.ratio.toFixed(2) : '—'}</p>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

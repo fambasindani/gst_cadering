@@ -13,7 +13,7 @@ export const entreeFicheTechniqueService = {
   generer: (data: RapportPayload) =>
     api.post<RapportFicheTechniqueResponse>('/config/entree-fiche-technique/generer', data),
 
-  apercu: (data: Pick<RapportPayload, 'id_fiche_technique_menu' | 'nombre_passagers'>) =>
+  apercu: (data: Pick<RapportPayload, 'id_fiche_technique_menu' | 'nombre_passagers'> & { id_partenaire?: number | null }) =>
     api.post<RapportFicheTechniqueResponse>('/config/entree-fiche-technique/apercu', data),
 
   get: (id: number) =>

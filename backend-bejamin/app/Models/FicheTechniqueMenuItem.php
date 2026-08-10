@@ -12,6 +12,7 @@ class FicheTechniqueMenuItem extends Model
         'id_partie',
         'id_fiche_technique',
         'id_produit',
+        'id_partenaire',
         'designation',
         'pourcentage',
         'ordre'
@@ -35,5 +36,10 @@ class FicheTechniqueMenuItem extends Model
     public function produit()
     {
         return $this->belongsTo(Produit::class, 'id_produit');
+    }
+
+    public function partenaire()
+    {
+        return $this->belongsTo(Partenaire::class, 'id_partenaire');
     }
 }

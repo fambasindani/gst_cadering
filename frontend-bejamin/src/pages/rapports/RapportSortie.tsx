@@ -9,6 +9,7 @@ import { PDFDownloadLink } from '@react-pdf/renderer';
 import { RapportTablePDF } from '../../components/pdf/RapportTablePDF';
 import type { Column } from '../../components/pdf/RapportTablePDF';
 import { rapportService } from '../../services/rapport';
+import { tauxConversionService } from '../../services/taux-conversion';
 import type { RapportSortieData } from '../../types/rapport';
 import { RefreshCw, Package, Download, Calendar, MapPin } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -35,6 +36,7 @@ export function RapportSortie() {
   const [data, setData] = useState<RapportSortieData | null>(null);
   const [loading, setLoading] = useState(true);
   const [searched, setSearched] = useState(false);
+  const [tauxCdf, setTauxCdf] = useState<number | null>(null);
 
   const lignes = data?.lignes ?? [];
   const stats = data?.statistiques;
@@ -43,7 +45,7 @@ export function RapportSortie() {
     setLoading(true);
     try {
       const params: Record<string, string> = {};
-      if (localSearch.trim()) params.local = localSearch.trim();
+      if (localSearch.trim()) params.client = localSearch.trim();
       if (dateDebut) params.date_debut = dateDebut;
       if (dateFin) params.date_fin = dateFin;
       const res = await rapportService.rapportSortie(params);
@@ -51,6 +53,8 @@ export function RapportSortie() {
         setData(res.data);
         setSearched(true);
       }
+      const tres = await tauxConversionService.getActuel();
+      if (tres.success && tres.data) setTauxCdf(tres.data.taux);
     } catch {
       //
     } finally {
@@ -62,13 +66,14 @@ export function RapportSortie() {
 
   const pdfColumns: Column[] = [
     { key: 'numero', label: 'N°', width: '4%', align: 'right', render: (r) => r.numero },
-    { key: 'date', label: 'Date', width: '12%', render: (r) => r.date },
-    { key: 'article', label: 'Article', width: '28%', render: (r) => r.article },
-    { key: 'unite', label: 'Unit', width: '7%', render: (r) => r.unite },
-    { key: 'prix', label: 'Prix unit', width: '15%', align: 'right', render: (r) => formatMoney(Number(r.prix_unitaire), r.devise) },
-    { key: 'qte', label: 'Qté', width: '10%', align: 'right', render: (r) => r.quantite },
-    { key: 'valeur', label: 'Valeur', width: '16%', align: 'right', render: (r) => formatMoney(Number(r.valeur), r.devise) },
-    { key: 'local', label: 'Local', width: '8%', render: (r) => r.local },
+    { key: 'date', label: 'Date', width: '10%', render: (r) => r.date },
+    { key: 'article', label: 'Article', width: '24%', render: (r) => r.article },
+    { key: 'unite', label: 'Unit', width: '6%', render: (r) => r.unite },
+    { key: 'prix', label: 'Prix unit', width: '12%', align: 'right', render: (r) => formatMoney(Number(r.prix_unitaire), '$') },
+    { key: 'qte', label: 'Qté', width: '8%', align: 'right', render: (r) => r.quantite },
+    { key: 'valeur', label: 'Valeur', width: '14%', align: 'right', render: (r) => formatMoney(Number(r.valeur), '$') },
+    { key: 'valeur_cdf', label: 'Valeur (CDF)', width: '16%', align: 'right', render: (r) => r.valeur_cdf },
+    { key: 'client', label: 'Client', width: '8%', render: (r) => r.client },
   ];
 
   const pdfRows = lignes.map((l) => ({
@@ -80,7 +85,8 @@ export function RapportSortie() {
     prix_unitaire: String(l.prix_unitaire),
     quantite: String(l.quantite),
     valeur: String(l.valeur),
-    local: l.local,
+    valeur_cdf: tauxCdf != null ? formatMoney(Number(l.valeur) * tauxCdf, 'CDF') : '—',
+    client: l.client || '—',
   }));
 
   return (
@@ -99,11 +105,11 @@ export function RapportSortie() {
                   orientation="landscape"
                   columns={pdfColumns}
                   rows={pdfRows}
-                  period={`Période : du ${formatDateFr(dateDebut)} au ${formatDateFr(dateFin)}${localSearch ? ` — Local : ${localSearch}` : ''}`}
+                  period={`Période : du ${formatDateFr(dateDebut)} au ${formatDateFr(dateFin)}${localSearch ? ` — Client : ${localSearch}` : ''}`}
                   stats={[
                     { label: 'Lignes', value: formatNumber(stats?.total_lignes ?? 0) },
                     { label: 'Qté totale', value: formatNumber(stats?.total_quantite ?? 0) },
-                    { label: 'Valeur totale', value: formatMoney(stats?.total_valeur ?? 0) },
+                    { label: 'Valeur totale', value: formatMoney(stats?.total_valeur ?? 0, '$') },
                   ]}
                 />
               }
@@ -130,14 +136,14 @@ export function RapportSortie() {
             <div className="flex-1">
               <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-1.5">
                 <MapPin className="w-4 h-4 text-gray-400" />
-                Local
+                Client
               </label>
               <Input
                 type="text"
                 value={localSearch}
                 onChange={(e) => setLocalSearch(e.target.value)}
                 onKeyDown={(e) => { if (e.key === 'Enter') fetchData(); }}
-                placeholder="Magasin ou emplacement"
+                placeholder="Nom du client"
                 className="h-11 border-gray-200 shadow-sm"
               />
             </div>
@@ -181,7 +187,7 @@ export function RapportSortie() {
               <Table>
                 <TableHeader className="bg-gray-50">
                   <TableRow>
-                    {['N°', 'Date', 'Article', 'Unit', 'Prix unit', 'Qté', 'Valeur', 'Local'].map((h) => (
+                    {['N°', 'Date', 'Article', 'Unit', 'Prix unit', 'Qté', 'Valeur', 'Valeur (CDF)', 'Client'].map((h) => (
                       <TableHead key={h} className="font-semibold text-gray-600">{h}</TableHead>
                     ))}
                   </TableRow>
@@ -189,7 +195,7 @@ export function RapportSortie() {
                 <TableBody>
                   {Array.from({ length: 5 }).map((_, i) => (
                     <TableRow key={i} className="animate-pulse">
-                      {Array.from({ length: 8 }).map((_, j) => (
+                      {Array.from({ length: 9 }).map((_, j) => (
                         <TableCell key={j}><div className="h-5 bg-gray-200 rounded" style={{ width: `${45 + j * 12}px` }} /></TableCell>
                       ))}
                     </TableRow>
@@ -201,7 +207,7 @@ export function RapportSortie() {
             <div className="text-center py-12 text-gray-500">
               <Package className="w-12 h-12 mx-auto text-gray-300 mb-3" />
               <p className="text-lg font-medium text-gray-700">Aucune donnée</p>
-              <p className="text-sm mt-1">{searched ? 'Aucune sortie sur la période sélectionnée' : 'Sélectionnez un local ou une période puis cliquez sur Générer'}</p>
+              <p className="text-sm mt-1">{searched ? 'Aucune sortie sur la période sélectionnée' : 'Sélectionnez un client ou une période puis cliquez sur Générer'}</p>
             </div>
           ) : (
             <div className="overflow-x-auto rounded-lg border border-gray-200">
@@ -215,7 +221,8 @@ export function RapportSortie() {
                     <TableHead className="text-right font-semibold text-gray-600">Prix unit</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Qté</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Valeur</TableHead>
-                    <TableHead className="font-semibold text-gray-600">Local</TableHead>
+                    <TableHead className="text-right font-semibold text-gray-600">Valeur (CDF)</TableHead>
+                    <TableHead className="font-semibold text-gray-600">Client</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -225,10 +232,11 @@ export function RapportSortie() {
                       <TableCell className="text-sm text-gray-600">{formatDateFr(l.date)}</TableCell>
                       <TableCell className="font-medium text-gray-900">{l.article}</TableCell>
                       <TableCell className="text-sm text-gray-600">{l.unite}</TableCell>
-                      <TableCell className="text-right font-mono text-sm text-gray-700">{formatMoney(l.prix_unitaire, l.devise)}</TableCell>
+                      <TableCell className="text-right font-mono text-sm text-gray-700">{formatMoney(l.prix_unitaire, '$')}</TableCell>
                       <TableCell className="text-right font-mono text-sm text-gray-700">{l.quantite}</TableCell>
-                      <TableCell className="text-right font-mono text-sm font-semibold text-gray-900">{formatMoney(l.valeur, l.devise)}</TableCell>
-                      <TableCell className="text-sm text-gray-600">{l.local}</TableCell>
+                      <TableCell className="text-right font-mono text-sm font-semibold text-gray-900">{formatMoney(l.valeur, '$')}</TableCell>
+                      <TableCell className="text-right font-mono text-sm text-gray-700">{tauxCdf != null ? formatMoney(l.valeur * tauxCdf, 'CDF') : '—'}</TableCell>
+                      <TableCell className="text-sm text-gray-600">{l.client || '—'}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

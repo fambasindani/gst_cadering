@@ -10,6 +10,7 @@ import { DataTablePagination } from '../../components/ui/DataTablePagination';
 import { ConfirmModal } from '../../components/ui/confirm-modal';
 import { useToast } from '../../hooks/useToast';
 import { avoirService } from '../../services/avoir';
+import { tauxConversionService } from '../../services/taux-conversion';
 import type { Avoir } from '../../types/facturation';
 import { formatCurrency } from '../../lib/format';
 import {
@@ -37,6 +38,7 @@ export function AvoirList() {
   const [total, setTotal] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [deleteTarget, setDeleteTarget] = useState<Avoir | null>(null);
+  const [tauxCdf, setTauxCdf] = useState<number | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -49,6 +51,8 @@ export function AvoirList() {
         setTotal(res.data.total);
         setLastPage(res.data.last_page);
       }
+      const tres = await tauxConversionService.getActuel();
+      if (tres.success && tres.data) setTauxCdf(tres.data.taux);
     } catch {
       //
     } finally {
@@ -126,6 +130,7 @@ export function AvoirList() {
                     <TableHead className="font-semibold text-gray-600">Date</TableHead>
                     <TableHead className="font-semibold text-gray-600">Retour</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Montant</TableHead>
+                    <TableHead className="text-right font-semibold text-gray-600">Montant (CDF)</TableHead>
                     <TableHead className="text-center w-20 font-semibold text-gray-600">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -136,6 +141,7 @@ export function AvoirList() {
                       <TableCell><div className="h-5 w-28 bg-gray-200 rounded" /></TableCell>
                       <TableCell><div className="h-5 w-20 bg-gray-200 rounded" /></TableCell>
                       <TableCell><div className="h-5 w-24 bg-gray-200 rounded" /></TableCell>
+                      <TableCell className="text-right"><div className="h-5 w-20 bg-gray-200 rounded ml-auto" /></TableCell>
                       <TableCell className="text-right"><div className="h-5 w-20 bg-gray-200 rounded ml-auto" /></TableCell>
                       <TableCell className="text-center"><div className="h-8 w-16 bg-gray-200 rounded mx-auto" /></TableCell>
                     </TableRow>
@@ -160,6 +166,7 @@ export function AvoirList() {
                       <TableHead className="font-semibold text-gray-600">Date</TableHead>
                       <TableHead className="font-semibold text-gray-600">Retour</TableHead>
                       <TableHead className="text-right font-semibold text-gray-600">Montant</TableHead>
+                      <TableHead className="text-right font-semibold text-gray-600">Montant (CDF)</TableHead>
                       <TableHead className="text-center w-20 font-semibold text-gray-600">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -171,6 +178,7 @@ export function AvoirList() {
                         <TableCell className="text-sm text-gray-600">{formatDate(a.date_avoir)}</TableCell>
                         <TableCell className="text-sm text-gray-600">{a.retour?.numero_retour || '-'}</TableCell>
                         <TableCell className="text-right font-mono text-sm font-medium text-red-600">{formatCurrency(a.montant_ht, a.devise?.code)}</TableCell>
+                        <TableCell className="text-right font-mono text-sm font-medium text-gray-700">{tauxCdf != null ? formatCurrency(a.montant_ht * tauxCdf, 'CDF') : '—'}</TableCell>
                         <TableCell>
                           <div className="flex items-center justify-center gap-1" onClick={(e) => e.stopPropagation()}>
                             <button onClick={() => navigate(`/stock/avoir/${a.id}`)} className="p-1.5 rounded text-gray-500 hover:text-blue-700 hover:bg-blue-50 transition-colors" title="Voir">
