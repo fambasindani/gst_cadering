@@ -11,10 +11,9 @@ import { DataTablePagination } from '../components/ui/DataTablePagination';
 import { useToast } from '../hooks/useToast';
 import { useIsAdmin } from '../hooks/useIsAdmin';
 import { mouvementStockService } from '../services/mouvement-stock';
-import { tauxConversionService } from '../services/taux-conversion';
 import type { MouvementStock } from '../types/validation';
 import {
-  Search, RefreshCw, Plus, Package, ArrowUp, Loader2, Pencil, Trash2, CheckCircle, XCircle,
+  Search, RefreshCw, Plus, Package, ArrowUp, Pencil, Trash2,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { formatCurrency } from '../lib/format';
@@ -33,11 +32,6 @@ export function SortieStockForm() {
   const [total, setTotal] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [deleteTarget, setDeleteTarget] = useState<MouvementStock | null>(null);
-  const [validateTarget, setValidateTarget] = useState<MouvementStock | null>(null);
-  const [rejectTarget, setRejectTarget] = useState<MouvementStock | null>(null);
-  const [validatingId, setValidatingId] = useState<number | null>(null);
-  const [rejectingId, setRejectingId] = useState<number | null>(null);
-  const [tauxCdf, setTauxCdf] = useState<number | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -49,12 +43,6 @@ export function SortieStockForm() {
         setData(res.data.data);
         setTotal(res.data.total);
         setLastPage(res.data.last_page);
-      }
-      try {
-        const taux = await tauxConversionService.getActuel();
-        if (taux.success && taux.data) setTauxCdf(Number(taux.data.taux));
-      } catch {
-        // taux indisponible
       }
     } catch {
       //
@@ -78,46 +66,6 @@ export function SortieStockForm() {
       const error = err as { message?: string };
       toast(error.message || 'Erreur lors de la suppression', 'error');
     }
-  };
-
-  const handleValidate = async (id: number) => {
-    setValidatingId(id);
-    try {
-      await mouvementStockService.validate(id);
-      toast('Sortie validée avec succès', 'success');
-      fetchData();
-    } catch (err: unknown) {
-      const error = err as { message?: string; error?: string };
-      toast(error.message || error.error || 'Erreur lors de la validation', 'error');
-    } finally {
-      setValidatingId(null);
-    }
-  };
-
-  const handleReject = async (id: number) => {
-    setRejectingId(id);
-    try {
-      await mouvementStockService.reject(id);
-      toast('Sortie rejetée', 'success');
-      fetchData();
-    } catch (err: unknown) {
-      const error = err as { message?: string };
-      toast(error.message || 'Erreur lors du rejet', 'error');
-    } finally {
-      setRejectingId(null);
-    }
-  };
-
-  const handleConfirmValidate = async () => {
-    if (!validateTarget) return;
-    await handleValidate(validateTarget.id);
-    setValidateTarget(null);
-  };
-
-  const handleConfirmReject = async () => {
-    if (!rejectTarget) return;
-    await handleReject(rejectTarget.id);
-    setRejectTarget(null);
   };
 
   const handlePageSizeChange = (size: number) => {
@@ -181,7 +129,6 @@ export function SortieStockForm() {
                     <TableHead className="font-semibold text-gray-600">Type</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Qté</TableHead>
                     <TableHead className="hidden md:table-cell text-right font-semibold text-gray-600">Montant</TableHead>
-                    <TableHead className="hidden lg:table-cell text-right font-semibold text-gray-600">Montant (CDF)</TableHead>
                     <TableHead className="font-semibold text-gray-600">Date</TableHead>
                     <TableHead className="text-center w-20 font-semibold text-gray-600">Actions</TableHead>
                   </TableRow>
@@ -196,7 +143,6 @@ export function SortieStockForm() {
                       <TableCell><div className="h-5 w-28 bg-gray-200 rounded" /></TableCell>
                       <TableCell className="text-right"><div className="h-5 w-16 bg-gray-200 rounded ml-auto" /></TableCell>
                       <TableCell className="hidden md:table-cell text-right"><div className="h-5 w-20 bg-gray-200 rounded ml-auto" /></TableCell>
-                      <TableCell className="hidden lg:table-cell text-right"><div className="h-5 w-24 bg-gray-200 rounded ml-auto" /></TableCell>
                       <TableCell><div className="h-5 w-20 bg-gray-200 rounded" /></TableCell>
                       <TableCell><div className="h-5 w-16 bg-gray-200 rounded mx-auto" /></TableCell>
                     </TableRow>
@@ -222,9 +168,8 @@ export function SortieStockForm() {
                       <TableHead className="font-semibold text-gray-600">Département</TableHead>
                       <TableHead className="font-semibold text-gray-600">Type</TableHead>
                       <TableHead className="text-right font-semibold text-gray-600">Qté</TableHead>
-                      <TableHead className="hidden md:table-cell text-right font-semibold text-gray-600">Montant</TableHead>
-                      <TableHead className="hidden lg:table-cell text-right font-semibold text-gray-600">Montant (CDF)</TableHead>
-                      <TableHead className="font-semibold text-gray-600">Date</TableHead>
+<TableHead className="hidden md:table-cell text-right font-semibold text-gray-600">Montant</TableHead>
+                    <TableHead className="font-semibold text-gray-600">Date</TableHead>
                       <TableHead className="text-center w-20 font-semibold text-gray-600">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -232,7 +177,6 @@ export function SortieStockForm() {
                     {data.map((m, i) => {
                       const prixUnitaire = m.lot?.prix_achat_ht_unitaire ?? 0;
                       const montant = m.quantite * prixUnitaire;
-                      const montantCdf = tauxCdf != null ? montant * tauxCdf : null;
                       return (
                       <TableRow key={m.id} className={cn('hover:bg-royal-50/50 transition-colors', i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50')}>
                         <TableCell className="font-medium text-gray-900">{m.lot?.produit?.nom || '-'}</TableCell>
@@ -247,34 +191,11 @@ export function SortieStockForm() {
                         </TableCell>
                         <TableCell className="text-right font-mono text-sm font-medium text-red-700">{m.quantite}</TableCell>
                         <TableCell className="hidden md:table-cell text-right font-mono text-sm text-gray-700">{formatCurrency(montant, '$')}</TableCell>
-                        <TableCell className="hidden lg:table-cell text-right font-mono text-sm font-medium text-gray-700">
-                          {montantCdf != null ? formatCurrency(montantCdf, 'CDF') : '—'}
-                        </TableCell>
                         <TableCell className="text-sm text-gray-600">
                           {m.date_mouvement ? new Date(m.date_mouvement).toLocaleDateString('fr-FR') : '-'}
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center justify-center gap-1">
-                            {m.statut_validation === 'EN ATTENTE' ? (
-                              <>
-                                <button
-                                  onClick={() => setValidateTarget(m)}
-                                  disabled={validatingId === m.id || rejectingId === m.id}
-                                  className="p-1.5 rounded text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors disabled:opacity-40"
-                                  title="Valider"
-                                >
-                                  {validatingId === m.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-                                </button>
-                                <button
-                                  onClick={() => setRejectTarget(m)}
-                                  disabled={rejectingId === m.id || validatingId === m.id}
-                                  className="p-1.5 rounded text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors disabled:opacity-40"
-                                  title="Rejeter"
-                                >
-                                  {rejectingId === m.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
-                                </button>
-                              </>
-                            ) : null}
                             {(isAdmin || m.statut_validation === 'EN ATTENTE') && (
                               <>
                                 <button
@@ -313,28 +234,6 @@ export function SortieStockForm() {
           )}
         </CardContent>
       </Card>
-
-      <ConfirmModal
-        isOpen={Boolean(validateTarget)}
-        onClose={() => setValidateTarget(null)}
-        onConfirm={handleConfirmValidate}
-        title="Valider la sortie"
-        message={`Confirmer la validation de la sortie du lot "${validateTarget?.lot?.numero_lot || '-'}" ?`}
-        variant="warning"
-        confirmLabel="Valider"
-        loading={validatingId !== null}
-      />
-
-      <ConfirmModal
-        isOpen={Boolean(rejectTarget)}
-        onClose={() => setRejectTarget(null)}
-        onConfirm={handleConfirmReject}
-        title="Rejeter la sortie"
-        message={`Confirmer le rejet de la sortie du lot "${rejectTarget?.lot?.numero_lot || '-'}" ?`}
-        variant="danger"
-        confirmLabel="Rejeter"
-        loading={rejectingId !== null}
-      />
 
       <ConfirmModal
         isOpen={Boolean(deleteTarget)}

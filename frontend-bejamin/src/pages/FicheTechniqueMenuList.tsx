@@ -126,7 +126,7 @@ export function FicheTechniqueMenuList() {
                     <TableHead className="font-semibold text-gray-600">Nom</TableHead>
                     <TableHead className="font-semibold text-gray-600">Cycle</TableHead>
                     <TableHead className="font-semibold text-gray-600">Périodicité</TableHead>
-                    <TableHead className="font-semibold text-gray-600">Clients</TableHead>
+                    <TableHead className="font-semibold text-gray-600">Client</TableHead>
                     <TableHead className="text-center font-semibold text-gray-600">Actif</TableHead>
                     <TableHead className="text-center w-32 font-semibold text-gray-600">Actions</TableHead>
                   </TableRow>
@@ -162,7 +162,7 @@ export function FicheTechniqueMenuList() {
                       <TableHead className="font-semibold text-gray-600">Nom</TableHead>
                       <TableHead className="font-semibold text-gray-600">Cycle</TableHead>
                       <TableHead className="font-semibold text-gray-600">Périodicité</TableHead>
-                      <TableHead className="font-semibold text-gray-600">Clients</TableHead>
+                      <TableHead className="font-semibold text-gray-600">Client</TableHead>
                       <TableHead className="text-center font-semibold text-gray-600">Actif</TableHead>
                       <TableHead className="text-center w-32 font-semibold text-gray-600">Actions</TableHead>
                     </TableRow>
@@ -175,17 +175,10 @@ export function FicheTechniqueMenuList() {
                         <TableCell className="text-gray-600">{f.cycle || '-'}</TableCell>
                         <TableCell className="text-gray-600">{f.periodicite || '-'}</TableCell>
                         <TableCell>
-                          {(f.clients ?? []).length === 0 ? (
-                            <span className="text-gray-400">—</span>
+                          {f.partenaire?.nom ? (
+                            <span className="text-gray-700">{f.partenaire.nom}</span>
                           ) : (
-                            <div className="flex flex-wrap gap-1 max-w-xs">
-                              {(f.clients ?? []).slice(0, 3).map((c) => (
-                                <Badge key={c.id} variant="secondary" className="text-xs">{c.nom}</Badge>
-                              ))}
-                              {(f.clients ?? []).length > 3 && (
-                                <Badge variant="outline" className="text-xs">+{(f.clients ?? []).length - 3}</Badge>
-                              )}
-                            </div>
+                            <span className="text-gray-400">—</span>
                           )}
                         </TableCell>
                         <TableCell className="text-center">

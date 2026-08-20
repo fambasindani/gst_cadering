@@ -9,7 +9,8 @@ import { ReceptionList } from './pages/ReceptionList';
 import { ReceptionForm } from './pages/ReceptionForm';
 import { Validation } from './pages/Validation';
 import { ValidationBonCommande } from './pages/ValidationBonCommande';
-import { EntrerStock } from './pages/EntrerStock';
+import { ValidationSortieStock } from './pages/ValidationSortieStock';
+import { ValidationRetourStock } from './pages/ValidationRetourStock';
 import { PeriodeInventaire } from './pages/PeriodeInventaire';
 import { Ajustement } from './pages/Ajustement';
 import { AjustementProduit } from './pages/AjustementProduit';
@@ -19,7 +20,6 @@ import { ProduitForm } from './pages/ProduitForm';
 import { ProduitDetails } from './pages/ProduitDetails';
 import { StockLotSerie } from './pages/StockLotSerie';
 import { StockLotSerieForm } from './pages/StockLotSerieForm';
-import { EntreeStockForm } from './pages/EntreeStockForm';
 import { SortieStockForm } from './pages/SortieStockForm';
 import { SortieForm } from './pages/SortieForm';
 import { StockMouvementProduit } from './pages/StockMouvementProduit';
@@ -67,6 +67,7 @@ import { InventaireTheorique } from './pages/rapports/InventaireTheorique';
 import { ConsommationsClients } from './pages/rapports/ConsommationsClients';
 import { RuptureStock } from './pages/rapports/RuptureStock';
 import { StockBas } from './pages/rapports/StockBas';
+import { VariationsPrix } from './pages/rapports/VariationsPrix';
 import { AvoirList } from './pages/facturation/AvoirList';
 import { AvoirForm } from './pages/facturation/AvoirForm';
 import { AvoirDetails } from './pages/facturation/AvoirDetails';
@@ -101,7 +102,8 @@ function App() {
           <Route path="reception/:id" element={<ReceptionForm />} />
           <Route path="validation" element={<Validation />} />
           <Route path="validation/bon-commande" element={<ValidationBonCommande />} />
-          <Route path="validation/entrer-stock" element={<EntrerStock />} />
+          <Route path="validation/sortie-stock" element={<ValidationSortieStock />} />
+          <Route path="validation/retour-stock" element={<ValidationRetourStock />} />
           <Route path="validation/periode-inventaire" element={<PeriodeInventaire />} />
           <Route path="validation/saisie-inventaire" element={<SaisieInventaire />} />
           <Route path="validation/ajustement" element={<Ajustement />} />
@@ -119,7 +121,6 @@ function App() {
           <Route path="stock/lot-serie" element={<StockLotSerie />} />
           <Route path="stock/lot-serie/creer" element={<StockLotSerieForm />} />
           <Route path="stock/lot-serie/:id/modifier" element={<StockLotSerieForm />} />
-          <Route path="stock/entree" element={<EntreeStockForm />} />
           <Route path="stock/sortie" element={<SortieStockForm />} />
           <Route path="stock/sortie/creer" element={<SortieForm />} />
           <Route path="stock/sortie/:id/modifier" element={<SortieForm />} />
@@ -156,6 +157,7 @@ function App() {
           <Route path="rapports/consommations" element={<ConsommationsClients />} />
           <Route path="rapports/rupture-stock" element={<RuptureStock />} />
           <Route path="rapports/stock-bas" element={<StockBas />} />
+          <Route path="rapports/variations-prix" element={<VariationsPrix />} />
           <Route path="configuration/utilisateurs" element={<ConfigurationUtilisateurs />} />
           <Route path="configuration/utilisateurs/nouveau" element={<ConfigurationUtilisateurForm />} />
           <Route path="configuration/utilisateurs/:id/modifier" element={<ConfigurationUtilisateurForm />} />

@@ -73,6 +73,10 @@ class Retour extends Model
 
     public function scopeByStatut($query, $statut)
     {
+        if (str_contains($statut, ',')) {
+            $statuts = array_map('trim', explode(',', $statut));
+            return $query->whereIn('statut_validation', $statuts);
+        }
         return $query->where('statut_validation', $statut);
     }
 

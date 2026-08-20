@@ -17,7 +17,6 @@ import { cn } from '../lib/utils';
 import { formatCurrency } from '../lib/format';
 
 const statutConfig: Record<string, { label: string; color: string }> = {
-  ENVOYÉ: { label: 'Envoyé', color: 'bg-blue-100 text-blue-800 border-blue-200' },
   'REÇU PARTIELLEMENT': { label: 'Reçu partiellement', color: 'bg-purple-100 text-purple-800 border-purple-200' },
   BROUILLON: { label: 'Brouillon', color: 'bg-amber-100 text-amber-800 border-amber-200' },
   REÇU: { label: 'Reçu', color: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
@@ -42,7 +41,7 @@ export function ReceptionList() {
       const params: Record<string, string> = {
         per_page: String(pageSize),
         page: String(currentPage),
-        statut: 'ENVOYÉ,REÇU PARTIELLEMENT',
+        statut: 'BROUILLON,REÇU PARTIELLEMENT',
       };
       if (searchTerm) params.search = searchTerm;
       const res = await bonCommandeService.list(params);
@@ -136,7 +135,7 @@ export function ReceptionList() {
             <div className="text-center py-12 text-gray-500">
               <PackagePlus className="w-12 h-12 mx-auto text-gray-300 mb-3" />
               <p className="text-lg font-medium text-gray-700">Aucune réception en attente</p>
-              <p className="text-sm mt-1">Les bons de commande envoyés apparaîtront ici</p>
+              <p className="text-sm mt-1">Les bons de commande validés apparaîtront ici</p>
             </div>
           ) : (
             <>

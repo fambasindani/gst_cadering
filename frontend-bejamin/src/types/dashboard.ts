@@ -44,6 +44,19 @@ export interface VariationPrix {
   date: string;
 }
 
+export interface VariationsPrixResponse {
+  success: boolean;
+  data: {
+    variations: VariationPrix[];
+    statistiques: {
+      total: number;
+      hausses: number;
+      baisses: number;
+    };
+  };
+  message: string;
+}
+
 export interface RepartitionCategorie {
   categorie: string;
   total: number;

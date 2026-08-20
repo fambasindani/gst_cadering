@@ -9,6 +9,7 @@ const typeIcons: Record<string, React.ElementType> = {
   bon_commande_en_attente: FileText,
   retour_en_attente: RotateCcw,
   lot_peremption_proche: AlertTriangle,
+  lots_perimes: AlertTriangle,
   stock_bas: PackageMinus,
 };
 
@@ -16,6 +17,7 @@ const typeColors: Record<string, string> = {
   bon_commande_en_attente: 'text-amber-600 bg-amber-50',
   retour_en_attente: 'text-blue-600 bg-blue-50',
   lot_peremption_proche: 'text-red-600 bg-red-50',
+  lots_perimes: 'text-red-700 bg-red-100',
   stock_bas: 'text-orange-600 bg-orange-50',
 };
 
@@ -100,8 +102,9 @@ export function NotificationPanel() {
     if (!n.read_at) handleMarkRead(n.id);
     const typeRoutes: Record<string, string> = {
       bon_commande_en_attente: '/bon-commande',
-      retour_en_attente: '/stock/retour',
-      lot_peremption_proche: '/stock/lot-serie',
+      retour_en_attente: '/stock/retour?statut=EN%20ATTENTE',
+      lot_peremption_proche: '/stock/lot-serie?peremption_proche=1&jours=30',
+      lots_perimes: '/stock/lot-serie?perimes=1',
       stock_bas: '/rapports/stock-bas',
     };
     const route = typeRoutes[n.type];

@@ -52,6 +52,19 @@ class Produit extends Model
         return $this->hasMany(Lot::class, 'id_produit');
     }
 
+    public function seuilsMagasin()
+    {
+        return $this->hasMany(ProduitMagasin::class, 'id_produit');
+    }
+
+    /**
+     * Fiche recette liée à ce produit fini (si le produit est issu d'une recette).
+     */
+    public function ficheTechnique()
+    {
+        return $this->hasOne(FicheTechnique::class, 'id_produit_fini');
+    }
+
     // Scopes
     public function scopeActif($query)
     {
@@ -85,6 +98,7 @@ class Produit extends Model
         $lots = $this->lots()
                     ->where('statut_validation', 'VALIDÉ')
                     ->where('quantite_disponible', '>', 0)
+                    ->nonPerime()
                     ->get();
 
         $qteTotale = 0;
@@ -105,6 +119,7 @@ class Produit extends Model
     {
         return $this->lots()
                     ->where('statut_validation', 'VALIDÉ')
+                    ->nonPerime()
                     ->sum('quantite_disponible');
     }
 
@@ -113,6 +128,54 @@ class Produit extends Model
         return $this->lots()
                     ->where('statut_validation', 'VALIDÉ')
                     ->where('id_magasin', $magasinId)
+                    ->nonPerime()
                     ->sum('quantite_disponible');
+    }
+
+    /**
+     * Alertes « stock bas » du produit, en tenant compte :
+     * - du seuil global (produits.seuil_alerte) sur le stock total ;
+     * - des seuils spécifiques par magasin (produit_magasin.seuil_alerte).
+     *
+     * @return array<int, array{type:string, id_magasin:int|null, magasin:string|null, stock:int, seuil:int}>
+     */
+    public function getStockBasAlerts(): array
+    {
+        $alertes = [];
+
+        $parMagasin = $this->lots()
+            ->where('statut_validation', 'VALIDÉ')
+            ->nonPerime()
+            ->selectRaw('id_magasin, SUM(quantite_disponible) as stock')
+            ->groupBy('id_magasin')
+            ->pluck('stock', 'id_magasin');
+
+        $total = (int) $parMagasin->sum();
+        $seuilGlobal = (int) ($this->seuil_alerte ?? 0);
+
+        if ($seuilGlobal > 0 && $total > 0 && $total <= $seuilGlobal) {
+            $alertes[] = [
+                'type' => 'global',
+                'id_magasin' => null,
+                'magasin' => null,
+                'stock' => $total,
+                'seuil' => $seuilGlobal,
+            ];
+        }
+
+        foreach ($this->seuilsMagasin()->with('magasin')->get() as $sm) {
+            $stock = (int) ($parMagasin[$sm->id_magasin] ?? 0);
+            if ($sm->seuil_alerte > 0 && $stock > 0 && $stock <= $sm->seuil_alerte) {
+                $alertes[] = [
+                    'type' => 'magasin',
+                    'id_magasin' => $sm->id_magasin,
+                    'magasin' => $sm->magasin->nom ?? null,
+                    'stock' => $stock,
+                    'seuil' => (int) $sm->seuil_alerte,
+                ];
+            }
+        }
+
+        return $alertes;
     }
 }

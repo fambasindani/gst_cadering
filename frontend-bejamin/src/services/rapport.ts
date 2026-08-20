@@ -15,6 +15,7 @@ import type {
   RuptureStockData,
   StockBasData,
 } from '../types/rapport';
+import type { VariationsPrixResponse } from '../types/dashboard';
 
 export const rapportService = {
   bonCommande: (params?: Record<string, string>) =>
@@ -66,4 +67,7 @@ export const rapportService = {
 
   stockBas: (params?: Record<string, string>) =>
     api.get<RapportResponse<StockBasData>>('/rapports/stock-bas', { params }),
+
+  variationsPrix: (params?: Record<string, string>) =>
+    api.get<VariationsPrixResponse>('/rapports/variations-prix', { params }),
 };

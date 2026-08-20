@@ -16,7 +16,7 @@ import { produitService } from '../services/produit';
 import { partenaireService } from '../services/partenaire';
 import {
   ArrowLeft, Save, Loader2, Plus, Trash2, UtensilsCrossed, Hash, CalendarDays,
-  CalendarRange, MapPin, Percent,
+  CalendarRange, MapPin, Percent, Building2,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -25,7 +25,6 @@ interface ItemRow {
   nomPartie: string;
   selection: string;
   pourcentage: string;
-  idPartenaire: string;
 }
 
 let rowKeyCounter = 0;
@@ -34,7 +33,6 @@ const newItem = (): ItemRow => ({
   nomPartie: '',
   selection: '',
   pourcentage: '100',
-  idPartenaire: '',
 });
 
 const PARTIES_SUGGESTEES = ['Entrée', 'Plat', 'Pain et beurre', 'Fromage', 'Dessert', 'Extra'];
@@ -59,7 +57,7 @@ export function FicheTechniqueMenuForm() {
 
   const [values, setValues] = useState({
     code: '', nom: '', description: '', cycle: '', periodicite: '', validite: '',
-    id_magasin: '', actif: true,
+    id_magasin: '', id_partenaire: '', actif: true,
   });
 
   const [items, setItems] = useState<ItemRow[]>([newItem()]);
@@ -93,7 +91,7 @@ export function FicheTechniqueMenuForm() {
             setValues({
               code: f.code, nom: f.nom, description: f.description || '',
               cycle: f.cycle || '', periodicite: f.periodicite || '', validite: f.validite || '',
-              id_magasin: String(f.id_magasin), actif: Boolean(f.actif),
+              id_magasin: String(f.id_magasin), id_partenaire: f.id_partenaire ? String(f.id_partenaire) : '', actif: Boolean(f.actif),
             });
             if (f.parties && f.parties.length > 0) {
               const flat: ItemRow[] = [];
@@ -104,7 +102,6 @@ export function FicheTechniqueMenuForm() {
                     nomPartie: p.nom,
                     selection: i.id_fiche_technique ? `recette:${i.id_fiche_technique}` : (i.id_produit ? `produit:${i.id_produit}` : ''),
                     pourcentage: String(i.pourcentage),
-                    idPartenaire: i.id_partenaire ? String(i.id_partenaire) : '',
                   });
                 });
               });
@@ -148,16 +145,21 @@ export function FicheTechniqueMenuForm() {
       setSaving(false);
       return;
     }
-    const itemsIncomplets = items.some(i => !i.nomPartie.trim() || !i.selection || !i.idPartenaire);
+    if (!values.id_partenaire) {
+      setFieldErrors({ id_partenaire: 'Le client est requis.' });
+      setSaving(false);
+      return;
+    }
+    const itemsIncomplets = items.some(i => !i.nomPartie.trim() || !i.selection);
     if (itemsIncomplets) {
-      setFieldErrors({ items: 'Chaque ligne doit avoir un client, un nom de partie et une fiche recette ou un produit.' });
+      setFieldErrors({ items: 'Chaque ligne doit avoir un nom de partie et une fiche recette ou un produit.' });
       setSaving(false);
       return;
     }
 
     const payload = {
       ...values,
-      id_partenaire: null,
+      id_partenaire: Number(values.id_partenaire),
       id_magasin: Number(values.id_magasin),
       items: items.map(i => {
         const [type, itemId] = i.selection.split(':');
@@ -165,7 +167,6 @@ export function FicheTechniqueMenuForm() {
           nom_partie: i.nomPartie.trim(),
           id_fiche_technique: type === 'recette' ? Number(itemId) : null,
           id_produit: type === 'produit' ? Number(itemId) : null,
-          id_partenaire: i.idPartenaire ? Number(i.idPartenaire) : null,
           pourcentage: Number(i.pourcentage) || 0,
         };
       }),
@@ -259,6 +260,19 @@ export function FicheTechniqueMenuForm() {
                 />
                 {fieldErrors.id_magasin && <p className="text-xs text-red-500 mt-1">{fieldErrors.id_magasin}</p>}
               </div>
+              <div>
+                <Label className="flex items-center gap-1.5 text-sm font-semibold mb-1.5 text-gray-700">
+                  <Building2 className="w-4 h-4 text-gray-400" /> Client *
+                </Label>
+                <SearchableSelect
+                  options={clients.map(p => ({ id: p.id, nom: p.nom }))}
+                  value={values.id_partenaire}
+                  onValueChange={(v) => set('id_partenaire', v)}
+                  placeholder="Sélectionner un client"
+                  searchPlaceholder="Rechercher un client..."
+                />
+                {fieldErrors.id_partenaire && <p className="text-xs text-red-500 mt-1">{fieldErrors.id_partenaire}</p>}
+              </div>
             </div>
             <div className="mt-4">
               <Label className="text-sm font-semibold mb-1.5 block text-gray-700">Description</Label>
@@ -274,7 +288,7 @@ export function FicheTechniqueMenuForm() {
         <Card className="border-0 shadow-sm">
           <CardHeader className="pb-3">
             <CardTitle className="text-lg font-semibold">Items du menu</CardTitle>
-            <p className="text-sm text-gray-500">Chaque ligne a son client (compagnie), son nom de partie (ex. DESSERT, PLAT), et sa fiche recette ou son produit. Le pourcentage indique la part des passagers concernés (100 % = tous).</p>
+            <p className="text-sm text-gray-500">Chaque ligne a son nom de partie (ex. DESSERT, PLAT) et sa fiche recette ou son produit. Le pourcentage indique la part des passagers concernés (100 % = tous).</p>
           </CardHeader>
           <CardContent className="space-y-4">
             {fieldErrors.items && (
@@ -285,7 +299,6 @@ export function FicheTechniqueMenuForm() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-gray-50">
-                    <th className="text-left font-semibold text-gray-600 px-4 py-2 w-64">Client *</th>
                     <th className="text-left font-semibold text-gray-600 px-4 py-2 w-64">Nom de la partie *</th>
                     <th className="text-left font-semibold text-gray-600 px-4 py-2">Recette ou produit *</th>
                     <th className="text-left font-semibold text-gray-600 px-4 py-2 w-32">Pourcentage (%)</th>
@@ -295,16 +308,6 @@ export function FicheTechniqueMenuForm() {
                 <tbody>
                   {items.map((item) => (
                     <tr key={item.key} className="border-t border-gray-100">
-                      <td className="px-4 py-2">
-                        <SearchableSelect
-                          options={clients.map(p => ({ id: p.id, nom: p.nom }))}
-                          value={item.idPartenaire}
-                          onValueChange={(v) => updateItem(item.key, 'idPartenaire', v)}
-                          placeholder="Sélectionner un client"
-                          searchPlaceholder="Rechercher un client..."
-                          triggerClassName="h-10"
-                        />
-                      </td>
                       <td className="px-4 py-2">
                         <select
                           value={item.nomPartie}

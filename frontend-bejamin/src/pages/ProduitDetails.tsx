@@ -414,19 +414,28 @@ export function ProduitDetails() {
                   {stock.stock_par_magasin.length > 0 ? (
                     <div className="space-y-2 pt-2 border-t border-gray-100">
                       <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Répartition par magasin</p>
-                      {stock.stock_par_magasin.map((sv) => (
-                        <div key={sv.magasin_id} className="flex items-center justify-between py-1.5">
-                          <span className="text-sm text-gray-700">{sv.magasin}</span>
-                          <span
-                            className={cn(
-                              'text-sm font-mono font-semibold',
-                              sv.stock <= (stock.seuil_alerte || 0) ? 'text-amber-600' : 'text-gray-900',
-                            )}
-                          >
-                            {sv.stock}
-                          </span>
-                        </div>
-                      ))}
+                      {stock.stock_par_magasin.map((sv) => {
+                        const seuilMagasin = sv.seuil_alerte ?? stock.seuil_alerte ?? 0;
+                        const enAlerte = seuilMagasin > 0 && sv.stock > 0 && sv.stock <= seuilMagasin;
+                        return (
+                          <div key={sv.magasin_id} className="flex items-center justify-between py-1.5">
+                            <span className="text-sm text-gray-700">
+                              {sv.magasin}
+                              {sv.seuil_alerte != null && sv.seuil_alerte > 0 && (
+                                <span className="ml-1.5 text-xs text-gray-400">(seuil : {sv.seuil_alerte})</span>
+                              )}
+                            </span>
+                            <span
+                              className={cn(
+                                'text-sm font-mono font-semibold',
+                                enAlerte ? 'text-amber-600' : 'text-gray-900',
+                              )}
+                            >
+                              {sv.stock}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                   ) : null}
                 </>

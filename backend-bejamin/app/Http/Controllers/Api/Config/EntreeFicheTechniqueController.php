@@ -88,9 +88,28 @@ class EntreeFicheTechniqueController extends Controller
             $menu = $this->chargerMenu($validated['id_fiche_technique_menu']);
             $detail = $this->calculerRapport($menu, $validated['nombre_passagers'], $validated['id_partenaire'] ?? null);
 
+            // Rapport synthétique pour l'aperçu (sans enregistrement) : permet au frontend
+            // et au PDF d'afficher les mêmes infos qu'un rapport enregistré.
+            $rapportSynthetique = [
+                'id' => 0,
+                'id_fiche_technique_menu' => (int) $validated['id_fiche_technique_menu'],
+                'numero_rapport' => null,
+                'id_partenaire' => $validated['id_partenaire'] ?? $menu->id_partenaire,
+                'partenaire' => $menu->partenaire ? ['id' => $menu->partenaire->id, 'nom' => $menu->partenaire->nom] : null,
+                'nombre_passagers' => (int) $validated['nombre_passagers'],
+                'date_rapport' => now()->toDateString(),
+                'commentaire' => null,
+                'id_utilisateur' => auth()->id(),
+                'utilisateur' => null,
+                'menu' => $menu,
+                'created_at' => now()->toDateTimeString(),
+            ];
+
             return response()->json([
                 'success' => true,
-                'data' => $detail,
+                'data' => array_merge([
+                    'rapport' => $rapportSynthetique,
+                ], $detail),
                 'message' => 'Aperçu du rapport calculé avec succès'
             ]);
 
@@ -249,18 +268,9 @@ class EntreeFicheTechniqueController extends Controller
             $items = [];
 
             foreach ($partie->items as $item) {
-                // Filtrer par client du rapport (les items sans client concernent tous les clients)
-                if ($item->id_partenaire !== null && (int) $item->id_partenaire !== (int) $clientId) {
-                    continue;
-                }
-
                 $pourcentage = (float) $item->pourcentage;
                 $pct = $pourcentage / 100;
                 $composants = [];
-
-                $clientItem = $item->partenaire
-                    ? ['id' => $item->partenaire->id, 'nom' => $item->partenaire->nom]
-                    : null;
 
                 // Item = produit (non recette)
                 if ($item->produit) {
@@ -290,7 +300,6 @@ class EntreeFicheTechniqueController extends Controller
                         'designation' => $item->designation ?? $produit->nom,
                         'code' => $produit->code_article,
                         'type' => 'produit',
-                        'client' => $clientItem,
                         'pourcentage' => $pourcentage,
                         'coutParPassager' => round($prixUnitaire * $pct, 2),
                         'coutTotal' => round($coutItem, 2),
@@ -337,7 +346,6 @@ class EntreeFicheTechniqueController extends Controller
                     'designation' => $item->designation ?? $recette->nom,
                     'code' => $recette->code,
                     'type' => 'recette',
-                    'client' => $clientItem,
                     'pourcentage' => $pourcentage,
                     'coutParPassager' => round($coutParPassager, 2),
                     'coutTotal' => round($coutItem, 2),

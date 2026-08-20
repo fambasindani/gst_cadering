@@ -10,9 +10,11 @@ import { RapportTablePDF } from '../../components/pdf/RapportTablePDF';
 import type { Column } from '../../components/pdf/RapportTablePDF';
 import { rapportService } from '../../services/rapport';
 import { tauxConversionService } from '../../services/taux-conversion';
+import { DeviseSelect } from '../../components/ui/DeviseSelect';
 import type { RapportStockData } from '../../types/rapport';
-import { RefreshCw, Package, Download, Calendar } from 'lucide-react';
+import { RefreshCw, Package, Download, Calendar, DollarSign } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { downloadCsv } from '../../lib/exportCsv';
 
 function formatNumber(v: number): string {
   return (v ?? 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
@@ -41,6 +43,7 @@ export function RapportStock() {
   const [loading, setLoading] = useState(true);
   const [searched, setSearched] = useState(false);
   const [tauxCdf, setTauxCdf] = useState<number | null>(null);
+  const [devise, setDevise] = useState<'USD' | 'CDF'>('USD');
 
   const lignes = data?.lignes ?? [];
   const stats = data?.statistiques;
@@ -64,23 +67,26 @@ export function RapportStock() {
 
   useEffect(() => { fetchData(); /* eslint-disable-line react-hooks/exhaustive-deps */ }, []);
 
+  const deviseCode = devise === 'CDF' ? 'CDF' : '$';
+  const fmt = (v: number) => devise === 'CDF' && tauxCdf != null ? formatMoney(v * tauxCdf, 'CDF') : formatMoney(v, '$');
+
+  const exportCsv = async () => {
+    await downloadCsv('/rapports/stock/export', { date_debut: dateDebut, date_fin: dateFin }, 'rapport-stock.csv');
+  };
+
   const pdfColumns: Column[] = [
     { key: 'numero', label: 'N°', width: '4%', align: 'right', render: (r) => r.numero },
     { key: 'designation', label: 'Désignation', width: '15%', render: (r) => r.designation },
     { key: 'unite', label: 'Unit', width: '4%', render: (r) => r.unite },
-    { key: 'prix', label: 'Prix unit', width: '7%', align: 'right', render: (r) => formatMoney(Number(r.prix_unitaire), '$') },
+    { key: 'prix', label: 'Prix unit', width: '7%', align: 'right', render: (r) => formatMoney(Number(r.prix_unitaire), deviseCode) },
     { key: 'qte_initiale', label: 'Qté In.', width: '6%', align: 'right', render: (r) => formatNumber(Number(r.qte_initiale)) },
-    { key: 'valeur_initiale', label: 'Valeur', width: '7%', align: 'right', render: (r) => formatMoney(Number(r.valeur_initiale), '$') },
-    { key: 'valeur_initiale_cdf', label: 'Valeur (CDF)', width: '8%', align: 'right', render: (r) => (tauxCdf != null ? formatMoney(Number(r.valeur_initiale) * tauxCdf, 'CDF') : '—') },
+    { key: 'valeur_initiale', label: devise === 'CDF' ? 'Valeur (CDF)' : 'Valeur', width: '9%', align: 'right', render: (r) => r.valeur_initiale },
     { key: 'qte_entree', label: 'Qté Ent.', width: '6%', align: 'right', render: (r) => formatNumber(Number(r.qte_entree)) },
-    { key: 'valeur_entree', label: 'Valeur', width: '7%', align: 'right', render: (r) => formatMoney(Number(r.valeur_entree), '$') },
-    { key: 'valeur_entree_cdf', label: 'Valeur (CDF)', width: '8%', align: 'right', render: (r) => (tauxCdf != null ? formatMoney(Number(r.valeur_entree) * tauxCdf, 'CDF') : '—') },
+    { key: 'valeur_entree', label: devise === 'CDF' ? 'Valeur (CDF)' : 'Valeur', width: '9%', align: 'right', render: (r) => r.valeur_entree },
     { key: 'qte_sortie', label: 'Qté Sort.', width: '6%', align: 'right', render: (r) => formatNumber(Number(r.qte_sortie)) },
-    { key: 'valeur_sortie', label: 'Valeur', width: '7%', align: 'right', render: (r) => formatMoney(Number(r.valeur_sortie), '$') },
-    { key: 'valeur_sortie_cdf', label: 'Valeur (CDF)', width: '8%', align: 'right', render: (r) => (tauxCdf != null ? formatMoney(Number(r.valeur_sortie) * tauxCdf, 'CDF') : '—') },
+    { key: 'valeur_sortie', label: devise === 'CDF' ? 'Valeur (CDF)' : 'Valeur', width: '9%', align: 'right', render: (r) => r.valeur_sortie },
     { key: 'qte_finale', label: 'Qté Fin.', width: '6%', align: 'right', render: (r) => formatNumber(Number(r.qte_finale)) },
-    { key: 'valeur_finale', label: 'Valeur', width: '7%', align: 'right', render: (r) => formatMoney(Number(r.valeur_finale), '$') },
-    { key: 'valeur_finale_cdf', label: 'Valeur (CDF)', width: '8%', align: 'right', render: (r) => (tauxCdf != null ? formatMoney(Number(r.valeur_finale) * tauxCdf, 'CDF') : '—') },
+    { key: 'valeur_finale', label: devise === 'CDF' ? 'Valeur (CDF)' : 'Valeur', width: '9%', align: 'right', render: (r) => r.valeur_finale },
   ];
 
   const pdfRows = lignes.map((l) => ({
@@ -90,13 +96,13 @@ export function RapportStock() {
     devise: l.devise,
     prix_unitaire: String(l.prix_unitaire),
     qte_initiale: String(l.qte_initiale),
-    valeur_initiale: String(l.valeur_initiale),
+    valeur_initiale: fmt(Number(l.valeur_initiale)),
     qte_entree: String(l.qte_entree),
-    valeur_entree: String(l.valeur_entree),
+    valeur_entree: fmt(Number(l.valeur_entree)),
     qte_sortie: String(l.qte_sortie),
-    valeur_sortie: String(l.valeur_sortie),
+    valeur_sortie: fmt(Number(l.valeur_sortie)),
     qte_finale: String(l.qte_finale),
-    valeur_finale: String(l.valeur_finale),
+    valeur_finale: fmt(Number(l.valeur_finale)),
   }));
 
   return (
@@ -107,6 +113,11 @@ export function RapportStock() {
           <p className="text-sm text-gray-500 mt-1">{loading ? '...' : `${stats?.total_produits ?? 0} article${(stats?.total_produits ?? 0) > 1 ? 's' : ''}`}</p>
         </div>
         <div className="flex items-center gap-2">
+          {lignes.length > 0 && (
+            <Button variant="outline" onClick={() => { exportCsv().catch(() => {}); }} className="border-gray-300 text-gray-700 hover:bg-gray-50">
+              <Download className="w-4 h-4 mr-1.5" /> CSV / Excel
+            </Button>
+          )}
           {lignes.length > 0 && (
             <PDFDownloadLink
               document={
@@ -123,10 +134,10 @@ export function RapportStock() {
                     { label: 'Qté Finale', value: formatNumber(stats?.total_qte_finale ?? 0) },
                   ]}
                   totals={[
-                    { label: 'Total initial', value: formatMoney(stats?.total_valeur_initiale ?? 0, '$') },
-                    { label: 'Total entrées', value: formatMoney(stats?.total_valeur_entree ?? 0, '$') },
-                    { label: 'Total sorties', value: formatMoney(stats?.total_valeur_sortie ?? 0, '$') },
-                    { label: 'Total final', value: formatMoney(stats?.total_valeur_finale ?? 0, '$') },
+                    { label: 'Total initial', value: fmt(stats?.total_valeur_initiale ?? 0) },
+                    { label: 'Total entrées', value: fmt(stats?.total_valeur_entree ?? 0) },
+                    { label: 'Total sorties', value: fmt(stats?.total_valeur_sortie ?? 0) },
+                    { label: 'Total final', value: fmt(stats?.total_valeur_finale ?? 0) },
                   ]}
                 />
               }
@@ -179,6 +190,13 @@ export function RapportStock() {
             <Button onClick={fetchData} disabled={loading} className="h-11 px-6 bg-royal-700 hover:bg-royal-800 text-white shadow-sm font-medium">
               Générer
             </Button>
+            <div>
+              <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-1.5">
+                <DollarSign className="w-4 h-4 text-gray-400" />
+                Devise
+              </label>
+              <DeviseSelect value={devise} onChange={setDevise} />
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -194,30 +212,26 @@ export function RapportStock() {
                     <TableHead className="font-semibold text-gray-600" rowSpan={2}>Désignation</TableHead>
                     <TableHead className="font-semibold text-gray-600" rowSpan={2}>Unit</TableHead>
                     <TableHead className="font-semibold text-gray-600" rowSpan={2}>Prix unit</TableHead>
-                    <TableHead className="text-center font-semibold text-gray-600" colSpan={3}>Stock Initial</TableHead>
-                    <TableHead className="text-center font-semibold text-gray-600" colSpan={3}>Entrées</TableHead>
-                    <TableHead className="text-center font-semibold text-gray-600" colSpan={3}>Sorties</TableHead>
-                    <TableHead className="text-center font-semibold text-gray-600" colSpan={3}>Stock Final</TableHead>
+                    <TableHead className="text-center font-semibold text-gray-600" colSpan={2}>Stock Initial</TableHead>
+                    <TableHead className="text-center font-semibold text-gray-600" colSpan={2}>Entrées</TableHead>
+                    <TableHead className="text-center font-semibold text-gray-600" colSpan={2}>Sorties</TableHead>
+                    <TableHead className="text-center font-semibold text-gray-600" colSpan={2}>Stock Final</TableHead>
                   </TableRow>
                   <TableRow>
                     <TableHead className="text-right font-semibold text-gray-600">Qté</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Valeur</TableHead>
-                    <TableHead className="text-right font-semibold text-gray-600">Valeur (CDF)</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Qté</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Valeur</TableHead>
-                    <TableHead className="text-right font-semibold text-gray-600">Valeur (CDF)</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Qté</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Valeur</TableHead>
-                    <TableHead className="text-right font-semibold text-gray-600">Valeur (CDF)</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Qté</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Valeur</TableHead>
-                    <TableHead className="text-right font-semibold text-gray-600">Valeur (CDF)</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {Array.from({ length: 5 }).map((_, i) => (
                     <TableRow key={i} className="animate-pulse">
-                      {Array.from({ length: 16 }).map((_, j) => (
+                      {Array.from({ length: 12 }).map((_, j) => (
                         <TableCell key={j}><div className="h-5 bg-gray-200 rounded" style={{ width: `${40 + j * 10}px` }} /></TableCell>
                       ))}
                     </TableRow>
@@ -264,17 +278,13 @@ export function RapportStock() {
                       <TableCell className="text-sm text-gray-600">{l.unite}</TableCell>
                       <TableCell className="text-right font-mono text-sm text-gray-700">{formatMoney(l.prix_unitaire, '$')}</TableCell>
                       <TableCell className="text-right font-mono text-sm text-gray-700">{formatNumber(l.qte_initiale)}</TableCell>
-                      <TableCell className="text-right font-mono text-sm text-gray-700">{formatMoney(l.valeur_initiale, '$')}</TableCell>
-                      <TableCell className="text-right font-mono text-sm text-gray-700">{tauxCdf != null ? formatMoney(l.valeur_initiale * tauxCdf, 'CDF') : '—'}</TableCell>
+                      <TableCell className="text-right font-mono text-sm text-gray-700">{fmt(l.valeur_initiale)}</TableCell>
                       <TableCell className="text-right font-mono text-sm text-emerald-700">{formatNumber(l.qte_entree)}</TableCell>
-                      <TableCell className="text-right font-mono text-sm text-emerald-700">{formatMoney(l.valeur_entree, '$')}</TableCell>
-                      <TableCell className="text-right font-mono text-sm text-emerald-700">{tauxCdf != null ? formatMoney(l.valeur_entree * tauxCdf, 'CDF') : '—'}</TableCell>
+                      <TableCell className="text-right font-mono text-sm text-emerald-700">{fmt(l.valeur_entree)}</TableCell>
                       <TableCell className="text-right font-mono text-sm text-red-700">{formatNumber(l.qte_sortie)}</TableCell>
-                      <TableCell className="text-right font-mono text-sm text-red-700">{formatMoney(l.valeur_sortie, '$')}</TableCell>
-                      <TableCell className="text-right font-mono text-sm text-red-700">{tauxCdf != null ? formatMoney(l.valeur_sortie * tauxCdf, 'CDF') : '—'}</TableCell>
+                      <TableCell className="text-right font-mono text-sm text-red-700">{fmt(l.valeur_sortie)}</TableCell>
                       <TableCell className="text-right font-mono text-sm font-semibold text-gray-900">{formatNumber(l.qte_finale)}</TableCell>
-                      <TableCell className="text-right font-mono text-sm font-semibold text-gray-900">{formatMoney(l.valeur_finale, '$')}</TableCell>
-                      <TableCell className="text-right font-mono text-sm font-semibold text-gray-900">{tauxCdf != null ? formatMoney(l.valeur_finale * tauxCdf, 'CDF') : '—'}</TableCell>
+                      <TableCell className="text-right font-mono text-sm font-semibold text-gray-900">{fmt(l.valeur_finale)}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

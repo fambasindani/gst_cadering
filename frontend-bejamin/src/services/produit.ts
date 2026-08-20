@@ -38,6 +38,9 @@ export const produitService = {
   getFournisseurs: (params?: Record<string, string>) =>
     api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/partenaires', { params: { ...params, type: 'fournisseur' } }),
 
+  getMagasins: (params?: Record<string, string>) =>
+    api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/magasins', { params }),
+
   addPrix: (data: { id_produit: number; prix_achat_ht: number; id_devise: number; date_application?: string; commentaire?: string }) =>
     api.post<{ success: boolean; data: HistoriquePrix; message: string }>('/config/historique-prix', data),
 

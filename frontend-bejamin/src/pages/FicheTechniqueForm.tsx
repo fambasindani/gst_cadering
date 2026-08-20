@@ -404,7 +404,7 @@ export function FicheTechniqueForm() {
                       <TableRow key={r.key} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
                         <TableCell className="min-w-[200px]">
                           <SearchableSelect
-                            options={produits.map(p => ({ id: p.id, nom: p.nom, sousTitre: p.code_article ? `[${p.code_article}]` : undefined }))}
+                            options={produits.map(p => ({ id: p.id, nom: p.nom }))}
                             value={r.id_produit_ingredient}
                             onValueChange={(v) => handleIngredientChange(r.key, v)}
                             placeholder="Ingrédient"

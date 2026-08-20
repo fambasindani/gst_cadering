@@ -42,9 +42,10 @@ export const menuItems: MenuItem[] = [
     title: 'Validation', 
     icon: 'CheckCircle', 
     path: '/validation',
-    subItems: [
+subItems: [
       { title: 'Bon de commande', path: '/validation/bon-commande', permission: 'config:bon_commande:validate' },
-      { title: 'Entrer stock', path: '/validation/entrer-stock', permission: 'config:mouvements:create' },
+      { title: 'Sortie stock', path: '/validation/sortie-stock', permission: 'config:mouvements:validate' },
+      { title: 'Retour stock', path: '/validation/retour-stock', permission: 'config:retours:validate' },
     ]
   },
   { 
@@ -54,8 +55,6 @@ export const menuItems: MenuItem[] = [
     subItems: [
       { title: 'Lot/Série', path: '/stock/lot-serie', permission: 'config:lots:view' },
       { title: 'Sortie stock', path: '/stock/sortie', permission: 'config:mouvements:create' },
-      { title: 'Entrée stock', path: '/stock/entree', permission: 'config:mouvements:create' },
-      { title: 'Bon de réception', path: '/reception', permission: 'config:bon_commande:receive' },
       { title: 'Mouvement produit', path: '/stock/mouvement-produit', permission: 'config:mouvements:view' },
       { title: 'Retour stock', path: '/stock/retour', permission: 'config:retours:view' },
       { title: 'Avoirs', path: '/stock/avoir', permission: 'facturation:avoir:view' },
@@ -137,6 +136,7 @@ export const menuItems: MenuItem[] = [
       { title: 'Inventaire Théorique', path: '/rapports/inventaire-theorique', permission: 'rapport:inventaire' },
       { title: 'Rupture Stock', path: '/rapports/rupture-stock', permission: 'rapport:stock' },
       { title: 'Stock bas', path: '/rapports/stock-bas' },
+      { title: 'Variations de prix', path: '/rapports/variations-prix', permission: 'rapport:stock' },
     ]
   },
 ];

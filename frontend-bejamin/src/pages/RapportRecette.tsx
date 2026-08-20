@@ -10,6 +10,7 @@ import { entreeRecetteService } from '../services/entree-recette';
 import { ficheTechniqueService } from '../services/fiche-technique';
 import { partenaireService } from '../services/partenaire';
 import { tauxConversionService } from '../services/taux-conversion';
+import { DeviseSelect } from '../components/ui/DeviseSelect';
 import type { EntreeRecette, FicheTechnique } from '../types/fiche-technique';
 import { Search, RefreshCw, FileText, DollarSign, Repeat, Download, Loader2 } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -34,6 +35,7 @@ export function RapportRecette() {
   const [total, setTotal] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [tauxCdf, setTauxCdf] = useState<number | null>(null);
+  const [devise, setDevise] = useState<'USD' | 'CDF'>('USD');
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -78,6 +80,8 @@ export function RapportRecette() {
 
   const totalPortions = data.reduce((s, r) => s + (Number(r.nombre_portions) || 0), 0);
   const totalCout = data.reduce((s, r) => s + (Number(r.fiche_technique?.cout_unitaire) || 0) * (Number(r.nombre_portions) || 0), 0);
+  const totalCoutLabel = devise === 'CDF' && tauxCdf != null ? formatCurrency(totalCout * tauxCdf, 'CDF') : formatCurrency(totalCout, '$');
+  const fmtCout = (cout: number) => devise === 'CDF' && tauxCdf != null ? formatCurrency(cout * tauxCdf, 'CDF') : formatCurrency(cout, '$');
 
   const resetFilters = () => {
     setSearchInput(''); setSearchTerm(''); setDateFrom(''); setDateTo('');
@@ -93,7 +97,7 @@ export function RapportRecette() {
         </div>
         <div className="flex items-center gap-2">
           {data.length > 0 && (
-            <PDFDownloadLink document={<RapportEntreeRecettePDF recettes={data} />} fileName="rapport-entrees-recette.pdf">
+            <PDFDownloadLink document={<RapportEntreeRecettePDF recettes={data} devise={devise} tauxCdf={tauxCdf} />} fileName="rapport-entrees-recette.pdf">
               {({ loading: pdfLoading }) => (
                 <Button variant="outline" disabled={pdfLoading} className="border-gray-300 text-gray-700 hover:bg-gray-50">
                   {pdfLoading ? <Loader2 className="w-4 h-4 mr-1.5 animate-spin" /> : <Download className="w-4 h-4 mr-1.5" />}
@@ -167,6 +171,10 @@ export function RapportRecette() {
               className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-royal-500 focus:ring-royal-500"
             />
           </div>
+          <div>
+            <label className="text-sm text-gray-600 font-medium block mb-1.5">Devise :</label>
+            <DeviseSelect value={devise} onChange={setDevise} />
+          </div>
         </div>
       </div>
 
@@ -205,7 +213,7 @@ export function RapportRecette() {
               </div>
               <div>
                 <p className="text-xs text-gray-500 font-medium">Coût total (page)</p>
-                <p className="text-xl font-bold text-gray-900 font-mono">{formatCurrency(totalCout, '$')}</p>
+                <p className="text-xl font-bold text-gray-900 font-mono">{totalCoutLabel}</p>
               </div>
             </div>
           </CardContent>
@@ -222,7 +230,7 @@ export function RapportRecette() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-gray-50">
-                    {Array.from({ length: 7 }).map((_, j) => (
+                    {Array.from({ length: 6 }).map((_, j) => (
                       <th key={j} className="px-4 py-3"><div className="h-4 bg-gray-200 rounded" /></th>
                     ))}
                   </tr>
@@ -230,7 +238,7 @@ export function RapportRecette() {
                 <tbody>
                   {Array.from({ length: 5 }).map((_, i) => (
                     <tr key={i} className="animate-pulse">
-                      {Array.from({ length: 7 }).map((_, j) => (
+                      {Array.from({ length: 6 }).map((_, j) => (
                         <td key={j} className="px-4 py-3"><div className="h-5 bg-gray-200 rounded" style={{ width: `${60 + j * 20}px` }} /></td>
                       ))}
                     </tr>
@@ -255,8 +263,7 @@ export function RapportRecette() {
                       <th className="text-left font-semibold text-gray-600 px-4 py-3">Client</th>
                       <th className="text-left font-semibold text-gray-600 px-4 py-3">Recette</th>
                       <th className="text-right font-semibold text-gray-600 px-4 py-3">Portions</th>
-                      <th className="text-right font-semibold text-gray-600 px-4 py-3">Coût total</th>
-                      <th className="text-right font-semibold text-gray-600 px-4 py-3">Coût total (CDF)</th>
+                      <th className="text-right font-semibold text-gray-600 px-4 py-3">{devise === 'CDF' ? 'Coût total (CDF)' : 'Coût total'}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -272,10 +279,7 @@ export function RapportRecette() {
                         </td>
                         <td className="px-4 py-3 text-right font-mono text-gray-700">{r.nombre_portions ?? 0}</td>
                         <td className="px-4 py-3 text-right font-mono font-medium text-gray-900">
-                          {formatCurrency(cout, '$')}
-                        </td>
-                        <td className="px-4 py-3 text-right font-mono text-gray-700">
-                          {tauxCdf != null ? formatCurrency(cout * tauxCdf, 'CDF') : '—'}
+                          {fmtCout(cout)}
                         </td>
                       </tr>
                       );

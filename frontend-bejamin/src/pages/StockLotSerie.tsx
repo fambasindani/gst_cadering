@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -11,11 +11,10 @@ import { Badge } from '../components/ui/badge';
 import { SlidePanel } from '../components/ui/SlidePanel';
 import { ConfirmModal } from '../components/ui/confirm-modal';
 import { useToast } from '../hooks/useToast';
-import { useIsAdmin } from '../hooks/useIsAdmin';
 import { lotService } from '../services/lot';
 import type { Lot } from '../types/lot';
 import {
-  Search, RefreshCw, Package, CheckCircle, XCircle, Edit3, Trash2, Plus, Eye, Barcode, Calendar,
+  Search, RefreshCw, Package, CheckCircle, XCircle, Eye, Barcode, Calendar,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -39,11 +38,11 @@ function isPerime(datePeremption: string): boolean {
 
 export function StockLotSerie() {
   const { toast } = useToast();
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const isAdmin = useIsAdmin();
 
   const [peremptionProche, setPeremptionProche] = useState(searchParams.get('peremption_proche') === '1');
+  const [perimes, setPerimes] = useState(searchParams.get('perimes') === '1');
+  const joursPeremption = searchParams.get('jours') || '7';
 
   const [data, setData] = useState<Lot[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,7 +55,6 @@ export function StockLotSerie() {
   const [dateDebut, setDateDebut] = useState('');
   const [dateFin, setDateFin] = useState('');
   const [viewLot, setViewLot] = useState<Lot | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<Lot | null>(null);
   const [validateTarget, setValidateTarget] = useState<Lot | null>(null);
   const [rejectTarget, setRejectTarget] = useState<Lot | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
@@ -66,11 +64,12 @@ export function StockLotSerie() {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const params: Record<string, string> = { per_page: String(pageSize), page: String(currentPage), sort_by: 'id', sort_order: 'desc' };
+      const params: Record<string, string> = { per_page: String(pageSize), page: String(currentPage), sort_by: 'id', sort_order: 'desc', statut: 'VALIDÉ' };
       if (searchTerm) params.search = searchTerm;
       if (dateDebut) params.date_debut = dateDebut;
       if (dateFin) params.date_fin = dateFin;
-      if (peremptionProche) params.peremption_proche = '1';
+      if (peremptionProche) { params.peremption_proche = '1'; params.jours = joursPeremption; }
+      if (perimes) params.perimes = '1';
       const res = await lotService.list(params);
       if (res.success) {
         setData(res.data.data);
@@ -82,25 +81,9 @@ export function StockLotSerie() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, searchTerm, dateDebut, dateFin, pageSize, peremptionProche]);
+  }, [currentPage, searchTerm, dateDebut, dateFin, pageSize, peremptionProche, perimes, joursPeremption]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
-
-  const handleDelete = async () => {
-    if (!deleteTarget) return;
-    setActionLoading(true);
-    try {
-      await lotService.delete(deleteTarget.id);
-      toast('Lot supprimé avec succès', 'success');
-      setDeleteTarget(null);
-      fetchData();
-    } catch (err: unknown) {
-      const error = err as { message?: string };
-      toast(error.message || 'Erreur lors de la suppression', 'error');
-    } finally {
-      setActionLoading(false);
-    }
-  };
 
   const handleConfirmValidate = async () => {
     if (!validateTarget) return;
@@ -142,13 +125,9 @@ export function StockLotSerie() {
           <p className="text-sm text-gray-500 mt-1">{loading ? '...' : `${total} lot${total > 1 ? 's' : ''}`}</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => { setSearchInput(''); setSearchTerm(''); setDateDebut(''); setDateFin(''); setPeremptionProche(false); setSearchParams({}); setCurrentPage(1); }} className="border-gray-300 text-gray-700 hover:bg-gray-50" title="Actualiser">
+          <Button variant="outline" onClick={() => { setSearchInput(''); setSearchTerm(''); setDateDebut(''); setDateFin(''); setPeremptionProche(false); setPerimes(false); setSearchParams({}); setCurrentPage(1); }} className="border-gray-300 text-gray-700 hover:bg-gray-50" title="Actualiser">
             <RefreshCw className={cn('h-4 w-4 mr-2', loading && 'animate-spin')} />
             Actualiser
-          </Button>
-          <Button onClick={() => navigate('/stock/lot-serie/creer')} className="bg-royal-700 hover:bg-royal-800 text-white shadow-sm">
-            <Plus className="w-4 h-4 mr-1.5" />
-            Nouveau lot
           </Button>
         </div>
       </div>
@@ -186,7 +165,7 @@ export function StockLotSerie() {
         <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-red-50 border border-red-200">
           <div className="flex items-center gap-2 text-sm font-medium text-red-700">
             <Calendar className="w-4 h-4" />
-            Lots proches de la péremption (7 jours ou moins)
+            Lots proches de la péremption ({joursPeremption} jours ou moins)
           </div>
           <button
             type="button"
@@ -198,10 +177,26 @@ export function StockLotSerie() {
         </div>
       )}
 
+      {perimes && (
+        <div className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-red-50 border border-red-200">
+          <div className="flex items-center gap-2 text-sm font-medium text-red-700">
+            <XCircle className="w-4 h-4" />
+            Lots périmés (hors stock disponible)
+          </div>
+          <button
+            type="button"
+            onClick={() => { setPerimes(false); setSearchParams({}); setCurrentPage(1); }}
+            className="text-xs font-semibold text-red-600 hover:text-red-800 hover:underline"
+          >
+            Afficher tous les lots
+          </button>
+        </div>
+      )}
+
       <Card className="border-0 shadow-sm">
         <CardHeader className="pb-3">
           <CardTitle className="text-lg font-semibold">
-            {peremptionProche ? 'Lots proches de la péremption' : 'Liste des lots'}
+            {perimes ? 'Lots périmés' : peremptionProche ? 'Lots proches de la péremption' : 'Liste des lots'}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -301,12 +296,6 @@ export function StockLotSerie() {
                                   <Barcode className="w-4 h-4" />
                                 </Button>
                               )}
-                              {(isAdmin || l.statut_validation !== 'VALIDÉ') && (
-                                <Button variant="ghost" size="sm" onClick={() => navigate(`/stock/lot-serie/${l.id}/modifier`)}
-                                  className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg" title="Modifier">
-                                  <Edit3 className="w-4 h-4" />
-                                </Button>
-                              )}
                               {l.statut_validation === 'EN ATTENTE' && (
                                 <>
                                   <Button variant="ghost" size="sm" onClick={() => setValidateTarget(l)}
@@ -318,12 +307,6 @@ export function StockLotSerie() {
                                     <XCircle className="w-4 h-4" />
                                   </Button>
                                 </>
-                              )}
-                              {(isAdmin || l.statut_validation !== 'VALIDÉ') && (
-                                <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(l)}
-                                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg" title="Supprimer">
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
                               )}
                             </div>
                           </TableCell>
@@ -364,17 +347,7 @@ export function StockLotSerie() {
         loading={actionLoading}
       />
 
-      <ConfirmModal
-        isOpen={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={handleDelete}
-        title="Supprimer le lot"
-        message={`Confirmer la suppression du lot "${deleteTarget?.numero_lot}" ? Cette action est irréversible.`}
-        confirmLabel="Supprimer"
-        variant="danger"
-        loading={actionLoading}
-      />
-    </div>
+</div>
   );
 }
 

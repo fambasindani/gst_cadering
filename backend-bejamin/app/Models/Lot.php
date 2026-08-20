@@ -25,6 +25,7 @@ class Lot extends Model
         'valide_par',
         'date_validation',
         'statut_validation',
+        'est_perime',
         'commentaire'
     ];
 
@@ -35,6 +36,7 @@ class Lot extends Model
         'date_peremption' => 'date',
         'date_reception' => 'datetime',
         'date_validation' => 'datetime',
+        'est_perime' => 'boolean',
     ];
 
     // Relations
@@ -72,7 +74,20 @@ class Lot extends Model
     public function scopeActif($query)
     {
         return $query->where('statut_validation', 'VALIDÉ')
-                     ->where('quantite_disponible', '>', 0);
+                     ->where('quantite_disponible', '>', 0)
+                     ->nonPerime();
+    }
+
+    /**
+     * Lots non périmés (la péremption est aussi marquée via le flag est_perime
+     * par la tâche planifiée, mais on filtre sur la date pour être toujours exact).
+     */
+    public function scopeNonPerime($query)
+    {
+        return $query->where(function ($q) {
+            $q->whereNull('date_peremption')
+              ->orWhereDate('date_peremption', '>=', now()->toDateString());
+        });
     }
 
     public function scopeSearch($query, $search)

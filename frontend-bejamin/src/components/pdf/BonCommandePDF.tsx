@@ -37,7 +37,11 @@ const styles = StyleSheet.create({
   colRecu: { width: '8%', textAlign: 'right' },
   colPrix: { width: '12%', textAlign: 'right' },
   colRecuTotal: { width: '14%', textAlign: 'right' },
-  colCdf: { width: '27%', textAlign: 'right' },
+  repRef: { width: 60, paddingHorizontal: 3 },
+  repProduit: { width: 180, paddingHorizontal: 3 },
+  repQte: { width: 45, textAlign: 'right', paddingHorizontal: 3 },
+  repMontant: { width: 85, textAlign: 'right', paddingHorizontal: 3 },
+  repStatut: { width: 100, paddingHorizontal: 3 },
   tableRow: { flexDirection: 'row', padding: 5, borderBottom: '1 solid #f0f0f0', alignItems: 'center' },
   tableRowAlt: { backgroundColor: '#f9f9f9' },
   tableCell: { fontSize: 7.5, color: '#333' },
@@ -53,12 +57,10 @@ const styles = StyleSheet.create({
 
 interface Props {
   bon: BonCommande;
-  tauxCdf?: number | null;
 }
 
 const statutColors: Record<string, string> = {
   BROUILLON: '#f59e0b',
-  ENVOYÉ: '#3b82f6',
   'REÇU PARTIELLEMENT': '#8b5cf6',
   REÇU: '#10b981',
   CLOTURE: '#ef4444',
@@ -66,20 +68,32 @@ const statutColors: Record<string, string> = {
 
 const statutLabels: Record<string, string> = {
   BROUILLON: 'Brouillon',
-  ENVOYÉ: 'Envoyé',
   'REÇU PARTIELLEMENT': 'Reçu partiellement',
   REÇU: 'Reçu',
   CLOTURE: 'Clôturé',
 };
 
-export function BonCommandePDF({ bon, tauxCdf }: Props) {
+export function BonCommandePDF({ bon }: Props) {
   const lignes = (bon.lignes || []).filter((l) => (Number(l.quantite_recue) || 0) > 0);
   const totalRecu = lignes.reduce(
     (sum, l) => sum + (l.montant_recu !== undefined ? l.montant_recu : (Number(l.quantite_recue) || 0) * l.prix_unitaire_ht),
     0,
   );
-  const totalRecuCdf = tauxCdf != null ? totalRecu * tauxCdf : null;
   const deviseCode = bon.devise?.code || lignes[0]?.devise?.code || 'USD';
+
+  const receptions = (bon.receptions_liste || []).flatMap((r) =>
+    (r.lignes || []).map((l) => ({
+      reference: r.reference_reception,
+      date: r.date || '',
+      produit: l.produit || '-',
+      numero_lot: l.numero_lot || '-',
+      quantite: l.quantite,
+      montant: l.montant,
+      statut: l.statut || '',
+    })),
+  );
+  const statutLabelsReception: Record<string, string> = { VALIDÉ: 'Validé', REJETÉ: 'Rejeté', 'EN ATTENTE': 'En attente' };
+  const rejetees = receptions.filter((r) => r.statut === 'REJETÉ');
 
   return (
     <Document>
@@ -127,13 +141,11 @@ export function BonCommandePDF({ bon, tauxCdf }: Props) {
               <Text style={[styles.tableHeaderCell, styles.colRecu]}>Reçu</Text>
               <Text style={[styles.tableHeaderCell, styles.colPrix]}>Prix unit.</Text>
               <Text style={[styles.tableHeaderCell, styles.colRecuTotal]}>Montant total</Text>
-              {tauxCdf != null ? <Text style={[styles.tableHeaderCell, styles.colCdf]}>Montant (CDF)</Text> : null}
             </View>
             {lignes.map((l, i) => {
               const recu = Number(l.quantite_recue) || 0;
               const montantRecu = l.montant_recu !== undefined ? Number(l.montant_recu) || 0 : recu * l.prix_unitaire_ht;
               const prixRecu = recu > 0 ? montantRecu / recu : 0;
-              const montantCdf = tauxCdf != null ? montantRecu * tauxCdf : null;
               return (
                 <View key={l.id} style={[styles.tableRow, i % 2 === 1 ? styles.tableRowAlt : {}]}>
                   <Text style={[styles.tableCell, styles.colCode]}>{l.produit?.code_article || '-'}</Text>
@@ -144,28 +156,56 @@ export function BonCommandePDF({ bon, tauxCdf }: Props) {
                   <Text style={[styles.tableCellRight, styles.colRecuTotal]}>
                     {formatCurrency(montantRecu, l.devise?.code || deviseCode)}
                   </Text>
-                  {montantCdf != null ? (
-                    <Text style={[styles.tableCellRight, styles.colCdf]}>
-                      {formatCurrency(montantCdf, 'CDF')}
-                    </Text>
-                  ) : null}
                 </View>
               );
             })}
           </View>
         </View>
 
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Réceptions</Text>
+          {receptions.length === 0 ? (
+            <View style={styles.row}><Text style={styles.value}>Aucune réception</Text></View>
+          ) : (
+            <View style={styles.table}>
+              <View style={styles.tableHeader}>
+                <Text style={[styles.tableHeaderCell, styles.repRef]}>Réf.</Text>
+                <Text style={[styles.tableHeaderCell, styles.repProduit]}>Produit</Text>
+                <Text style={[styles.tableHeaderCell, styles.repQte]}>Qté</Text>
+                <Text style={[styles.tableHeaderCell, styles.repMontant]}>Montant</Text>
+                <Text style={[styles.tableHeaderCell, styles.repStatut]}>Statut</Text>
+              </View>
+              {receptions.map((r, i) => (
+                <View key={`${r.reference}-${r.numero_lot}-${i}`} style={[styles.tableRow, i % 2 === 1 ? styles.tableRowAlt : {}]}>
+                  <Text style={[styles.tableCell, styles.repRef]}>{r.reference}</Text>
+                  <Text style={[styles.tableCell, styles.repProduit]}>{r.produit} ({r.numero_lot})</Text>
+                  <Text style={[styles.tableCellRight, styles.repQte]}>{r.quantite}</Text>
+                  <Text style={[styles.tableCellRight, styles.repMontant]}>{formatCurrency(r.montant, deviseCode)}</Text>
+                  <Text style={[
+                    styles.tableCell,
+                    styles.repStatut,
+                    { color: r.statut === 'REJETÉ' ? '#b91c1c' : r.statut === 'EN ATTENTE' ? '#b45309' : '#047857', fontWeight: 'bold' },
+                  ]}>
+                    {statutLabelsReception[r.statut] || r.statut || '-'}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          )}
+        </View>
+
         <View style={styles.totalSection}>
+          {rejetees.length > 0 ? (
+            <View style={styles.totalRow}>
+              <Text style={[styles.totalLabel, { color: '#b91c1c', fontWeight: 'bold', width: '100%', textAlign: 'left' }]}>
+                Attention : {rejetees.length} réception(s) rejetée(s)
+              </Text>
+            </View>
+          ) : null}
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Montant total:</Text>
             <Text style={styles.totalValue}>{formatCurrency(totalRecu, deviseCode)}</Text>
           </View>
-          {totalRecuCdf != null ? (
-            <View style={styles.totalRow}>
-              <Text style={styles.totalLabel}>Montant total (CDF):</Text>
-              <Text style={styles.totalValue}>{formatCurrency(totalRecuCdf, 'CDF')}</Text>
-            </View>
-          ) : null}
         </View>
 
         <View style={styles.footer}>

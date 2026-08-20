@@ -2,46 +2,37 @@ import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer';
 import type { RapportFicheTechniqueData } from '../../types/fiche-technique-menu';
 import { formatCurrency } from '../../lib/format';
 
+const COL_W = { code: 90, designation: 250, u: 45, qte: 130, pu: 130, cout: 141 };
+
 const styles = StyleSheet.create({
   page: { padding: 28, fontSize: 8, fontFamily: 'Helvetica' },
-  header: { marginBottom: 12, borderBottom: '2 solid #1e3a5f', paddingBottom: 8 },
+  header: { marginBottom: 10, borderBottom: '2 solid #1e3a5f', paddingBottom: 8 },
   companyName: { fontSize: 13, fontWeight: 'bold', color: '#1e3a5f', marginBottom: 2 },
   companyInfo: { fontSize: 6.5, color: '#555', lineHeight: 1.4 },
-  title: { fontSize: 12, fontWeight: 'bold', color: '#1e3a5f', marginTop: 4, marginBottom: 2 },
-  subtitle: { fontSize: 7.5, color: '#666', marginBottom: 10 },
-  infoRow: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: 10 },
-  infoBox: { width: '16%', border: '1 solid #e5e5e5', borderRadius: 3, padding: 5, marginRight: 6, marginBottom: 5 },
-  infoLabel: { fontSize: 5.5, color: '#888', marginBottom: 2, textTransform: 'uppercase' },
-  infoValue: { fontSize: 8, fontWeight: 'bold', color: '#1e3a5f' },
+  titleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 4, marginBottom: 2 },
+  title: { fontSize: 12, fontWeight: 'bold', color: '#1e3a5f' },
+  titleMeta: { flexDirection: 'row', marginTop: 1, marginBottom: 8 },
+  metaChip: { fontSize: 7.5, color: '#1e3a5f', fontFamily: 'Courier', marginRight: 8 },
+  clientBox: { borderWidth: 1, borderColor: '#1e3a5f', backgroundColor: '#eef2f7', borderRadius: 4, padding: 8, marginBottom: 10 },
+  clientLabel: { fontSize: 6, color: '#1e3a5f', marginBottom: 2, textTransform: 'uppercase' },
+  clientValue: { fontSize: 11, fontWeight: 'bold', color: '#1e3a5f' },
   sectionTitle: { fontSize: 9, fontWeight: 'bold', color: '#1e3a5f', marginBottom: 4, paddingBottom: 3, borderBottom: '1 solid #ddd', marginTop: 8 },
-  itemHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 6, marginBottom: 3 },
-  itemName: { fontSize: 8.5, fontWeight: 'bold', color: '#333' },
-  itemCode: { fontSize: 6.5, color: '#888', fontFamily: 'Courier' },
-  itemMeta: { fontSize: 7, color: '#555' },
-  table: { marginTop: 2 },
-  tableHeader: { flexDirection: 'row', backgroundColor: '#1e3a5f', padding: 4 },
-  tableHeaderCell: { color: '#fff', fontSize: 6.5, fontWeight: 'bold' },
-  tableRow: { flexDirection: 'row', padding: 3.5, borderBottom: '1 solid #f0f0f0', alignItems: 'center' },
+  table: { marginTop: 2, width: COL_W.code + COL_W.designation + COL_W.u + COL_W.qte + COL_W.pu + COL_W.cout },
+  tableHeader: { flexDirection: 'row', backgroundColor: '#1e3a5f' },
+  tableHeaderCell: { color: '#fff', fontSize: 6.5, fontWeight: 'bold', paddingVertical: 4, paddingHorizontal: 3 },
+  tableRow: { flexDirection: 'row', borderBottom: '1 solid #f0f0f0', alignItems: 'center' },
   tableRowAlt: { backgroundColor: '#f9f9f9' },
-  tableCell: { fontSize: 6.5, color: '#333' },
-  tableCellRight: { fontSize: 6.5, color: '#333', textAlign: 'right' },
-  tableCellMono: { fontSize: 6.5, color: '#1e3a5f', fontFamily: 'Courier' },
-  partieHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#1e3a5f', padding: 5, marginTop: 8 },
-  partieTitle: { fontSize: 8.5, fontWeight: 'bold', color: '#fff' },
-  partieCount: { fontSize: 7, color: '#cbd5e1' },
-  colCode: { width: '12%' },
-  colDesignation: { width: '30%' },
-  colU: { width: '6%', textAlign: 'center' },
-  colQtePort: { width: '12%' },
-  colQteTot: { width: '13%' },
-  colPU: { width: '13%' },
-  colCout: { width: '14%' },
-  colCodeP: { width: '13%' },
-  colDesignationP: { width: '50%' },
-  colPct: { width: '14%', textAlign: 'right' },
-  colCoutP: { width: '23%', textAlign: 'right' },
-  totalRow: { flexDirection: 'row', padding: 4, backgroundColor: '#eef1f5', alignItems: 'center' },
-  totalCell: { fontSize: 7, fontWeight: 'bold', color: '#1e3a5f' },
+  tableCell: { fontSize: 6.5, color: '#333', paddingVertical: 3.5, paddingHorizontal: 3 },
+  tableCellRight: { fontSize: 6.5, color: '#333', textAlign: 'right', paddingVertical: 3.5, paddingHorizontal: 3 },
+  tableCellMono: { fontSize: 6.5, color: '#1e3a5f', fontFamily: 'Courier', paddingVertical: 3.5, paddingHorizontal: 3 },
+  colCode: { width: COL_W.code },
+  colDesignation: { width: COL_W.designation },
+  colU: { width: COL_W.u, textAlign: 'center' },
+  colQteTot: { width: COL_W.qte, textAlign: 'right' },
+  colPU: { width: COL_W.pu, textAlign: 'right' },
+  colCout: { width: COL_W.cout, textAlign: 'right' },
+  totalRow: { flexDirection: 'row', backgroundColor: '#eef1f5', alignItems: 'center' },
+  totalCell: { fontSize: 7, fontWeight: 'bold', color: '#1e3a5f', paddingVertical: 4, paddingHorizontal: 3 },
   totalsBox: { flexDirection: 'row', marginTop: 10, justifyContent: 'space-between' },
   totalBox: { flex: 1, border: '1 solid #c9d4e0', backgroundColor: '#f4f7fa', borderRadius: 3, padding: 8, alignItems: 'center', marginHorizontal: 4 },
   totalValue: { fontSize: 12, fontWeight: 'bold', color: '#1e3a5f', marginBottom: 2 },
@@ -50,14 +41,11 @@ const styles = StyleSheet.create({
   footerText: { fontSize: 6, color: '#999' },
 });
 
-const formatDate = (d?: string) =>
-  d ? new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-';
-
 const fmt = (n: number | string | null | undefined, decimals = 2) =>
   Number(n ?? 0).toLocaleString('fr-FR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
 
 export function FicheTechniqueRapportPDF({ data }: { data: RapportFicheTechniqueData }) {
-  const { menu, parties, totalArticles, coutTotalFiche, coutParPassagerTotal } = data;
+  const { menu, totalArticles, coutTotalFiche, coutParPassagerTotal } = data;
   const passagers = Number(data.rapport.nombre_passagers) || 0;
 
   return (
@@ -66,45 +54,20 @@ export function FicheTechniqueRapportPDF({ data }: { data: RapportFicheTechnique
         <View style={styles.header}>
           <Text style={styles.companyName}>FONDEG CATERING CONGO SA</Text>
           <Text style={styles.companyInfo}>Aéroport de Ndjili, Commune de Nsele, Kinshasa, RDC</Text>
+        </View>
+
+        <View style={styles.titleRow}>
           <Text style={styles.title}>Fiche technique — {menu.nom}</Text>
-          <Text style={styles.subtitle}>Code : {menu.code} — Rapport N° {data.rapport.id}</Text>
+        </View>
+        <View style={styles.titleMeta}>
+          <Text style={styles.metaChip}>Code : {menu.code}</Text>
+          <Text style={styles.metaChip}>N° {data.rapport.id}</Text>
         </View>
 
-        <View style={styles.infoRow}>
-          <View style={styles.infoBox}><Text style={styles.infoLabel}>Cycle</Text><Text style={styles.infoValue}>{menu.cycle || '-'}</Text></View>
-          <View style={styles.infoBox}><Text style={styles.infoLabel}>Périodicité</Text><Text style={styles.infoValue}>{menu.periodicite || '-'}</Text></View>
-          <View style={styles.infoBox}><Text style={styles.infoLabel}>Validité</Text><Text style={styles.infoValue}>{menu.validite || '-'}</Text></View>
-          <View style={styles.infoBox}><Text style={styles.infoLabel}>Client</Text><Text style={styles.infoValue}>{data.rapport.partenaire?.nom || menu.partenaire?.nom || '-'}</Text></View>
-          <View style={styles.infoBox}><Text style={styles.infoLabel}>Date</Text><Text style={styles.infoValue}>{formatDate(data.rapport.date_rapport)}</Text></View>
-          <View style={styles.infoBox}><Text style={styles.infoLabel}>Magasin</Text><Text style={styles.infoValue}>{menu.magasin?.nom || '-'}</Text></View>
-          <View style={styles.infoBox}><Text style={styles.infoLabel}>Passagers</Text><Text style={styles.infoValue}>{fmt(passagers, 0)}</Text></View>
-          <View style={styles.infoBox}><Text style={styles.infoLabel}>Coût par passager</Text><Text style={styles.infoValue}>{formatCurrency(coutParPassagerTotal)}</Text></View>
+        <View style={styles.clientBox}>
+          <Text style={styles.clientLabel}>Client</Text>
+          <Text style={styles.clientValue}>{data.rapport.partenaire?.nom || menu.partenaire?.nom || '-'}</Text>
         </View>
-
-        {parties.map((partie) => (
-          <View key={partie.id} wrap={false}>
-            <View style={styles.partieHeader}>
-              <Text style={styles.partieTitle}>{partie.nom}</Text>
-              <Text style={styles.partieCount}>{partie.items.length} item(s)</Text>
-            </View>
-            <View style={styles.table}>
-              <View style={styles.tableHeader}>
-                <Text style={[styles.tableHeaderCell, styles.colCodeP]}>Code article</Text>
-                <Text style={[styles.tableHeaderCell, styles.colDesignationP]}>Désignation</Text>
-                <Text style={[styles.tableHeaderCell, styles.colPct]}>% passagers</Text>
-                <Text style={[styles.tableHeaderCell, styles.colCoutP]}>Coût total</Text>
-              </View>
-              {partie.items.map((item) => (
-                <View key={item.id} style={styles.tableRow}>
-                  <Text style={[styles.tableCellMono, styles.colCodeP]}>{item.code}</Text>
-                  <Text style={[styles.tableCell, styles.colDesignationP]}>{item.designation}</Text>
-                  <Text style={[styles.tableCellRight, styles.colPct]}>{fmt(item.pourcentage)} %</Text>
-                  <Text style={[styles.tableCellRight, styles.colCoutP]}>{formatCurrency(item.coutTotal)}</Text>
-                </View>
-              ))}
-            </View>
-          </View>
-        ))}
 
         <Text style={styles.sectionTitle}>Récapitulatif des articles consommés</Text>
         <View style={styles.table}>
@@ -128,7 +91,7 @@ export function FicheTechniqueRapportPDF({ data }: { data: RapportFicheTechnique
           ))}
           <View style={styles.totalRow}>
             <Text style={[styles.totalCell, styles.colCode]}>TOTAL</Text>
-            <Text style={[styles.totalCell, { width: '74%' }]} />
+            <Text style={[styles.totalCell, { width: COL_W.designation + COL_W.u + COL_W.qte + COL_W.pu }]} />
             <Text style={[styles.totalCell, styles.colCout]}>{formatCurrency(coutTotalFiche)}</Text>
           </View>
         </View>

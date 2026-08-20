@@ -36,8 +36,11 @@ class DashboardController extends Controller
 
             // Agrégats par produit
             $stockParProduit = [];
+            $stockParProduitMagasin = [];
             foreach ($stockLots as $info) {
                 $stockParProduit[$info['id_produit']] = ($stockParProduit[$info['id_produit']] ?? 0) + $info['stock'];
+                $stockParProduitMagasin[$info['id_produit']][$info['id_magasin']] =
+                    ($stockParProduitMagasin[$info['id_produit']][$info['id_magasin']] ?? 0) + $info['stock'];
             }
 
             // ============================================================
@@ -61,15 +64,12 @@ class DashboardController extends Controller
                 ->count();
 
             // 1.4 Nombre de commandes validées sur la période
-            $commandesValidees = BonCommande::whereIn('statut', ['ENVOYÉ', 'REÇU PARTIELLEMENT', 'REÇU'])
+            $commandesValidees = BonCommande::where('statut_validation', 'VALIDÉ')
                 ->whereBetween('date_commande', [$dateDebut, $dateFin])
                 ->count();
 
             // 1.5 Nombre de commandes en attente sur la période (brouillon ou en attente de validation)
-            $commandesEnAttente = BonCommande::where(function($q) {
-                    $q->where('statut', 'BROUILLON')
-                      ->orWhere('statut_validation', 'EN ATTENTE');
-                })
+            $commandesEnAttente = BonCommande::where('statut_validation', 'EN ATTENTE')
                 ->whereBetween('date_commande', [$dateDebut, $dateFin])
                 ->count();
 
@@ -171,23 +171,45 @@ class DashboardController extends Controller
             // ============================================================
             // 5. ALERTES - Produits en stock bas (à la fin de la période)
             // ============================================================
-            $produitsStockBas = Produit::with(['categorie', 'unite'])
+            $produitsStockBas = Produit::with(['categorie', 'unite', 'seuilsMagasin.magasin'])
                 ->where('actif', true)
                 ->get()
-                ->filter(function($produit) use ($stockParProduit) {
+                ->map(function($produit) use ($stockParProduit, $stockParProduitMagasin) {
                     $stock = $stockParProduit[$produit->id] ?? 0;
-                    return $stock > 0 && $stock <= $produit->seuil_alerte;
-                })
-                ->map(function($produit) use ($stockParProduit) {
+                    $parMagasin = $stockParProduitMagasin[$produit->id] ?? [];
+
+                    // Alerte globale (stock total vs seuil global)
+                    $alerteGlobale = $produit->seuil_alerte > 0 && $stock > 0 && $stock <= $produit->seuil_alerte;
+
+                    // Alertes par magasin (stock du magasin vs seuil spécifique)
+                    $magasinsAlerte = [];
+                    foreach ($produit->seuilsMagasin as $sm) {
+                        $stockMagasin = (int) ($parMagasin[$sm->id_magasin] ?? 0);
+                        if ($sm->seuil_alerte > 0 && $stockMagasin > 0 && $stockMagasin <= $sm->seuil_alerte) {
+                            $magasinsAlerte[] = [
+                                'id_magasin' => $sm->id_magasin,
+                                'magasin' => $sm->magasin->nom ?? null,
+                                'stock' => $stockMagasin,
+                                'seuil' => (int) $sm->seuil_alerte,
+                            ];
+                        }
+                    }
+
+                    if (!$alerteGlobale && count($magasinsAlerte) === 0) {
+                        return null;
+                    }
+
                     return [
                         'id' => $produit->id,
                         'nom' => $produit->nom,
-                        'stock_actuel' => $stockParProduit[$produit->id] ?? 0,
+                        'stock_actuel' => $stock,
                         'seuil_alerte' => $produit->seuil_alerte,
                         'categorie' => $produit->categorie->nom ?? 'Non classé',
-                        'unite' => $produit->unite->symbole ?? 'pc'
+                        'unite' => $produit->unite->symbole ?? 'pc',
+                        'details_magasin' => $magasinsAlerte,
                     ];
                 })
+                ->filter()
                 ->values();
 
             // ============================================================
@@ -245,7 +267,7 @@ class DashboardController extends Controller
                     ];
                 })
                 ->filter()
-                ->sortByDesc(fn($item) => $item['date_application'])
+                ->sortByDesc(fn($item) => abs($item['variation']))
                 ->take(5)
                 ->map(function ($item) {
                     unset($item['date_application']);
@@ -340,10 +362,11 @@ class DashboardController extends Controller
             $stock = Lot::where('id_magasin', $magasinId)
                 ->where('quantite_disponible', '>', 0)
                 ->where('statut_validation', 'VALIDÉ')
+                ->nonPerime()
                 ->sum('quantite_disponible');
 
             $commandes = BonCommande::where('id_magasin_destination', $magasinId)
-                ->whereIn('statut', ['ENVOYÉ', 'REÇU PARTIELLEMENT', 'REÇU'])
+                ->where('statut_validation', 'VALIDÉ')
                 ->count();
 
             $clients = Partenaire::where('id_magasin', $magasinId)
@@ -353,12 +376,14 @@ class DashboardController extends Controller
             $produits = Lot::where('id_magasin', $magasinId)
                 ->where('quantite_disponible', '>', 0)
                 ->where('statut_validation', 'VALIDÉ')
+                ->nonPerime()
                 ->distinct('id_produit')
                 ->count();
 
             $valeur = Lot::where('id_magasin', $magasinId)
                 ->where('quantite_disponible', '>', 0)
                 ->where('statut_validation', 'VALIDÉ')
+                ->nonPerime()
                 ->get()
                 ->sum(function($lot) {
                     return $lot->quantite_disponible * ($lot->prix_achat_ht_unitaire ?? 0);
@@ -394,8 +419,7 @@ class DashboardController extends Controller
     public function mini()
     {
         try {
-            $commandesEnAttente = BonCommande::where('statut', 'BROUILLON')
-                ->orWhere('statut_validation', 'EN ATTENTE')
+            $commandesEnAttente = BonCommande::where('statut_validation', 'EN ATTENTE')
                 ->count();
 
             $retoursEnAttente = Retour::where('statut_validation', 'EN ATTENTE')->count();
@@ -466,7 +490,12 @@ class DashboardController extends Controller
 
         Lot::where('statut_validation', 'VALIDÉ')
             ->where('created_at', '<=', $dateFin)
-            ->get(['id', 'id_produit', 'quantite_disponible', 'prix_achat_ht_unitaire'])
+            // Un lot périmé à la fin de la période ne compte pas dans le stock (rupture)
+            ->where(function ($q) use ($dateFin) {
+                $q->whereNull('date_peremption')
+                    ->orWhere('date_peremption', '>=', $dateFin->toDateString());
+            })
+            ->get(['id', 'id_produit', 'id_magasin', 'quantite_disponible', 'prix_achat_ht_unitaire'])
             ->each(function($lot) use (&$stock, $ajustements) {
                 $aj = $ajustements->get($lot->id);
                 $dispo = $lot->quantite_disponible
@@ -476,6 +505,7 @@ class DashboardController extends Controller
                 if ($dispo > 0) {
                     $stock[$lot->id] = [
                         'id_produit' => $lot->id_produit,
+                        'id_magasin' => $lot->id_magasin,
                         'stock' => $dispo,
                         'prix' => (float) ($lot->prix_achat_ht_unitaire ?? 0),
                     ];

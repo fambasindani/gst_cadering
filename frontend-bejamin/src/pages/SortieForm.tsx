@@ -19,7 +19,7 @@ import { partenaireService } from '../services/partenaire';
 import type { Lot } from '../types/lot';
 import {
   ArrowLeft, Save, Loader2, Plus, Trash2, User, Building2, Boxes, CalendarDays,
-  MessageSquare, Package, ArrowUp, ShoppingCart,
+  MessageSquare, Package, ArrowUp, ShoppingCart, RefreshCw,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { formatCurrency } from '../lib/format';
@@ -77,11 +77,18 @@ export function SortieForm() {
     typeMouvementService.getSortie().then((res) => { if (res.success && res.data.length > 0) setTypeSortieId(res.data[0].id); }).catch(() => {});
   }, []);
 
-  useEffect(() => {
-    const params: Record<string, string> = { per_page: '500', statut: 'VALIDÉ', sort_by: 'numero_lot', sort_order: 'asc' };
+  const chargerLots = useCallback(async () => {
+    const params: Record<string, string> = { per_page: '500', statut: 'VALIDÉ', disponible: '1', sort_by: 'numero_lot', sort_order: 'asc' };
     if (values.id_magasin) params.magasin_id = values.id_magasin;
-    lotService.list(params).then((r) => { if (r.success) setLots(r.data.data); }).catch(() => {});
-  }, [values.id_magasin]);
+    try {
+      const response = await lotService.list(params);
+      if (response.success) setLots(response.data.data);
+    } catch {
+      toast('Impossible de charger les lots disponibles', 'error');
+    }
+  }, [values.id_magasin, toast]);
+
+  useEffect(() => { chargerLots(); }, [chargerLots]);
 
   useEffect(() => {
     if (isEdit && id) {
@@ -350,12 +357,18 @@ export function SortieForm() {
                     <Package className="w-5 h-5 text-emerald-700" />
                     <h2 className="text-base font-bold text-gray-800">Produits à sortir</h2>
                   </div>
-                  {!isEdit && (
-                    <Button type="button" size="sm" onClick={addLigne}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm text-xs rounded-lg">
-                      <Plus className="w-3.5 h-3.5 mr-1" /> Ajouter une ligne
+                  <div className="flex items-center gap-2">
+                    <Button type="button" variant="outline" size="sm" onClick={chargerLots}
+                      className="border-gray-200 text-gray-600 text-xs rounded-lg">
+                      <RefreshCw className="w-3.5 h-3.5 mr-1" /> Actualiser les lots
                     </Button>
-                  )}
+                    {!isEdit && (
+                      <Button type="button" size="sm" onClick={addLigne}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm text-xs rounded-lg">
+                        <Plus className="w-3.5 h-3.5 mr-1" /> Ajouter une ligne
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
                 <div className="overflow-x-auto rounded-lg border border-gray-200">

@@ -27,6 +27,8 @@ class LotController extends Controller
             $dateDebut = $request->input('date_debut');
             $dateFin = $request->input('date_fin');
             $peremptionProche = $request->input('peremption_proche');
+            $perimes = $request->input('perimes');
+            $disponible = $request->boolean('disponible');
             $joursPeremption = (int) $request->input('jours', 7);
             $sortBy = $request->input('sort_by', 'id');
             $sortOrder = $request->input('sort_order', 'desc');
@@ -56,6 +58,11 @@ class LotController extends Controller
                 $query->where('statut_validation', $statut);
             }
 
+            if ($disponible) {
+                // Stock disponible = quantité > 0 et lot non périmé
+                $query->where('quantite_disponible', '>', 0)->nonPerime();
+            }
+
             if ($dateDebut) {
                 $query->whereDate('date_reception', '>=', $dateDebut);
             }
@@ -68,6 +75,16 @@ class LotController extends Controller
                 $query->where('quantite_disponible', '>', 0)
                     ->where('statut_validation', 'VALIDÉ')
                     ->whereBetween('date_peremption', [now(), now()->addDays($joursPeremption)]);
+                $sortBy = 'date_peremption';
+                $sortOrder = 'asc';
+            }
+
+            // Filtre « lots périmés » (date dépassée, encore du stock physique)
+            if (in_array($perimes, ['1', 'true', 'oui', 'on'])) {
+                $query->where('quantite_disponible', '>', 0)
+                    ->where('statut_validation', 'VALIDÉ')
+                    ->whereNotNull('date_peremption')
+                    ->whereDate('date_peremption', '<', now()->toDateString());
                 $sortBy = 'date_peremption';
                 $sortOrder = 'asc';
             }

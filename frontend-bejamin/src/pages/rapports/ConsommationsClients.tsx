@@ -9,6 +9,7 @@ import { RapportTablePDF } from '../../components/pdf/RapportTablePDF';
 import type { Column } from '../../components/pdf/RapportTablePDF';
 import { rapportService } from '../../services/rapport';
 import { tauxConversionService } from '../../services/taux-conversion';
+import { DeviseSelect } from '../../components/ui/DeviseSelect';
 import type { ConsommationsClientsData } from '../../types/rapport';
 import { RefreshCw, FileText, Download, Users } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -21,6 +22,7 @@ export function ConsommationsClients() {
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [tauxCdf, setTauxCdf] = useState<number | null>(null);
+  const [devise, setDevise] = useState<'USD' | 'CDF'>('USD');
 
   const consommations = data?.consommations ?? [];
   const stats = data?.statistiques;
@@ -51,20 +53,20 @@ export function ConsommationsClients() {
 
   useEffect(() => { fetchData(); }, [dateFrom, dateTo]);
 
+  const colMoyenneLabel = devise === 'CDF' ? 'Moy/commande (CDF)' : 'Moy/commande';
+
   const pdfColumns: Column[] = [
-    { key: 'client', label: 'Client', width: '22%', render: (r) => r.client },
-    { key: 'commandes', label: 'N° commandes', width: '16%', align: 'right', render: (r) => r.commandes },
-    { key: 'produits', label: 'Produits', width: '20%', align: 'right', render: (r) => r.produits },
-    { key: 'moyenne', label: 'Moy/commande', width: '18%', align: 'right', render: (r) => r.moyenne },
-    { key: 'moyenne_cdf', label: 'Moy/commande (CDF)', width: '24%', align: 'right', render: (r) => r.moyenne_cdf },
+    { key: 'client', label: 'Client', width: '26%', render: (r) => r.client },
+    { key: 'commandes', label: 'N° commandes', width: '20%', align: 'right', render: (r) => r.commandes },
+    { key: 'produits', label: 'Produits', width: '24%', align: 'right', render: (r) => r.produits },
+    { key: 'moyenne', label: colMoyenneLabel, width: '30%', align: 'right', render: (r) => r.moyenne },
   ];
 
   const pdfRows = consommations.map((c) => ({
     client: c.client.nom,
     commandes: String(c.total_commandes),
     produits: String(c.total_produits),
-    moyenne: formatCurrency(c.moyenne_par_commande, '$'),
-    moyenne_cdf: tauxCdf != null ? formatCurrency(c.moyenne_par_commande * tauxCdf, 'CDF') : '—',
+    moyenne: devise === 'CDF' && tauxCdf != null ? formatCurrency(c.moyenne_par_commande * tauxCdf, 'CDF') : formatCurrency(c.moyenne_par_commande, '$'),
   }));
 
   return (
@@ -140,6 +142,10 @@ export function ConsommationsClients() {
               Effacer
             </button>
           )}
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-600 font-medium whitespace-nowrap">Devise :</label>
+            <DeviseSelect value={devise} onChange={setDevise} />
+          </div>
         </div>
       </div>
 
@@ -198,14 +204,13 @@ export function ConsommationsClients() {
                     <TableHead className="font-semibold text-gray-600">Client</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">N° commandes</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Produits</TableHead>
-                    <TableHead className="text-right font-semibold text-gray-600">Moy/commande</TableHead>
-                    <TableHead className="text-right font-semibold text-gray-600">Moy/commande (CDF)</TableHead>
+                    <TableHead className="text-right font-semibold text-gray-600">{colMoyenneLabel}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {Array.from({ length: 5 }).map((_, i) => (
                     <TableRow key={i} className="animate-pulse">
-                      {Array.from({ length: 5 }).map((_, j) => (
+                      {Array.from({ length: 4 }).map((_, j) => (
                         <TableCell key={j}><div className="h-5 bg-gray-200 rounded" style={{ width: `${60 + j * 15}px` }} /></TableCell>
                       ))}
                     </TableRow>
@@ -227,8 +232,7 @@ export function ConsommationsClients() {
                     <TableHead className="font-semibold text-gray-600">Client</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">N° commandes</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Produits</TableHead>
-                    <TableHead className="text-right font-semibold text-gray-600">Moy/commande</TableHead>
-                    <TableHead className="text-right font-semibold text-gray-600">Moy/commande (CDF)</TableHead>
+                    <TableHead className="text-right font-semibold text-gray-600">{colMoyenneLabel}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -237,8 +241,7 @@ export function ConsommationsClients() {
                       <TableCell className="font-medium text-gray-900">{c.client.nom}</TableCell>
                       <TableCell className="text-right font-mono text-sm text-gray-600">{c.total_commandes}</TableCell>
                       <TableCell className="text-right font-mono text-sm text-gray-600">{c.total_produits}</TableCell>
-                      <TableCell className="text-right font-mono text-sm text-gray-600">{formatCurrency(c.moyenne_par_commande, '$')}</TableCell>
-                      <TableCell className="text-right font-mono text-sm text-gray-700">{tauxCdf != null ? formatCurrency(c.moyenne_par_commande * tauxCdf, 'CDF') : '—'}</TableCell>
+                      <TableCell className="text-right font-mono text-sm text-gray-600">{devise === 'CDF' && tauxCdf != null ? formatCurrency(c.moyenne_par_commande * tauxCdf, 'CDF') : formatCurrency(c.moyenne_par_commande, '$')}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

@@ -122,7 +122,6 @@ class BonCommande extends Model
     {
         $statuts = [
             'BROUILLON' => 'Brouillon',
-            'ENVOYÉ' => 'Envoyé',
             'REÇU PARTIELLEMENT' => 'Reçu partiellement',
             'REÇU' => 'Reçu',
             'CLOTURE' => 'Clôturé'

@@ -9,6 +9,7 @@ import { RapportTablePDF } from '../../components/pdf/RapportTablePDF';
 import type { Column } from '../../components/pdf/RapportTablePDF';
 import { rapportService } from '../../services/rapport';
 import { tauxConversionService } from '../../services/taux-conversion';
+import { DeviseSelect } from '../../components/ui/DeviseSelect';
 import type { BonCommandeRapport } from '../../types/rapport';
 import { RefreshCw, FileText, ShoppingCart, Download } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -23,6 +24,7 @@ export function BonCommandeRapport() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [tauxCdf, setTauxCdf] = useState<number | null>(null);
+  const [devise, setDevise] = useState<'USD' | 'CDF'>('USD');
 
   const bons = data?.bons_commande ?? [];
   const stats = data?.statistiques;
@@ -52,14 +54,15 @@ export function BonCommandeRapport() {
 
   useEffect(() => { fetchData(); }, [dateFrom, dateTo]);
 
+  const colMontantLabel = devise === 'CDF' ? 'Montant (CDF)' : 'Montant HT';
+
   const pdfColumns: Column[] = [
-    { key: 'numero', label: 'N° commande', width: '16%', render: (r) => r.numero },
+    { key: 'numero', label: 'N° commande', width: '18%', render: (r) => r.numero },
     { key: 'date', label: 'Date', width: '12%', render: (r) => r.date },
-    { key: 'fournisseur', label: 'Fournisseur', width: '22%', render: (r) => r.fournisseur },
-    { key: 'magasin', label: 'Magasin', width: '13%', render: (r) => r.magasin },
+    { key: 'fournisseur', label: 'Fournisseur', width: '24%', render: (r) => r.fournisseur },
+    { key: 'magasin', label: 'Magasin', width: '14%', render: (r) => r.magasin },
     { key: 'nbLignes', label: 'Nb lignes', width: '10%', align: 'right', render: (r) => r.nbLignes },
-    { key: 'montant', label: 'Montant HT', width: '14%', align: 'right', render: (r) => r.montant },
-    { key: 'montant_cdf', label: 'Montant (CDF)', width: '13%', align: 'right', render: (r) => r.montant_cdf },
+    { key: 'montant', label: colMontantLabel, width: '16%', align: 'right', render: (r) => r.montant },
   ];
 
   const pdfRows = bons.map((b) => {
@@ -70,8 +73,7 @@ export function BonCommandeRapport() {
       fournisseur: b.partenaire?.nom ?? '-',
       magasin: b.magasin_destination?.nom ?? '-',
       nbLignes: String(b.lignes?.length ?? 0),
-      montant: formatCurrency(montant, '$'),
-      montant_cdf: tauxCdf != null ? formatCurrency(montant * tauxCdf, 'CDF') : '—',
+      montant: devise === 'CDF' && tauxCdf != null ? formatCurrency(montant * tauxCdf, 'CDF') : formatCurrency(montant, '$'),
     };
   });
 
@@ -94,11 +96,10 @@ export function BonCommandeRapport() {
                   stats={stats ? [
                     { label: 'Total bons', value: String(stats.total_bons) },
                     { label: 'Total lignes', value: String(stats.total_lignes) },
-                    { label: 'Montant total', value: formatCurrency(stats.total_montant_ht, '$') },
+                    { label: 'Montant total', value: devise === 'CDF' && tauxCdf != null ? formatCurrency(stats.total_montant_ht * tauxCdf, 'CDF') : formatCurrency(stats.total_montant_ht, '$') },
                   ] : undefined}
                   totals={[
-                    { label: 'Montant total HT', value: formatCurrency(stats?.total_montant_ht ?? 0, '$') },
-                    { label: 'Montant total (CDF)', value: tauxCdf != null ? formatCurrency((stats?.total_montant_ht ?? 0) * tauxCdf, 'CDF') : '—' },
+                    { label: 'Montant total', value: devise === 'CDF' && tauxCdf != null ? formatCurrency((stats?.total_montant_ht ?? 0) * tauxCdf, 'CDF') : formatCurrency(stats?.total_montant_ht ?? 0, '$') },
                   ]}
                 />
               }
@@ -148,6 +149,10 @@ export function BonCommandeRapport() {
               Effacer
             </button>
           )}
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-600 font-medium whitespace-nowrap">Devise :</label>
+            <DeviseSelect value={devise} onChange={setDevise} />
+          </div>
         </div>
       </div>
 
@@ -186,7 +191,7 @@ export function BonCommandeRapport() {
               </div>
               <div>
                 <p className="text-xs text-gray-500 font-medium">Montant total</p>
-                <p className="text-xl font-bold text-gray-900 font-mono">{formatCurrency(stats?.total_montant_ht ?? 0, '$')}</p>
+                <p className="text-xl font-bold text-gray-900 font-mono">{devise === 'CDF' && tauxCdf != null ? formatCurrency((stats?.total_montant_ht ?? 0) * tauxCdf, 'CDF') : formatCurrency(stats?.total_montant_ht ?? 0, '$')}</p>
               </div>
             </div>
           </CardContent>
@@ -208,14 +213,13 @@ export function BonCommandeRapport() {
                     <TableHead className="font-semibold text-gray-600">Fournisseur</TableHead>
                     <TableHead className="font-semibold text-gray-600">Magasin</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Nb lignes</TableHead>
-                    <TableHead className="text-right font-semibold text-gray-600">Montant HT</TableHead>
-                    <TableHead className="text-right font-semibold text-gray-600">Montant (CDF)</TableHead>
+                    <TableHead className="text-right font-semibold text-gray-600">{colMontantLabel}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {Array.from({ length: 5 }).map((_, i) => (
                     <TableRow key={i} className="animate-pulse">
-                      {Array.from({ length: 7 }).map((_, j) => (
+                      {Array.from({ length: 6 }).map((_, j) => (
                         <TableCell key={j}><div className="h-5 bg-gray-200 rounded" style={{ width: `${60 + j * 15}px` }} /></TableCell>
                       ))}
                     </TableRow>
@@ -239,8 +243,7 @@ export function BonCommandeRapport() {
                     <TableHead className="font-semibold text-gray-600">Fournisseur</TableHead>
                     <TableHead className="font-semibold text-gray-600">Magasin</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Nb lignes</TableHead>
-                    <TableHead className="text-right font-semibold text-gray-600">Montant HT</TableHead>
-                    <TableHead className="text-right font-semibold text-gray-600">Montant (CDF)</TableHead>
+                    <TableHead className="text-right font-semibold text-gray-600">{colMontantLabel}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -253,8 +256,7 @@ export function BonCommandeRapport() {
                       <TableCell className="font-medium text-gray-900">{b.partenaire?.nom ?? '-'}</TableCell>
                       <TableCell className="text-sm text-gray-600">{b.magasin_destination?.nom ?? '-'}</TableCell>
                       <TableCell className="text-right font-mono text-sm text-gray-600">{b.lignes?.length ?? 0}</TableCell>
-                      <TableCell className="text-right font-mono text-sm font-semibold text-gray-900">{formatCurrency(montant, '$')}</TableCell>
-                      <TableCell className="text-right font-mono text-sm text-gray-700">{tauxCdf != null ? formatCurrency(montant * tauxCdf, 'CDF') : '—'}</TableCell>
+                      <TableCell className="text-right font-mono text-sm font-semibold text-gray-900">{devise === 'CDF' && tauxCdf != null ? formatCurrency(montant * tauxCdf, 'CDF') : formatCurrency(montant, '$')}</TableCell>
                     </TableRow>
                     );
                   })}

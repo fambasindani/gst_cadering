@@ -14,7 +14,6 @@ import { ConfirmModal } from '../components/ui/confirm-modal';
 import { useToast } from '../hooks/useToast';
 import { useIsAdmin } from '../hooks/useIsAdmin';
 import { bonCommandeService } from '../services/bon-commande';
-import { tauxConversionService } from '../services/taux-conversion';
 import type { BonCommande } from '../types/bon-commande';
 import {
   Plus, Search, RefreshCw, Eye, Pencil, Trash2, FileText,
@@ -24,7 +23,6 @@ import { formatCurrency } from '../lib/format';
 
 const statutConfig: Record<string, { label: string; color: string }> = {
   BROUILLON: { label: 'Brouillon', color: 'bg-amber-100 text-amber-800' },
-  ENVOYÉ: { label: 'Envoyé', color: 'bg-blue-100 text-blue-800' },
   'REÇU PARTIELLEMENT': { label: 'Reçu partiellement', color: 'bg-purple-100 text-purple-800' },
   REÇU: { label: 'Reçu', color: 'bg-emerald-100 text-emerald-800' },
   CLOTURE: { label: 'Clôturé', color: 'bg-red-100 text-red-800' },
@@ -48,7 +46,6 @@ export function BonCommande() {
   const [pageSize, setPageSize] = useState(20);
   const [deleteTarget, setDeleteTarget] = useState<BonCommande | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [tauxCdf, setTauxCdf] = useState<number | null>(null);
 
   const handlePageSizeChange = (size: number) => { setPageSize(size); setCurrentPage(1); };
 
@@ -65,12 +62,6 @@ export function BonCommande() {
         setData(res.data.data);
         setTotal(res.data.total);
         setLastPage(res.data.last_page);
-      }
-      try {
-        const taux = await tauxConversionService.getActuel();
-        if (taux.success && taux.data) setTauxCdf(Number(taux.data.taux));
-      } catch {
-        // taux indisponible
       }
     } catch {
       //
@@ -143,10 +134,9 @@ export function BonCommande() {
             <SelectContent>
               <SelectItem value="_all">Tous les statuts</SelectItem>
               <SelectItem value="BROUILLON">Brouillon</SelectItem>
-              <SelectItem value="ENVOYÉ">Envoyé</SelectItem>
-              <SelectItem value="REÇU PARTIELLEMENT">Reçu partiellement</SelectItem>
-              <SelectItem value="REÇU">Reçu</SelectItem>
-              <SelectItem value="CLOTURE">Clôturé</SelectItem>
+               <SelectItem value="REÇU PARTIELLEMENT">Reçu partiellement</SelectItem>
+               <SelectItem value="REÇU">Reçu</SelectItem>
+               <SelectItem value="CLOTURE">Clôturé</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -197,7 +187,6 @@ export function BonCommande() {
                     <TableHead className="hidden lg:table-cell font-semibold text-gray-600">Date</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Montant (saisi)</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Montant (prix actuel)</TableHead>
-                    <TableHead className="hidden md:table-cell text-right font-semibold text-gray-600">Montant (CDF)</TableHead>
                     <TableHead className="text-center font-semibold text-gray-600">Statut</TableHead>
                     <TableHead className="text-center font-semibold text-gray-600">Actions</TableHead>
                   </TableRow>
@@ -211,7 +200,6 @@ export function BonCommande() {
                       <TableCell className="hidden lg:table-cell"><div className="h-5 w-20 bg-gray-200 rounded" /></TableCell>
                       <TableCell className="text-right"><div className="h-5 w-16 bg-gray-200 rounded ml-auto" /></TableCell>
                       <TableCell className="text-right"><div className="h-5 w-16 bg-gray-200 rounded ml-auto" /></TableCell>
-                      <TableCell className="hidden md:table-cell text-right"><div className="h-5 w-20 bg-gray-200 rounded ml-auto" /></TableCell>
                       <TableCell className="text-center"><div className="h-6 w-20 bg-gray-200 rounded-full mx-auto" /></TableCell>
                       <TableCell className="text-center"><div className="h-8 w-24 bg-gray-200 rounded mx-auto" /></TableCell>
                     </TableRow>
@@ -237,7 +225,6 @@ export function BonCommande() {
                       <TableHead className="hidden lg:table-cell font-semibold text-gray-600">Date</TableHead>
                       <TableHead className="text-right font-semibold text-gray-600">Montant (saisi)</TableHead>
                       <TableHead className="text-right font-semibold text-gray-600">Montant (prix actuel)</TableHead>
-                      <TableHead className="hidden md:table-cell text-right font-semibold text-gray-600">Montant (CDF)</TableHead>
                       <TableHead className="text-center font-semibold text-gray-600">Statut</TableHead>
                       <TableHead className="text-center font-semibold text-gray-600">Actions</TableHead>
                     </TableRow>
@@ -249,7 +236,6 @@ export function BonCommande() {
                       const totalMt = lignes.reduce((s, l) => s + l.quantite_commandee * l.prix_unitaire_ht, 0);
                       const totalActuel = b.montant_actuel ?? lignes.reduce((s, l) => s + l.quantite_commandee * (l.prix_actuel ?? l.prix_unitaire_ht), 0);
                       const diff = Math.abs(totalActuel - totalMt) > 0.005;
-                      const totalCdf = tauxCdf != null ? totalActuel * tauxCdf : null;
                       return (
                         <TableRow key={b.id} className={cn('hover:bg-royal-50/50 transition-colors', i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50')}>
                           <TableCell className="font-mono text-sm font-medium text-gray-900">{b.numero_commande}</TableCell>
@@ -266,9 +252,6 @@ export function BonCommande() {
                                 {totalActuel > totalMt ? '+' : ''}{formatCurrency(totalActuel - totalMt, b.devise?.code)}
                               </span>
                             )}
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell text-right font-mono text-sm font-medium text-gray-700">
-                            {totalCdf != null ? formatCurrency(totalCdf, 'CDF') : '—'}
                           </TableCell>
                           <TableCell className="text-center">
                             <span className={cn('inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium', sc.color)}>

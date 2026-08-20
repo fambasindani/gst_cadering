@@ -248,7 +248,7 @@ export function ReceptionForm() {
     );
   }
 
-  const statutNonReceptionnable = bon.statut !== 'ENVOYÉ' && bon.statut !== 'REÇU PARTIELLEMENT' && !(isAdmin && bon.statut === 'REÇU');
+  const statutNonReceptionnable = !(bon.statut === 'BROUILLON' || bon.statut === 'REÇU PARTIELLEMENT' || (isAdmin && bon.statut === 'REÇU'));
   const lignes = bon.lignes || [];
 
   const totalQuantite = Object.values(receptionData).reduce((sum, rd) => sum + (Number(rd.quantite_recue) || 0), 0);

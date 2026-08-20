@@ -47,16 +47,6 @@ export function FicheTechniqueMenuDetails() {
 
   const nbItems = (menu.parties || []).reduce((s, p) => s + (p.items?.length || 0), 0);
 
-  const clients = Array.from(
-    new Map(
-      (menu.parties || [])
-        .flatMap(p => p.items || [])
-        .map(i => i.partenaire)
-        .filter((c): c is { id: number; nom: string } => Boolean(c))
-        .map(c => [c.id, c])
-    ).values()
-  );
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -124,18 +114,8 @@ export function FicheTechniqueMenuDetails() {
             <div className="flex items-center gap-3">
               <div className="p-2 rounded-lg bg-amber-50"><Landmark className="w-4 h-4 text-amber-700" /></div>
               <div>
-                <p className="text-xs text-gray-500 font-medium">Client(s)</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {clients.length === 0 ? (
-                    <p className="text-base font-bold text-gray-900">-</p>
-                  ) : (
-                    clients.map((c) => (
-                      <span key={c.id} className="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1">
-                        {c.nom}
-                      </span>
-                    ))
-                  )}
-                </div>
+                <p className="text-xs text-gray-500 font-medium">Client</p>
+                <p className="text-base font-bold text-gray-900">{menu.partenaire?.nom || '-'}</p>
               </div>
             </div>
           </CardContent>
@@ -187,7 +167,6 @@ export function FicheTechniqueMenuDetails() {
                   <table className="w-full text-sm">
                     <thead>
                       <tr className="bg-gray-50">
-                        <th className="text-left font-semibold text-gray-600 px-4 py-2">Client</th>
                         <th className="text-left font-semibold text-gray-600 px-4 py-2">Recette / Produit</th>
                         <th className="text-center font-semibold text-gray-600 px-4 py-2">%</th>
                         <th className="text-right font-semibold text-gray-600 px-4 py-2">Coût / passager</th>
@@ -201,11 +180,6 @@ export function FicheTechniqueMenuDetails() {
                           : (i.produit ? Number(i.produit.prix_unitaire ?? 0) : 0);
                         return (
                           <tr key={i.id} className="border-t border-gray-100 hover:bg-royal-50/50 transition-colors">
-                            <td className="px-4 py-2.5">
-                              <span className="text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1">
-                                {i.partenaire?.nom || 'Tous'}
-                              </span>
-                            </td>
                             <td className="px-4 py-2.5">
                               <div className="font-medium text-gray-900">{i.designation || i.fiche_technique?.nom || i.produit?.nom || '-'}</div>
                               {(i.fiche_technique || i.produit) && (

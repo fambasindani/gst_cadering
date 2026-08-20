@@ -7,8 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '../components/ui/table';
-import { useToast } from '../hooks/useToast';
 import { useIsAdmin } from '../hooks/useIsAdmin';
+import { useToast } from '../hooks/useToast';
 import { ConfirmModal } from '../components/ui/confirm-modal';
 import { Modal } from '../components/ui/modal';
 import { bonCommandeService } from '../services/bon-commande';
@@ -17,34 +17,31 @@ import { BonCommandePDF } from '../components/pdf/BonCommandePDF';
 import { ReceptionPDF } from '../components/pdf/ReceptionPDF';
 import type { BonCommande, ReceptionListe } from '../types/bon-commande';
 import {
-  ArrowLeft, Pencil, FileText, Truck, CheckCircle, XCircle, Ban, Printer, PackagePlus, Package, Eye,
-  Building2, MapPin, Calendar, DollarSign, MessageSquare, User, Clock, Loader2,
+  ArrowLeft, Pencil, FileText, Truck, CheckCircle, Printer, PackagePlus, Package, Eye,
+  Building2, MapPin, Calendar, DollarSign, MessageSquare, User, Clock, Loader2, Ban,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { formatCurrency } from '../lib/format';
 
 const statutConfig: Record<string, { label: string; color: string; icon: typeof Clock }> = {
   BROUILLON: { label: 'Brouillon', color: 'bg-amber-100 text-amber-800 border-amber-200', icon: Clock },
-  ENVOYÉ: { label: 'Envoyé', color: 'bg-blue-100 text-blue-800 border-blue-200', icon: Truck },
   'REÇU PARTIELLEMENT': { label: 'Reçu partiellement', color: 'bg-purple-100 text-purple-800 border-purple-200', icon: Truck },
   REÇU: { label: 'Reçu', color: 'bg-emerald-100 text-emerald-800 border-emerald-200', icon: CheckCircle },
-  CLOTURE: { label: 'Clôturé', color: 'bg-red-100 text-red-800 border-red-200', icon: Ban },
+  CLOTURE: { label: 'Clôturé', color: 'bg-red-100 text-red-800 border-red-200', icon: Clock },
 };
 
 export function BonCommandeDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const isAdmin = useIsAdmin();
+  const { toast } = useToast();
 
   const [bon, setBon] = useState<BonCommande | null>(null);
   const [loading, setLoading] = useState(true);
   const [tauxCdf, setTauxCdf] = useState<number | null>(null);
-  const [actionLoading, setActionLoading] = useState(false);
-  const [confirmValidate, setConfirmValidate] = useState(false);
-  const [confirmReject, setConfirmReject] = useState(false);
-  const [confirmCancel, setConfirmCancel] = useState(false);
   const [receptionDetail, setReceptionDetail] = useState<ReceptionListe | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [confirmCancel, setConfirmCancel] = useState(false);
 
 
 
@@ -87,6 +84,7 @@ export function BonCommandeDetails() {
       setActionLoading(false);
     }
   };
+
 
   if (loading) {
     return (
@@ -146,7 +144,7 @@ export function BonCommandeDetails() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <PDFDownloadLink document={<BonCommandePDF bon={bon} tauxCdf={tauxCdf} />} fileName={`BC-${bon.numero_commande}.pdf`}>
+          <PDFDownloadLink document={<BonCommandePDF bon={bon} />} fileName={`BC-${bon.numero_commande}.pdf`}>
             {({ loading: pdfLoading }) => (
               <Button variant="outline" className="border-gray-200 text-gray-700 hover:bg-gray-50" disabled={pdfLoading}>
                 <Printer className="w-4 h-4 mr-2" />
@@ -274,6 +272,7 @@ export function BonCommandeDetails() {
                                       <TableHead className="text-xs font-semibold text-gray-500 text-right">Quantité</TableHead>
                                       <TableHead className="text-xs font-semibold text-gray-500 text-right">Prix unit.</TableHead>
                                       <TableHead className="text-xs font-semibold text-gray-500 text-right">Montant</TableHead>
+                                      <TableHead className="text-xs font-semibold text-gray-500 text-center">Statut</TableHead>
                                     </TableRow>
                                   </TableHeader>
                                   <TableBody>
@@ -289,6 +288,9 @@ export function BonCommandeDetails() {
                                         </TableCell>
                                         <TableCell className="text-xs text-gray-800 font-mono text-right">
                                           {formatCurrency(rec.montant, l.devise?.code || deviseCode)}
+                                        </TableCell>
+                                        <TableCell className="text-center">
+                                          <ReceptionStatutBadge statuts={[rec.statut]} />
                                         </TableCell>
                                       </TableRow>
                                     ))}
@@ -336,6 +338,7 @@ export function BonCommandeDetails() {
                         <TableHead className="font-semibold text-gray-600">Date</TableHead>
                         <TableHead className="text-right font-semibold text-gray-600">Quantité</TableHead>
                         <TableHead className="text-right font-semibold text-gray-600">Montant</TableHead>
+                        <TableHead className="text-center font-semibold text-gray-600">Statut</TableHead>
                         <TableHead className="text-right font-semibold text-gray-600">Actions</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -349,6 +352,9 @@ export function BonCommandeDetails() {
                           <TableCell className="text-right font-mono text-sm text-gray-900">{rec.quantite}</TableCell>
                           <TableCell className="text-right font-mono text-sm font-medium text-gray-900">
                             {formatCurrency(rec.montant, deviseCode)}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <ReceptionStatutBadge statuts={rec.lignes.map((l) => l.statut)} />
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex items-center justify-end gap-1.5">
@@ -395,34 +401,22 @@ export function BonCommandeDetails() {
               <CardTitle className="text-lg font-semibold">Actions</CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-2">
-              {bon.statut === 'BROUILLON' ? (
-                <>
-                  <Button onClick={() => setConfirmValidate(true)}
-                    disabled={actionLoading} className="w-full justify-start bg-emerald-600 hover:bg-emerald-700 text-white">
-                    {actionLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <CheckCircle className="w-4 h-4 mr-2" />}
-                    Valider
-                  </Button>
-                  <Button onClick={() => setConfirmReject(true)}
-                    disabled={actionLoading} className="w-full justify-start bg-red-600 hover:bg-red-700 text-white">
-                    {actionLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <XCircle className="w-4 h-4 mr-2" />}
-                    Rejeter
-                  </Button>
-                  <Button onClick={() => navigate(`/bon-commande/${id}/modifier`)}
-                    variant="outline" className="w-full justify-start border-gray-200 text-gray-700 hover:bg-gray-50">
-                    <Pencil className="w-4 h-4 mr-2" /> Modifier
-                  </Button>
-                </>
-              ) : null}
-
-              {bon.statut === 'ENVOYÉ' || bon.statut === 'REÇU PARTIELLEMENT' || (isAdmin && bon.statut === 'REÇU') ? (
+              {bon.statut === 'BROUILLON' || bon.statut === 'REÇU PARTIELLEMENT' || (isAdmin && bon.statut === 'REÇU') ? (
                 <Button onClick={() => navigate(`/reception/${id}`)}
-                  disabled={actionLoading} className="w-full justify-start bg-royal-600 hover:bg-royal-700 text-white">
+                  className="w-full justify-start bg-royal-600 hover:bg-royal-700 text-white">
                   <PackagePlus className="w-4 h-4 mr-2" />
                   {bon.statut === 'REÇU' ? 'Corriger la réception' : 'Réceptionner'}
                 </Button>
               ) : null}
 
-              {bon.statut === 'ENVOYÉ' || bon.statut === 'REÇU PARTIELLEMENT' ? (
+              {bon.statut === 'BROUILLON' ? (
+                <Button onClick={() => navigate(`/bon-commande/${id}/modifier`)}
+                  variant="outline" className="w-full justify-start border-gray-200 text-gray-700 hover:bg-gray-50">
+                  <Pencil className="w-4 h-4 mr-2" /> Modifier
+                </Button>
+              ) : null}
+
+              {bon.statut === 'REÇU PARTIELLEMENT' ? (
                 <Button onClick={() => setConfirmCancel(true)}
                   disabled={actionLoading} variant="outline" className="w-full justify-start border-red-200 text-red-700 hover:bg-red-50">
                   {actionLoading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Ban className="w-4 h-4 mr-2" />}
@@ -430,7 +424,7 @@ export function BonCommandeDetails() {
                 </Button>
               ) : null}
 
-              <PDFDownloadLink document={<BonCommandePDF bon={bon} tauxCdf={tauxCdf} />} fileName={`BC-${bon.numero_commande}.pdf`}>
+              <PDFDownloadLink document={<BonCommandePDF bon={bon} />} fileName={`BC-${bon.numero_commande}.pdf`}>
                 {({ loading: pdfLoading }) => (
                   <Button variant="outline" disabled={pdfLoading} className="w-full justify-start border-gray-200 text-gray-700 hover:bg-gray-50">
                     <Printer className="w-4 h-4 mr-2" />
@@ -465,6 +459,7 @@ export function BonCommandeDetails() {
                     <th className="px-4 py-2.5 font-semibold text-right">Quantité</th>
                     <th className="px-4 py-2.5 font-semibold text-right">Prix unit.</th>
                     <th className="px-4 py-2.5 font-semibold text-right">Montant</th>
+                    <th className="px-4 py-2.5 font-semibold text-center">Statut</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -475,6 +470,7 @@ export function BonCommandeDetails() {
                       <td className="px-4 py-2.5 font-mono text-right text-gray-900">{l.quantite}</td>
                       <td className="px-4 py-2.5 font-mono text-right text-gray-700">{formatCurrency(l.prix_unitaire, deviseCode)}</td>
                       <td className="px-4 py-2.5 font-mono text-right font-medium text-gray-900">{formatCurrency(l.montant, deviseCode)}</td>
+                      <td className="px-4 py-2.5 text-center"><ReceptionStatutBadge statuts={[l.statut]} /></td>
                     </tr>
                   ))}
                 </tbody>
@@ -508,35 +504,6 @@ export function BonCommandeDetails() {
       </Modal>
 
       <ConfirmModal
-        isOpen={confirmValidate}
-        onClose={() => setConfirmValidate(false)}
-        onConfirm={async () => {
-          setConfirmValidate(false);
-          const ok = await doAction('validation', () => bonCommandeService.validate(Number(id)), 'Bon validé avec succès');
-          if (ok) navigate(`/reception/${id}`);
-        }}
-        title="Valider le bon"
-        message={`Confirmer la validation du bon "${bon?.numero_commande || ''}" ?`}
-        variant="warning"
-        confirmLabel="Valider"
-        loading={actionLoading}
-      />
-
-      <ConfirmModal
-        isOpen={confirmReject}
-        onClose={() => setConfirmReject(false)}
-        onConfirm={async () => {
-          setConfirmReject(false);
-          await doAction('rejet', () => bonCommandeService.reject(Number(id)), 'Bon rejeté');
-        }}
-        title="Rejeter le bon"
-        message={`Confirmer le rejet du bon "${bon?.numero_commande || ''}" ?`}
-        variant="danger"
-        confirmLabel="Rejeter"
-        loading={actionLoading}
-      />
-
-      <ConfirmModal
         isOpen={confirmCancel}
         onClose={() => setConfirmCancel(false)}
         onConfirm={async () => {
@@ -549,6 +516,7 @@ export function BonCommandeDetails() {
         confirmLabel="Clôturer"
         loading={actionLoading}
       />
+
     </div>
   );
 }
@@ -560,4 +528,18 @@ function DetailItem({ icon, label, value }: { icon: React.ReactNode; label: stri
       <dd className="text-sm font-medium text-gray-900">{value}</dd>
     </div>
   );
+}
+
+function ReceptionStatutBadge({ statuts }: { statuts: string[] }) {
+  const unique = [...new Set(statuts.filter(Boolean))];
+  if (unique.length === 0) {
+    return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">-</span>;
+  }
+  if (unique.includes('REJETÉ')) {
+    return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">Rejeté</span>;
+  }
+  if (unique.includes('EN ATTENTE')) {
+    return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-700">En attente</span>;
+  }
+  return <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">Validé</span>;
 }

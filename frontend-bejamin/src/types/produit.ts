@@ -1,3 +1,11 @@
+export interface SeuilMagasin {
+  id: number;
+  id_produit?: number;
+  id_magasin: number;
+  seuil_alerte: number;
+  magasin?: { id: number; nom: string } | null;
+}
+
 export interface Produit {
   id: number;
   code_article: string;
@@ -13,6 +21,8 @@ export interface Produit {
   unite?: { id: number; nom: string; symbole: string } | null;
   seuil_alerte: number;
   actif: boolean;
+  seuils_magasin?: SeuilMagasin[];
+  fiche_technique?: { id: number; code: string; nom: string } | null;
   historiquePrix?: HistoriquePrix[];
   historique_prix?: HistoriquePrix[];
   stock_total?: number;
@@ -70,6 +80,7 @@ export interface StockParMagasin {
   magasin: string;
   magasin_id: number;
   stock: number;
+  seuil_alerte?: number | null;
 }
 
 export interface StockResponse {

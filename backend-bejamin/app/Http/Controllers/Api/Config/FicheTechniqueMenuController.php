@@ -25,7 +25,7 @@ class FicheTechniqueMenuController extends Controller
             $sortBy = $request->input('sort_by', 'id');
             $sortOrder = $request->input('sort_order', 'desc');
 
-            $query = FicheTechniqueMenu::with(['magasin', 'partenaire', 'parties.items.partenaire'])
+            $query = FicheTechniqueMenu::with(['magasin', 'partenaire', 'parties.items'])
                 ->withCount('items as nombre_items');
 
             if ($search) {
@@ -37,17 +37,6 @@ class FicheTechniqueMenuController extends Controller
             }
 
             $data = $query->orderBy($sortBy, $sortOrder)->paginate($perPage);
-
-            // Clients distincts par menu (les clients sont définis par ligne dans les items)
-            foreach ($data as $menu) {
-                $menu->clients = collect($menu->parties->flatMap(fn ($p) => $p->items)
-                    ->map(fn ($i) => $i->partenaire)
-                    ->filter())
-                    ->unique('id')
-                    ->values()
-                    ->values();
-                unset($menu->parties);
-            }
 
             return response()->json([
                 'success' => true,
@@ -77,7 +66,7 @@ class FicheTechniqueMenuController extends Controller
                 'cycle' => 'nullable|string|max:50',
                 'periodicite' => 'nullable|string|max:100',
                 'validite' => 'nullable|string|max:100',
-                'id_partenaire' => 'nullable|exists:partenaires,id',
+                'id_partenaire' => 'required|exists:partenaires,id',
                 'id_magasin' => 'required|exists:magasins,id',
                 'actif' => 'nullable|boolean',
                 'parties' => 'nullable|array|min:1',
@@ -86,7 +75,6 @@ class FicheTechniqueMenuController extends Controller
                 'parties.*.items' => 'required_with:parties|array|min:1',
                 'parties.*.items.*.id_fiche_technique' => 'nullable|exists:fiche_technique,id',
                 'parties.*.items.*.id_produit' => 'nullable|exists:produits,id',
-                'parties.*.items.*.id_partenaire' => 'nullable|exists:partenaires,id',
                 'parties.*.items.*.designation' => 'nullable|string|max:200',
                 'parties.*.items.*.pourcentage' => 'required_with:parties|numeric|min:0|max:100',
                 'parties.*.items.*.ordre' => 'nullable|integer',
@@ -94,7 +82,6 @@ class FicheTechniqueMenuController extends Controller
                 'items.*.nom_partie' => 'required_with:items|string|max:200',
                 'items.*.id_fiche_technique' => 'nullable|exists:fiche_technique,id',
                 'items.*.id_produit' => 'nullable|exists:produits,id',
-                'items.*.id_partenaire' => 'nullable|exists:partenaires,id',
                 'items.*.pourcentage' => 'required_with:items|numeric|min:0|max:100',
             ]);
 
@@ -218,7 +205,7 @@ class FicheTechniqueMenuController extends Controller
                 'cycle' => 'nullable|string|max:50',
                 'periodicite' => 'nullable|string|max:100',
                 'validite' => 'nullable|string|max:100',
-                'id_partenaire' => 'sometimes|nullable|exists:partenaires,id',
+                'id_partenaire' => 'sometimes|required|exists:partenaires,id',
                 'id_magasin' => 'sometimes|required|exists:magasins,id',
                 'actif' => 'nullable|boolean',
                 'parties' => 'nullable|array|min:1',
@@ -227,7 +214,6 @@ class FicheTechniqueMenuController extends Controller
                 'parties.*.items' => 'required_with:parties|array|min:1',
                 'parties.*.items.*.id_fiche_technique' => 'nullable|exists:fiche_technique,id',
                 'parties.*.items.*.id_produit' => 'nullable|exists:produits,id',
-                'parties.*.items.*.id_partenaire' => 'nullable|exists:partenaires,id',
                 'parties.*.items.*.designation' => 'nullable|string|max:200',
                 'parties.*.items.*.pourcentage' => 'required_with:parties|numeric|min:0|max:100',
                 'parties.*.items.*.ordre' => 'nullable|integer',
@@ -235,7 +221,6 @@ class FicheTechniqueMenuController extends Controller
                 'items.*.nom_partie' => 'required_with:items|string|max:200',
                 'items.*.id_fiche_technique' => 'nullable|exists:fiche_technique,id',
                 'items.*.id_produit' => 'nullable|exists:produits,id',
-                'items.*.id_partenaire' => 'nullable|exists:partenaires,id',
                 'items.*.pourcentage' => 'required_with:items|numeric|min:0|max:100',
             ]);
 
@@ -398,7 +383,6 @@ class FicheTechniqueMenuController extends Controller
             $parties[$indexParNom[$nom]]['items'][] = [
                 'id_fiche_technique' => $item['id_fiche_technique'] ?? null,
                 'id_produit' => $item['id_produit'] ?? null,
-                'id_partenaire' => $item['id_partenaire'] ?? null,
                 'pourcentage' => $item['pourcentage'] ?? 100,
             ];
         }
@@ -427,7 +411,6 @@ class FicheTechniqueMenuController extends Controller
                     'id_partie' => $newPartie->id,
                     'id_fiche_technique' => $item['id_fiche_technique'] ?? null,
                     'id_produit' => $item['id_produit'] ?? null,
-                    'id_partenaire' => $item['id_partenaire'] ?? null,
                     'designation' => $item['designation'] ?? null,
                     'pourcentage' => $item['pourcentage'],
                     'ordre' => $item['ordre'] ?? $ordreItem,

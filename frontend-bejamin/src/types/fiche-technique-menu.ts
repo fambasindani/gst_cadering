@@ -35,7 +35,6 @@ export interface FicheTechniqueMenu {
   actif: boolean;
   nombre_parties?: number;
   nombre_items?: number;
-  clients?: Array<{ id: number; nom: string }>;
   parties?: FicheTechniqueMenuPartieData[];
   created_at?: string;
   updated_at?: string;
@@ -48,14 +47,13 @@ export interface FicheTechniqueMenuFormData {
   cycle: string;
   periodicite: string;
   validite: string;
-  id_partenaire: number | null;
+  id_partenaire: number;
   id_magasin: string;
   actif: boolean;
   items: Array<{
     nom_partie: string;
     id_fiche_technique: number | null;
     id_produit: number | null;
-    id_partenaire: number | null;
     pourcentage: number;
   }>;
 }

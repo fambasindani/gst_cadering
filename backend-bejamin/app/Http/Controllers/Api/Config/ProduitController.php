@@ -26,7 +26,7 @@ class ProduitController extends Controller
             $sortBy = $request->input('sort_by', 'id');
             $sortOrder = $request->input('sort_order', 'desc');
 
-            $query = Produit::with(['categorie', 'unite', 'partenairePrincipal']);
+            $query = Produit::with(['categorie', 'unite', 'partenairePrincipal', 'ficheTechnique']);
 
             if ($search) {
                 $query->search($search);
@@ -74,6 +74,10 @@ class ProduitController extends Controller
                 'id_devise' => 'required|exists:devises,id',
                 'date_application' => 'nullable|date',
                 'commentaire_prix' => 'nullable|string',
+                // Seuils par magasin
+                'seuils_magasin' => 'nullable|array',
+                'seuils_magasin.*.id_magasin' => 'required|exists:magasins,id',
+                'seuils_magasin.*.seuil_alerte' => 'required|integer|min:0',
             ]);
 
             // Auto-générer le code article si non fourni
@@ -103,6 +107,9 @@ class ProduitController extends Controller
                 'commentaire' => $validated['commentaire_prix'] ?? 'Prix initial',
                 'id_utilisateur' => Auth::id(),
             ]);
+
+            // Seuils d'alerte spécifiques par magasin
+            $this->syncSeuilsMagasin($produit, $request->input('seuils_magasin'));
 
             return response()->json([
                 'success' => true,
@@ -135,6 +142,8 @@ class ProduitController extends Controller
                 'categorie',
                 'unite',
                 'partenairePrincipal',
+                'ficheTechnique',
+                'seuilsMagasin.magasin',
                 'historiquePrix' => function($query) {
                     $query->orderBy('date_application', 'desc');
                 },
@@ -176,9 +185,16 @@ class ProduitController extends Controller
                 'id_unite' => 'sometimes|required|exists:unites,id',
                 'seuil_alerte' => 'nullable|integer|min:0',
                 'actif' => 'nullable|boolean',
+                // Seuils par magasin
+                'seuils_magasin' => 'nullable|array',
+                'seuils_magasin.*.id_magasin' => 'required|exists:magasins,id',
+                'seuils_magasin.*.seuil_alerte' => 'required|integer|min:0',
             ]);
 
             $produit->update($validated);
+
+            // Seuils d'alerte spécifiques par magasin
+            $this->syncSeuilsMagasin($produit, $request->input('seuils_magasin'));
 
             return response()->json([
                 'success' => true,
@@ -199,6 +215,34 @@ class ProduitController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Synchronise les seuils d'alerte par magasin du produit.
+     * Les entrées sans seuil (> 0) sont ignorées ; les seuils absents du
+     * tableau sont supprimés (le tableau reçu fait foi).
+     */
+    private function syncSeuilsMagasin(Produit $produit, $seuils): void
+    {
+        if (!is_array($seuils)) {
+            return;
+        }
+
+        $conserves = [];
+        foreach ($seuils as $s) {
+            $idMagasin = (int) ($s['id_magasin'] ?? 0);
+            $seuil = (int) ($s['seuil_alerte'] ?? 0);
+            if ($idMagasin <= 0 || $seuil <= 0) {
+                continue;
+            }
+            $pm = $produit->seuilsMagasin()->updateOrCreate(
+                ['id_magasin' => $idMagasin],
+                ['seuil_alerte' => $seuil]
+            );
+            $conserves[] = $pm->id;
+        }
+
+        $produit->seuilsMagasin()->whereNotIn('id', $conserves)->delete();
     }
 
     /**
@@ -246,8 +290,8 @@ public function getStock($id)
         // Stock total
         $stockTotal = $produit->getStockTotal();
         
-        // Prix moyen pondéré : Σ(prix_achat × quantite_disponible) / Σ(quantite_disponible) sur les lots VALIDÉ en stock
-        $lots = $produit->lots()->where('statut_validation', 'VALIDÉ')->where('quantite_disponible', '>', 0)->get();
+        // Prix moyen pondéré : Σ(prix_achat × quantite_disponible) / Σ(quantite_disponible) sur les lots VALIDÉ en stock (non périmés)
+        $lots = $produit->lots()->where('statut_validation', 'VALIDÉ')->where('quantite_disponible', '>', 0)->nonPerime()->get();
         $qteTotale = 0;
         $valeurTotale = 0;
         $devisePonderee = null;
@@ -260,14 +304,16 @@ public function getStock($id)
         }
         $prixPondere = $qteTotale > 0 ? round($valeurTotale / $qteTotale, 4) : null;
         
-        // Stock par magasin
+        // Stock par magasin (avec le seuil d'alerte spécifique du magasin, s'il existe)
         $magasins = Magasin::where('actif', true)->get();
+        $seuilsParMagasin = $produit->seuilsMagasin()->pluck('seuil_alerte', 'id_magasin');
         $stockParMagasin = [];
         foreach ($magasins as $magasin) {
             $stockParMagasin[] = [
                 'magasin' => $magasin->nom,
                 'magasin_id' => $magasin->id,
-                'stock' => $produit->getStockParMagasin($magasin->id)
+                'stock' => $produit->getStockParMagasin($magasin->id),
+                'seuil_alerte' => isset($seuilsParMagasin[$magasin->id]) ? (int) $seuilsParMagasin[$magasin->id] : null,
             ];
         }
 

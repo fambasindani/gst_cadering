@@ -10,7 +10,7 @@ import { DataTablePagination } from '../components/ui/DataTablePagination';
 import { ConfirmModal } from '../components/ui/confirm-modal';
 import { useToast } from '../hooks/useToast';
 import { bonCommandeService } from '../services/bon-commande';
-import type { BonCommande } from '../types/bon-commande';
+import type { BonCommande, ReceptionValidation } from '../types/bon-commande';
 import {
   Search, CheckCircle, XCircle, RefreshCw, FileText, Eye, Building2, DollarSign,
 } from 'lucide-react';
@@ -18,8 +18,7 @@ import { cn } from '../lib/utils';
 import { formatCurrency } from '../lib/format';
 
 const statutConfig: Record<string, { label: string; color: string }> = {
-  BROUILLON: { label: 'Brouillon', color: 'bg-amber-100 text-amber-800' },
-  ENVOYÉ: { label: 'Envoyé', color: 'bg-blue-100 text-blue-800' },
+  BROUILLON: { label: 'Brouillon / attente', color: 'bg-amber-100 text-amber-800' },
   'REÇU PARTIELLEMENT': { label: 'Reçu partiellement', color: 'bg-purple-100 text-purple-800' },
   REÇU: { label: 'Reçu', color: 'bg-emerald-100 text-emerald-800' },
   CLOTURE: { label: 'Clôturé', color: 'bg-red-100 text-red-800' },
@@ -45,6 +44,8 @@ export function ValidationBonCommande() {
   const [pageSize, setPageSize] = useState(20);
   const [actionTarget, setActionTarget] = useState<BonCommande | null>(null);
   const [actionType, setActionType] = useState<'validate' | 'reject' | null>(null);
+  const [receptionTarget, setReceptionTarget] = useState<{ bon: BonCommande; reception: ReceptionValidation } | null>(null);
+  const [receptionActionType, setReceptionActionType] = useState<'validate' | 'reject' | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
   const handlePageSizeChange = (size: number) => { setPageSize(size); setCurrentPage(1); };
@@ -53,7 +54,7 @@ export function ValidationBonCommande() {
     setLoading(true);
     try {
       const params: Record<string, string> = {
-        statut_validation: 'EN ATTENTE',
+        validation_receptions: '1',
         sort_by: 'id',
         sort_order: 'desc',
         per_page: String(pageSize),
@@ -71,7 +72,7 @@ export function ValidationBonCommande() {
     } finally {
       setLoading(false);
     }
-  }, [currentPage, searchTerm]);
+  }, [currentPage, searchTerm, pageSize]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -100,6 +101,28 @@ export function ValidationBonCommande() {
   const openAction = (item: BonCommande, type: 'validate' | 'reject') => {
     setActionTarget(item);
     setActionType(type);
+  };
+
+  const handleReceptionAction = async () => {
+    if (!receptionTarget || !receptionActionType) return;
+    setActionLoading(true);
+    try {
+      if (receptionActionType === 'validate') {
+        await bonCommandeService.validateReception(receptionTarget.bon.id, receptionTarget.reception.id);
+        toast('Réception validée et prise en compte dans le stock', 'success');
+      } else {
+        await bonCommandeService.rejectReception(receptionTarget.bon.id, receptionTarget.reception.id);
+        toast('Réception rejetée', 'success');
+      }
+      setReceptionTarget(null);
+      setReceptionActionType(null);
+      fetchData();
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      toast(error.message || "Une erreur s'est produite", 'error');
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   return (
@@ -229,15 +252,36 @@ export function ValidationBonCommande() {
                                 className="h-8 w-8 p-0 text-gray-600 hover:text-gray-700 hover:bg-gray-100 rounded-lg" title="Détails">
                                 <Eye className="w-4 h-4" />
                               </Button>
-                              <Button variant="ghost" size="sm" onClick={() => openAction(b, 'validate')}
-                                className="h-8 w-8 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg" title="Valider">
-                                <CheckCircle className="w-4 h-4" />
-                              </Button>
-                              <Button variant="ghost" size="sm" onClick={() => openAction(b, 'reject')}
-                                className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg" title="Rejeter">
-                                <XCircle className="w-4 h-4" />
-                              </Button>
+                               {b.statut_validation === 'EN ATTENTE' ? (
+                                 <>
+                                   <Button variant="ghost" size="sm" onClick={() => openAction(b, 'validate')}
+                                     className="h-8 w-8 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg" title="Valider le bon">
+                                     <CheckCircle className="w-4 h-4" />
+                                   </Button>
+                                   <Button variant="ghost" size="sm" onClick={() => openAction(b, 'reject')}
+                                     className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg" title="Rejeter le bon">
+                                     <XCircle className="w-4 h-4" />
+                                   </Button>
+                                 </>
+                               ) : null}
                             </div>
+                            {(b.receptions_en_attente || []).map((reception) => (
+                              <div key={reception.id} className="mt-2 rounded-md bg-amber-50 px-2 py-1.5 text-left">
+                                <div className="text-xs font-medium text-amber-900">
+                                  Réception : {reception.lot?.produit?.nom || '-'} · {reception.quantite}
+                                </div>
+                                <div className="mt-1 flex gap-1">
+                                  <Button variant="ghost" size="sm" onClick={() => { setReceptionTarget({ bon: b, reception }); setReceptionActionType('validate'); }}
+                                    className="h-7 px-2 text-xs text-emerald-700 hover:bg-emerald-100">
+                                    <CheckCircle className="mr-1 h-3.5 w-3.5" /> Valider
+                                  </Button>
+                                  <Button variant="ghost" size="sm" onClick={() => { setReceptionTarget({ bon: b, reception }); setReceptionActionType('reject'); }}
+                                    className="h-7 px-2 text-xs text-red-700 hover:bg-red-100">
+                                    <XCircle className="mr-1 h-3.5 w-3.5" /> Rejeter
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
                           </TableCell>
                         </TableRow>
                       );
@@ -264,6 +308,19 @@ export function ValidationBonCommande() {
         }
         confirmLabel={actionType === 'validate' ? 'Valider' : 'Rejeter'}
         variant={actionType === 'validate' ? 'info' : 'danger'}
+        loading={actionLoading}
+      />
+
+      <ConfirmModal
+        isOpen={!!receptionTarget && !!receptionActionType}
+        onClose={() => { setReceptionTarget(null); setReceptionActionType(null); }}
+        onConfirm={handleReceptionAction}
+        title={receptionActionType === 'validate' ? 'Valider la réception' : 'Rejeter la réception'}
+        message={receptionActionType === 'validate'
+          ? `Confirmer la validation de ${receptionTarget?.reception.quantite || 0} unité(s) de ${receptionTarget?.reception.lot?.produit?.nom || 'ce produit'} ?`
+          : `Confirmer le rejet de la réception du lot "${receptionTarget?.reception.lot?.numero_lot || '-'}" ?`}
+        confirmLabel={receptionActionType === 'validate' ? 'Valider' : 'Rejeter'}
+        variant={receptionActionType === 'validate' ? 'info' : 'danger'}
         loading={actionLoading}
       />
     </div>

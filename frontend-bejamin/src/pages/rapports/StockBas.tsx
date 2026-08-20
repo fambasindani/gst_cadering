@@ -184,7 +184,18 @@ export function StockBas() {
                     return (
                       <TableRow key={item.produit.id} className={cn('transition-colors hover:bg-amber-50/50', i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50')}>
                         <TableCell className="font-mono text-sm font-medium text-royal-700">{item.produit.code_article}</TableCell>
-                        <TableCell className="font-medium text-gray-900">{item.produit.nom}</TableCell>
+                        <TableCell className="font-medium text-gray-900">
+                          {item.produit.nom}
+                          {(item.details_magasin ?? []).length > 0 && (
+                            <span className="flex flex-wrap gap-1 mt-1">
+                              {(item.details_magasin ?? []).map((d) => (
+                                <span key={d.id_magasin} className="inline-flex items-center px-1.5 py-0.5 rounded bg-amber-50 border border-amber-200 text-[10px] font-medium text-amber-700">
+                                  {d.magasin} : {d.stock}/{d.seuil}
+                                </span>
+                              ))}
+                            </span>
+                          )}
+                        </TableCell>
                         <TableCell className="text-sm text-gray-600">{item.produit.categorie?.nom ?? '-'}</TableCell>
                         <TableCell className="text-right font-mono text-sm font-semibold text-amber-600">{item.quantite_totale}</TableCell>
                         <TableCell className="text-right font-mono text-sm text-gray-600">{item.seuil_alerte}</TableCell>

@@ -23,6 +23,12 @@ export const bonCommandeService = {
   reject: (id: number) =>
     api.patch<BonCommandeResponse>(`/config/bons-commande/${id}/rejeter`),
 
+  validateReception: (bonId: number, mouvementId: number) =>
+    api.patch<BonCommandeResponse>(`/config/bons-commande/${bonId}/receptions/${mouvementId}/valider`),
+
+  rejectReception: (bonId: number, mouvementId: number) =>
+    api.patch<BonCommandeResponse>(`/config/bons-commande/${bonId}/receptions/${mouvementId}/rejeter`),
+
   cloturer: (id: number) =>
     api.patch<BonCommandeResponse>(`/config/bons-commande/${id}/cloturer`),
 

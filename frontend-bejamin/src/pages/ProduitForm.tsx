@@ -32,6 +32,8 @@ export function ProduitForm() {
   const [unites, setUnites] = useState<SelectOption[]>([]);
   const [devises, setDevises] = useState<SelectOption[]>([]);
   const [fournisseurs, setFournisseurs] = useState<SelectOption[]>([]);
+  const [magasins, setMagasins] = useState<SelectOption[]>([]);
+  const [seuilsMagasin, setSeuilsMagasin] = useState<Record<number, string>>({});
 
   useEffect(() => {
     produitService.getCategories({ per_page: '200', sort_by: 'nom', sort_order: 'asc' })
@@ -42,6 +44,8 @@ export function ProduitForm() {
       .then((res) => { if (res.success) setDevises(res.data.data); });
     produitService.getFournisseurs({ per_page: '200', sort_by: 'nom', sort_order: 'asc' })
       .then((res) => { if (res.success) setFournisseurs(res.data.data); });
+    produitService.getMagasins({ per_page: '200', sort_by: 'nom', sort_order: 'asc' })
+      .then((res) => { if (res.success) setMagasins(res.data.data); });
   }, []);
 
   const formFields = isEdit
@@ -75,6 +79,12 @@ export function ProduitForm() {
               seuil_alerte: String(p.seuil_alerte ?? 0),
               actif: p.actif ? '1' : '0',
             });
+            // Seuils spécifiques par magasin
+            if (p.seuils_magasin && p.seuils_magasin.length > 0) {
+              const init: Record<number, string> = {};
+              for (const sm of p.seuils_magasin) init[sm.id_magasin] = String(sm.seuil_alerte);
+              setSeuilsMagasin(init);
+            }
           }
         })
         .catch(() => { toast('Erreur lors du chargement du produit', 'error'); })
@@ -92,11 +102,16 @@ export function ProduitForm() {
     setSaving(true);
     setFieldErrors({});
     try {
+      // Seuils par magasin : n'envoyer que les seuils > 0 (les absents sont supprimés côté backend)
+      const seuils_magasin = magasins
+        .map((m) => ({ id_magasin: m.id, seuil_alerte: Number(seuilsMagasin[m.id] ?? 0) }))
+        .filter((s) => s.seuil_alerte > 0);
+      const payload = { ...values, seuils_magasin };
       if (isEdit && id) {
-        await produitService.update(Number(id), values);
+        await produitService.update(Number(id), payload as never);
         toast('Produit modifié avec succès', 'success');
       } else {
-        await produitService.create(values as never);
+        await produitService.create(payload as never);
         toast('Produit créé avec succès', 'success');
       }
       navigate('/produits');
@@ -254,11 +269,34 @@ export function ProduitForm() {
                 </div>
 
                 <div>
-                  <LabelIcon icon={AlertTriangle} error={fieldErrors.seuil_alerte}>Seuil d'alerte</LabelIcon>
+                  <LabelIcon icon={AlertTriangle} error={fieldErrors.seuil_alerte}>Seuil d'alerte (global)</LabelIcon>
                   <Input type="number" min="0" value={values.seuil_alerte} onChange={(e) => set('seuil_alerte', e.target.value)}
                     className={cn('h-11 border-gray-200 shadow-sm', errorClass(fieldErrors.seuil_alerte))} />
                   {fieldErrors.seuil_alerte && <p className="text-xs text-red-500 mt-1">{fieldErrors.seuil_alerte}</p>}
                 </div>
+
+                {magasins.length > 0 && (
+                  <div className="pt-3 border-t border-gray-100 space-y-3">
+                    <p className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
+                      <AlertTriangle className="w-4 h-4 text-gray-400" />
+                      Seuils par magasin
+                    </p>
+                    <p className="text-xs text-gray-500">Optionnel : remplace le seuil global pour le magasin concerné.</p>
+                    {magasins.map((m) => (
+                      <div key={m.id} className="flex items-center gap-3">
+                        <span className="text-sm text-gray-600 flex-1 truncate">{m.nom}</span>
+                        <Input
+                          type="number"
+                          min="0"
+                          value={seuilsMagasin[m.id] ?? ''}
+                          onChange={(e) => setSeuilsMagasin((prev) => ({ ...prev, [m.id]: e.target.value }))}
+                          placeholder="—"
+                          className="h-9 w-24 border-gray-200 shadow-sm text-right"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 <div className="flex items-center gap-2 pt-2">
                   <Checkbox id="actif" checked={values.actif === '1'} onCheckedChange={(v) => set('actif', v ? '1' : '0')} />

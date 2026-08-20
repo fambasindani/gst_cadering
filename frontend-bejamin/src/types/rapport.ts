@@ -128,6 +128,7 @@ export interface RapportClientLigne {
   devise: string;
   quantite: number;
   valeur: number;
+  statut?: string;
 }
 
 export interface RapportClientData {
@@ -136,6 +137,9 @@ export interface RapportClientData {
     total_lignes: number;
     total_quantite: number;
     total_valeur: number;
+    total_rejets?: number;
+    total_quantite_rejets?: number;
+    total_valeur_rejets?: number;
   };
 }
 
@@ -158,6 +162,7 @@ export interface RapportSortieLigne {
   local: string;
   client?: string;
   numero_lot: string;
+  statut?: string;
 }
 
 export interface RapportSortieData {
@@ -166,6 +171,9 @@ export interface RapportSortieData {
     total_lignes: number;
     total_quantite: number;
     total_valeur: number;
+    total_rejets?: number;
+    total_quantite_rejets?: number;
+    total_valeur_rejets?: number;
   };
 }
 
@@ -182,6 +190,7 @@ export interface RapportAchatLigne {
   valeur: number;
   numero_lot: string;
   numero_commande: string;
+  statut?: string;
 }
 
 export interface RapportAchatData {
@@ -191,6 +200,9 @@ export interface RapportAchatData {
     total_quantite: number;
     total_valeur: number;
     total_fournisseurs: number;
+    total_rejets?: number;
+    total_quantite_rejets?: number;
+    total_valeur_rejets?: number;
   };
 }
 
@@ -294,10 +306,19 @@ export interface RuptureStockData {
   };
 }
 
+export interface StockBasDetailMagasin {
+  type: string;
+  id_magasin: number | null;
+  magasin: string | null;
+  stock: number;
+  seuil: number;
+}
+
 export interface StockBasProduit {
   produit: Produit;
   quantite_totale: number;
   seuil_alerte: number;
+  details_magasin?: StockBasDetailMagasin[];
   lots: Lot[];
 }
 

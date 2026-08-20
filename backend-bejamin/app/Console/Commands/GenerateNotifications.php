@@ -21,6 +21,7 @@ class GenerateNotifications extends Command
         $this->notifyBonsCommandeEnAttente();
         $this->notifyRetoursEnAttente();
         $this->notifyLotsPeremptionProche();
+        $this->notifyLotsPerimes();
         $this->notifyStockBas();
         $this->info('Notifications générées avec succès.');
     }
@@ -105,6 +106,37 @@ class GenerateNotifications extends Command
         }
     }
 
+    private function notifyLotsPerimes()
+    {
+        // Lots périmés (date dépassée) encore avec du stock physique
+        $lots = Lot::where('statut_validation', 'VALIDÉ')
+            ->where('quantite_disponible', '>', 0)
+            ->whereNotNull('date_peremption')
+            ->whereDate('date_peremption', '<', Carbon::now()->toDateString())
+            ->count();
+
+        if ($lots === 0) return;
+
+        $users = Utilisateur::actif()->get();
+        foreach ($users as $user) {
+            if (!$user->hasPermission('config:lots:view')) continue;
+
+            $existing = Notification::where('type', 'lots_perimes')
+                ->where('id_utilisateur', $user->id)
+                ->whereNull('read_at')
+                ->exists();
+            if ($existing) continue;
+
+            Notification::create([
+                'type' => 'lots_perimes',
+                'message' => "{$lots} lot(s) périmés en stock (à traiter)",
+                'id_utilisateur' => $user->id,
+                'reference_type' => Lot::class,
+                'reference_id' => null,
+            ]);
+        }
+    }
+
     private function notifyStockBas()
     {
         $produits = Produit::with(['categorie', 'unite'])
@@ -113,14 +145,8 @@ class GenerateNotifications extends Command
 
         $stockBas = 0;
         foreach ($produits as $produit) {
-            $lots = $produit->lots()
-                ->where('statut_validation', 'VALIDÉ')
-                ->get();
-
-            $quantiteTotale = $lots->sum('quantite_disponible');
-            $seuil = $produit->seuil_alerte ?? 0;
-
-            if ($seuil > 0 && $quantiteTotale > 0 && $quantiteTotale <= $seuil) {
+            // Seuil global OU seuil spécifique par magasin
+            if (count($produit->getStockBasAlerts()) > 0) {
                 $stockBas++;
             }
         }

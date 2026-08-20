@@ -19,6 +19,7 @@ export interface Lot {
   valide_par: number | null;
   date_validation: string | null;
   statut_validation: 'BROUILLON' | 'EN ATTENTE' | 'VALIDÉ' | 'REJETÉ';
+  est_perime?: boolean;
   commentaire: string | null;
 }
 

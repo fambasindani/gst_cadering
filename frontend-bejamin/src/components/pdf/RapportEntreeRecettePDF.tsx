@@ -38,10 +38,12 @@ const styles = StyleSheet.create({
 const formatDate = (d: string) =>
   d ? new Date(d).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '-';
 
-export function RapportEntreeRecettePDF({ recettes }: { recettes: EntreeRecette[] }) {
+export function RapportEntreeRecettePDF({ recettes, devise = 'USD', tauxCdf = null }: { recettes: EntreeRecette[]; devise?: 'USD' | 'CDF'; tauxCdf?: number | null }) {
   const totalPortions = recettes.reduce((s, r) => s + (Number(r.nombre_portions) || 0), 0);
   const totalPassages = recettes.reduce((s, r) => s + (Number(r.nombre_passages) || 0), 0);
   const totalCout = recettes.reduce((s, r) => s + (Number(r.fiche_technique?.cout_unitaire) || 0) * (Number(r.nombre_portions) || 0), 0);
+  const cout = (c: number) => devise === 'CDF' && tauxCdf != null ? c * tauxCdf : c;
+  const deviseSymbole = devise === 'CDF' ? 'CDF' : '$';
 
   return (
     <Document>
@@ -68,7 +70,7 @@ export function RapportEntreeRecettePDF({ recettes }: { recettes: EntreeRecette[
             <Text style={styles.statLabel}>Passages</Text>
           </View>
           <View style={styles.statBox}>
-            <Text style={styles.statValue}>{formatCurrency(totalCout)}</Text>
+            <Text style={styles.statValue}>{formatCurrency(cout(totalCout), deviseSymbole)}</Text>
             <Text style={styles.statLabel}>Coût total</Text>
           </View>
         </View>
@@ -90,7 +92,7 @@ export function RapportEntreeRecettePDF({ recettes }: { recettes: EntreeRecette[
               <Text style={[styles.tableCell, styles.colClient]}>{r.partenaire?.nom || '-'}</Text>
               <Text style={[styles.tableCell, styles.colRecette]}>{r.fiche_technique?.nom || '-'}</Text>
               <Text style={[styles.tableCellRight, styles.colPassages]}>{r.nombre_portions ?? 0}</Text>
-              <Text style={[styles.tableCellRight, styles.colCout]}>{formatCurrency((Number(r.fiche_technique?.cout_unitaire) || 0) * (Number(r.nombre_portions) || 0))}</Text>
+              <Text style={[styles.tableCellRight, styles.colCout]}>{formatCurrency(cout((Number(r.fiche_technique?.cout_unitaire) || 0) * (Number(r.nombre_portions) || 0)), deviseSymbole)}</Text>
             </View>
           ))}
         </View>
@@ -110,7 +112,7 @@ export function RapportEntreeRecettePDF({ recettes }: { recettes: EntreeRecette[
           </View>
           <View style={styles.totalRow}>
             <Text style={styles.totalLabel}>Coût total:</Text>
-            <Text style={styles.totalValue}>{formatCurrency(totalCout)}</Text>
+            <Text style={styles.totalValue}>{formatCurrency(cout(totalCout), deviseSymbole)}</Text>
           </View>
         </View>
 

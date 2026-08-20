@@ -7,7 +7,7 @@ export interface BonCommande {
   magasin_destination?: { id: number; nom: string } | null;
   date_commande: string;
   date_livraison_prevue: string | null;
-  statut: 'BROUILLON' | 'ENVOYÉ' | 'REÇU PARTIELLEMENT' | 'REÇU' | 'CLOTURE';
+  statut: 'BROUILLON' | 'REÇU PARTIELLEMENT' | 'REÇU' | 'CLOTURE';
   montant_total_ht: number;
   id_devise: number | null;
   devise?: { id: number; code: string; nom: string; symbole: string } | null;
@@ -23,6 +23,22 @@ export interface BonCommande {
   deleted_at?: string | null;
   montant_actuel?: number;
   receptions_liste?: ReceptionListe[];
+  receptions_en_attente?: ReceptionValidation[];
+}
+
+export interface ReceptionValidation {
+  id: number;
+  id_lot: number;
+  quantite: number;
+  date_mouvement: string | null;
+  reference_document: string | null;
+  lot?: {
+    id: number;
+    numero_lot: string;
+    produit?: { id: number; nom: string; code_article: string } | null;
+    magasin?: { id: number; nom: string } | null;
+  } | null;
+  statut_validation: 'EN ATTENTE' | 'VALIDÉ' | 'REJETÉ';
 }
 
 export interface LigneCommande {

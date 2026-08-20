@@ -22,7 +22,7 @@ export interface Retour {
   commentaire: string | null;
   valide_par?: { id: number; nom: string; prenom: string } | null;
   date_validation: string | null;
-  statut_validation: 'EN ATTENTE' | 'VALIDÉ' | 'REJETÉ';
+  statut_validation: 'EN ATTENTE' | 'VALIDÉ' | 'TRAITÉ' | 'REJETÉ' | 'ANNULE';
   lignes?: LigneRetour[];
 }
 

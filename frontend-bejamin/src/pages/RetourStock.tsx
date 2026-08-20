@@ -13,14 +13,16 @@ import { useIsAdmin } from '../hooks/useIsAdmin';
 import { retourService } from '../services/retour';
 import type { Retour } from '../types/retour';
 import {
-  Search, RefreshCw, Eye, CheckCircle, XCircle, Edit3, Trash2, Plus, Building2, RotateCcw,
+  Search, RefreshCw, Eye, Edit3, Trash2, Plus, Building2, RotateCcw,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 const validationConfig: Record<string, { label: string; color: string }> = {
   'EN ATTENTE': { label: 'En attente', color: 'bg-amber-100 text-amber-800' },
   'VALIDÉ': { label: 'Validé', color: 'bg-emerald-100 text-emerald-800' },
+  'TRAITÉ': { label: 'Traité', color: 'bg-blue-100 text-blue-800' },
   'REJETÉ': { label: 'Rejeté', color: 'bg-red-100 text-red-800' },
+  'ANNULE': { label: 'Annulé', color: 'bg-gray-100 text-gray-600' },
 };
 
 export function RetourStock() {
@@ -41,8 +43,6 @@ export function RetourStock() {
   const [total, setTotal] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [deleteTarget, setDeleteTarget] = useState<Retour | null>(null);
-  const [validateTarget, setValidateTarget] = useState<Retour | null>(null);
-  const [rejectTarget, setRejectTarget] = useState<Retour | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
   const handlePageSizeChange = (size: number) => { setPageSize(size); setCurrentPage(1); };
@@ -81,49 +81,6 @@ export function RetourStock() {
       toast(error.message || 'Erreur lors de la suppression', 'error');
     } finally {
       setActionLoading(false);
-    }
-  };
-
-  const handleConfirmValidate = async () => {
-    if (!validateTarget) return;
-    setActionLoading(true);
-    try {
-      await retourService.validate(validateTarget.id);
-      toast('Retour validé avec succès', 'success');
-      setValidateTarget(null);
-      fetchData();
-    } catch (err: unknown) {
-      const error = err as { message?: string; error?: string };
-      toast(error.message || error.error || 'Erreur lors de la validation', 'error');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleConfirmReject = async () => {
-    if (!rejectTarget) return;
-    setActionLoading(true);
-    try {
-      await retourService.reject(rejectTarget.id);
-      toast('Retour rejeté', 'success');
-      setRejectTarget(null);
-      fetchData();
-    } catch (err: unknown) {
-      const error = err as { message?: string; error?: string };
-      toast(error.message || error.error || 'Erreur lors du rejet', 'error');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
-  const handleTraiter = async (id: number) => {
-    try {
-      await retourService.traiter(id);
-      toast('Retour traité avec succès', 'success');
-      fetchData();
-    } catch (err: unknown) {
-      const error = err as { message?: string };
-      toast(error.message || 'Erreur lors du traitement', 'error');
     }
   };
 
@@ -269,14 +226,6 @@ export function RetourStock() {
                                     className="h-8 w-8 p-0 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg" title="Modifier">
                                     <Edit3 className="w-4 h-4" />
                                   </Button>
-                                  <Button variant="ghost" size="sm" onClick={() => setValidateTarget(r)}
-                                    className="h-8 w-8 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg" title="Valider">
-                                    <CheckCircle className="w-4 h-4" />
-                                  </Button>
-                                  <Button variant="ghost" size="sm" onClick={() => setRejectTarget(r)}
-                                    className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg" title="Rejeter">
-                                    <XCircle className="w-4 h-4" />
-                                  </Button>
                                   <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(r)}
                                     className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg" title="Supprimer">
                                     <Trash2 className="w-4 h-4" />
@@ -295,13 +244,6 @@ export function RetourStock() {
                                   </Button>
                                 </>
                               )}
-                              {r.statut_validation === 'VALIDÉ' && (
-                                <Button size="sm" onClick={() => handleTraiter(r.id)}
-                                  className="h-8 px-3 bg-royal-600 hover:bg-royal-700 text-white text-xs font-medium rounded-lg shadow-sm" title="Traiter">
-                                  <RotateCcw className="w-3.5 h-3.5 mr-1" />
-                                  Traiter
-                                </Button>
-                              )}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -316,28 +258,6 @@ export function RetourStock() {
           )}
         </CardContent>
       </Card>
-
-      <ConfirmModal
-        isOpen={!!validateTarget}
-        onClose={() => setValidateTarget(null)}
-        onConfirm={handleConfirmValidate}
-        title="Valider le retour"
-        message={`Confirmer la validation du retour "${validateTarget?.numero_retour}" ?`}
-        variant="warning"
-        confirmLabel="Valider"
-        loading={actionLoading}
-      />
-
-      <ConfirmModal
-        isOpen={!!rejectTarget}
-        onClose={() => setRejectTarget(null)}
-        onConfirm={handleConfirmReject}
-        title="Rejeter le retour"
-        message={`Confirmer le rejet du retour "${rejectTarget?.numero_retour}" ?`}
-        variant="danger"
-        confirmLabel="Rejeter"
-        loading={actionLoading}
-      />
 
       <ConfirmModal
         isOpen={!!deleteTarget}

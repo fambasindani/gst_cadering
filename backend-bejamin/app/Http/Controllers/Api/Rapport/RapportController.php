@@ -12,6 +12,7 @@ use App\Models\Partenaire;
 use App\Models\Retour;
 use App\Models\Inventaire;
 use App\Models\Categorie;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -43,7 +44,7 @@ class RapportController extends Controller
             $achatsLessiviels = 0;
 
             $bcs = BonCommande::with('lignes.produit.categorie')
-                ->where('statut', '!=', 'CLOTURE');
+                ->where('statut_validation', '!=', 'REJETÉ');
             if ($dateDebut) {
                 $bcs->whereDate('date_commande', '>=', $dateDebut);
             }
@@ -445,6 +446,20 @@ class RapportController extends Controller
         }
     }
 
+    public function exportStockCsv(Request $request)
+    {
+        $payload = $this->rapportStock($request)->getData(true);
+        return $this->csvResponse('rapport-stock', [
+            'N°', 'Désignation', 'Code article', 'Unité', 'Prix unitaire', 'Devise',
+            'Qté initiale', 'Valeur initiale', 'Qté entrée', 'Valeur entrée',
+            'Qté sortie', 'Valeur sortie', 'Qté finale', 'Valeur finale',
+        ], array_map(static fn ($l) => [
+            $l['numero'], $l['designation'], $l['code_article'], $l['unite'], $l['prix_unitaire'], $l['devise'],
+            $l['qte_initiale'], $l['valeur_initiale'], $l['qte_entree'], $l['valeur_entree'],
+            $l['qte_sortie'], $l['valeur_sortie'], $l['qte_finale'], $l['valeur_finale'],
+        ], $payload['data']['lignes'] ?? []));
+    }
+
     /**
      * 3bis. Rapport Stock logique/physique
      */
@@ -695,7 +710,7 @@ class RapportController extends Controller
                 'partenaire',
             ])
                 ->where('id_type_mouvement', 2) // Sortie consommation
-                ->where('statut_validation', 'VALIDÉ')
+                ->whereIn('statut_validation', ['VALIDÉ', 'REJETÉ'])
                 ->whereNotNull('id_partenaire');
 
             if ($dateDebut) {
@@ -721,6 +736,9 @@ class RapportController extends Controller
             $totalLignes = 0;
             $totalQuantite = 0;
             $totalValeur = 0;
+            $totalRejets = 0;
+            $totalQuantiteRejets = 0;
+            $totalValeurRejets = 0;
 
             foreach ($sorties as $sortie) {
                 $produit = $sortie->lot->produit;
@@ -730,9 +748,17 @@ class RapportController extends Controller
                 $numero++;
                 $prix = (float) ($sortie->lot->prix_achat_ht_unitaire ?? 0);
                 $valeur = $sortie->quantite * $prix;
-                $totalLignes++;
-                $totalQuantite += $sortie->quantite;
-                $totalValeur += $valeur;
+                $estRejet = $sortie->statut_validation === 'REJETÉ';
+                if ($estRejet) {
+                    // Les rejets sont affichés pour la traçabilité mais exclus des totaux
+                    $totalRejets++;
+                    $totalQuantiteRejets += $sortie->quantite;
+                    $totalValeurRejets += $valeur;
+                } else {
+                    $totalLignes++;
+                    $totalQuantite += $sortie->quantite;
+                    $totalValeur += $valeur;
+                }
 
                 $lignes[] = [
                     'numero' => $numero,
@@ -747,6 +773,7 @@ class RapportController extends Controller
                     'devise' => optional($sortie->lot->devise)->code,
                     'quantite' => (int) $sortie->quantite,
                     'valeur' => $valeur,
+                    'statut' => $sortie->statut_validation,
                 ];
             }
 
@@ -758,6 +785,9 @@ class RapportController extends Controller
                         'total_lignes' => $totalLignes,
                         'total_quantite' => $totalQuantite,
                         'total_valeur' => $totalValeur,
+                        'total_rejets' => $totalRejets,
+                        'total_quantite_rejets' => $totalQuantiteRejets,
+                        'total_valeur_rejets' => $totalValeurRejets,
                     ],
                 ],
                 'message' => 'Rapport client récupéré avec succès'
@@ -770,6 +800,18 @@ class RapportController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function exportClientCsv(Request $request)
+    {
+        $payload = $this->rapportClient($request)->getData(true);
+        return $this->csvResponse('rapport-clients', [
+            'N°', 'Client', 'Référence', 'Date', 'Désignation', 'Article', 'Unité',
+            'Prix unitaire', 'Devise', 'Quantité', 'Valeur', 'Statut',
+        ], array_map(static fn ($l) => [
+            $l['numero'], $l['client'], $l['numero_commande'], $l['date_commande'], $l['designation'],
+            $l['article'], $l['unite'], $l['prix_unitaire'], $l['devise'], $l['quantite'], $l['valeur'], $l['statut'],
+        ], $payload['data']['lignes'] ?? []));
     }
 
     /**
@@ -792,7 +834,7 @@ class RapportController extends Controller
                 'partenaire',
             ])
                 ->where('id_type_mouvement', 2) // Sortie consommation
-                ->where('statut_validation', 'VALIDÉ');
+                ->whereIn('statut_validation', ['VALIDÉ', 'REJETÉ']);
 
             if ($dateDebut) {
                 $query->whereDate('date_mouvement', '>=', $dateDebut);
@@ -824,6 +866,9 @@ class RapportController extends Controller
             $totalLignes = 0;
             $totalQuantite = 0;
             $totalValeur = 0;
+            $totalRejets = 0;
+            $totalQuantiteRejets = 0;
+            $totalValeurRejets = 0;
 
             foreach ($sorties as $sortie) {
                 $produit = $sortie->lot->produit;
@@ -833,9 +878,16 @@ class RapportController extends Controller
                 $numero++;
                 $prix = (float) ($sortie->lot->prix_achat_ht_unitaire ?? 0);
                 $valeur = $sortie->quantite * $prix;
-                $totalLignes++;
-                $totalQuantite += $sortie->quantite;
-                $totalValeur += $valeur;
+                $estRejet = $sortie->statut_validation === 'REJETÉ';
+                if ($estRejet) {
+                    $totalRejets++;
+                    $totalQuantiteRejets += $sortie->quantite;
+                    $totalValeurRejets += $valeur;
+                } else {
+                    $totalLignes++;
+                    $totalQuantite += $sortie->quantite;
+                    $totalValeur += $valeur;
+                }
 
                 $lignes[] = [
                     'numero' => $numero,
@@ -850,6 +902,7 @@ class RapportController extends Controller
                     'local' => optional($sortie->lot->magasin)->nom,
                     'client' => optional($sortie->partenaire)->nom,
                     'numero_lot' => $sortie->lot->numero_lot,
+                    'statut' => $sortie->statut_validation,
                 ];
             }
 
@@ -861,6 +914,9 @@ class RapportController extends Controller
                         'total_lignes' => $totalLignes,
                         'total_quantite' => $totalQuantite,
                         'total_valeur' => $totalValeur,
+                        'total_rejets' => $totalRejets,
+                        'total_quantite_rejets' => $totalQuantiteRejets,
+                        'total_valeur_rejets' => $totalValeurRejets,
                     ],
                 ],
                 'message' => 'Rapport sortie récupéré avec succès'
@@ -873,6 +929,18 @@ class RapportController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function exportSortieCsv(Request $request)
+    {
+        $payload = $this->rapportSortie($request)->getData(true);
+        return $this->csvResponse('rapport-sorties', [
+            'N°', 'Date', 'Article', 'Code article', 'Unité', 'Prix unitaire', 'Devise',
+            'Quantité', 'Valeur', 'Magasin', 'Client', 'N° lot', 'Statut',
+        ], array_map(static fn ($l) => [
+            $l['numero'], $l['date'], $l['article'], $l['code_article'], $l['unite'], $l['prix_unitaire'],
+            $l['devise'], $l['quantite'], $l['valeur'], $l['local'], $l['client'], $l['numero_lot'], $l['statut'],
+        ], $payload['data']['lignes'] ?? []));
     }
 
     /**
@@ -955,7 +1023,7 @@ class RapportController extends Controller
                 'typeMouvement',
             ])
                 ->where('id_type_mouvement', 1) // Entrée réception
-                ->where('statut_validation', 'VALIDÉ');
+                ->whereIn('statut_validation', ['VALIDÉ', 'REJETÉ']);
 
             if ($dateDebut) {
                 $query->whereDate('date_mouvement', '>=', $dateDebut);
@@ -981,6 +1049,9 @@ class RapportController extends Controller
             $totalLignes = 0;
             $totalQuantite = 0;
             $totalValeur = 0;
+            $totalRejets = 0;
+            $totalQuantiteRejets = 0;
+            $totalValeurRejets = 0;
             $fournisseurs = [];
 
             foreach ($entrees as $entree) {
@@ -991,9 +1062,17 @@ class RapportController extends Controller
                 $numero++;
                 $prix = (float) ($entree->lot->prix_achat_ht_unitaire ?? 0);
                 $valeur = $entree->quantite * $prix;
-                $totalLignes++;
-                $totalQuantite += $entree->quantite;
-                $totalValeur += $valeur;
+                $estRejet = $entree->statut_validation === 'REJETÉ';
+                if ($estRejet) {
+                    // Les rejets sont affichés pour la traçabilité mais exclus des totaux
+                    $totalRejets++;
+                    $totalQuantiteRejets += $entree->quantite;
+                    $totalValeurRejets += $valeur;
+                } else {
+                    $totalLignes++;
+                    $totalQuantite += $entree->quantite;
+                    $totalValeur += $valeur;
+                }
 
                 $fournisseur = optional($entree->lot->partenaire)->nom;
                 if ($fournisseur && !in_array($fournisseur, $fournisseurs)) {
@@ -1013,6 +1092,7 @@ class RapportController extends Controller
                     'valeur' => $valeur,
                     'numero_lot' => $entree->lot->numero_lot,
                     'numero_commande' => $entree->reference_document,
+                    'statut' => $entree->statut_validation,
                 ];
             }
 
@@ -1025,6 +1105,9 @@ class RapportController extends Controller
                         'total_quantite' => $totalQuantite,
                         'total_valeur' => $totalValeur,
                         'total_fournisseurs' => count($fournisseurs),
+                        'total_rejets' => $totalRejets,
+                        'total_quantite_rejets' => $totalQuantiteRejets,
+                        'total_valeur_rejets' => $totalValeurRejets,
                     ],
                 ],
                 'message' => 'Rapport achat récupéré avec succès'
@@ -1037,6 +1120,33 @@ class RapportController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function exportAchatCsv(Request $request)
+    {
+        $payload = $this->rapportAchatFull($request)->getData(true);
+        return $this->csvResponse('rapport-achats', [
+            'N°', 'Date', 'Fournisseur', 'Article', 'Code article', 'Unité', 'Prix unitaire',
+            'Devise', 'Quantité', 'Valeur', 'N° lot', 'N° commande', 'Statut',
+        ], array_map(static fn ($l) => [
+            $l['numero'], $l['date'], $l['fournisseur'], $l['article'], $l['code_article'], $l['unite'],
+            $l['prix_unitaire'], $l['devise'], $l['quantite'], $l['valeur'], $l['numero_lot'], $l['numero_commande'], $l['statut'],
+        ], $payload['data']['lignes'] ?? []));
+    }
+
+    private function csvResponse(string $prefix, array $headers, array $rows)
+    {
+        $filename = $prefix . '_' . now()->format('Y-m-d') . '.csv';
+
+        return response()->streamDownload(function () use ($headers, $rows) {
+            $handle = fopen('php://output', 'w');
+            fwrite($handle, "\xEF\xBB\xBF");
+            fputcsv($handle, $headers, ';');
+            foreach ($rows as $row) {
+                fputcsv($handle, $row, ';');
+            }
+            fclose($handle);
+        }, $filename, ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     /**
@@ -1395,6 +1505,7 @@ class RapportController extends Controller
             foreach ($produits as $produit) {
                 $lots = $produit->lots()
                     ->where('statut_validation', 'VALIDÉ')
+                    ->nonPerime()
                     ->when($magasinId, fn($q) => $q->where('id_magasin', $magasinId))
                     ->get();
 
@@ -1454,17 +1565,37 @@ class RapportController extends Controller
                 $lots = $produit->lots()
                     ->with('magasin')
                     ->where('statut_validation', 'VALIDÉ')
+                    ->nonPerime()
                     ->when($magasinId, fn($q) => $q->where('id_magasin', $magasinId))
                     ->get();
 
                 $quantiteTotale = $lots->sum('quantite_disponible');
                 $seuil = $produit->seuil_alerte ?? 0;
 
-                if ($seuil > 0 && $quantiteTotale > 0 && $quantiteTotale <= $seuil) {
+                // Alertes : seuil global + seuils spécifiques par magasin
+                $alertes = $produit->getStockBasAlerts();
+                if ($magasinId) {
+                    // Filtre magasin : ne garder que l'alerte globale (stock du magasin
+                    // vs seuil global) et les alertes de ce magasin
+                    $alertes = array_values(array_filter($alertes, function ($a) use ($magasinId, $quantiteTotale, $seuil) {
+                        if ($a['type'] === 'magasin') {
+                            return (int) $a['id_magasin'] === (int) $magasinId;
+                        }
+                        return $seuil > 0 && $quantiteTotale > 0 && $quantiteTotale <= $seuil;
+                    }));
+                    // Seuil spécifique du magasin prioritaire pour l'affichage
+                    $seuilSpecifique = $produit->seuilsMagasin()->where('id_magasin', $magasinId)->value('seuil_alerte');
+                    if ($seuilSpecifique) {
+                        $seuil = (int) $seuilSpecifique;
+                    }
+                }
+
+                if (count($alertes) > 0) {
                     $stockBas[] = [
                         'produit' => $produit,
                         'quantite_totale' => $quantiteTotale,
                         'seuil_alerte' => $seuil,
+                        'details_magasin' => array_values(array_filter($alertes, fn($a) => $a['type'] === 'magasin')),
                         'lots' => $lots->toArray(),
                     ];
                 }
@@ -1495,6 +1626,83 @@ class RapportController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la génération du rapport',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Toutes les variations de prix des produits (hausses et baisses),
+     * triées par amplitude de variation décroissante.
+     */
+    public function variationsPrix(Request $request)
+    {
+        try {
+            $dateDebut = $request->input('date_debut');
+            $dateFin = $request->input('date_fin');
+
+            $query = DB::table('historique_prix')
+                ->join('produits', 'historique_prix.id_produit', '=', 'produits.id')
+                ->where('produits.actif', true)
+                ->whereNull('historique_prix.deleted_at')
+                ->whereNotNull('historique_prix.prix_achat_ht');
+
+            if ($dateFin) {
+                $query->where('historique_prix.date_application', '<=', $dateFin);
+            }
+
+            $derniersPrix = $query
+                ->orderBy('historique_prix.date_application', 'desc')
+                ->orderBy('historique_prix.id', 'desc')
+                ->get(['historique_prix.id_produit', 'historique_prix.prix_achat_ht', 'historique_prix.date_application', 'produits.nom']);
+
+            $variations = collect($derniersPrix)
+                ->groupBy('id_produit')
+                ->map(function ($entrees) {
+                    $entrees = $entrees->values();
+                    $nouveau = $entrees->first();
+                    $ancien = $entrees->get(1);
+                    if (!$ancien) {
+                        return null;
+                    }
+                    $ancienPrix = (float) $ancien->prix_achat_ht;
+                    $nouveauPrix = (float) $nouveau->prix_achat_ht;
+                    $variation = $nouveauPrix - $ancienPrix;
+                    if (abs($variation) < 0.0001) {
+                        return null;
+                    }
+                    return [
+                        'id' => (int) $nouveau->id_produit,
+                        'nom' => $nouveau->nom,
+                        'ancien_prix' => $ancienPrix,
+                        'nouveau_prix' => $nouveauPrix,
+                        'variation' => round($variation, 2),
+                        'pourcentage' => $ancienPrix != 0 ? round(($variation / $ancienPrix) * 100, 1) : 0,
+                        'type' => $variation > 0 ? 'hausse' : 'baisse',
+                        'date' => Carbon::parse($nouveau->date_application)->format('d/m/Y'),
+                    ];
+                })
+                ->filter()
+                ->sortByDesc(fn($item) => abs($item['variation']))
+                ->values();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'variations' => $variations,
+                    'statistiques' => [
+                        'total' => $variations->count(),
+                        'hausses' => $variations->where('type', 'hausse')->count(),
+                        'baisses' => $variations->where('type', 'baisse')->count(),
+                    ]
+                ],
+                'message' => 'Variations de prix récupérées avec succès'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la récupération des variations',
                 'error' => $e->getMessage()
             ], 500);
         }

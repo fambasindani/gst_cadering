@@ -245,7 +245,9 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
         Route::delete('bons-commande/{id}', [BonCommandeController::class, 'destroy'])->middleware('permission:config:bon_commande:delete');
         Route::patch('bons-commande/{id}/valider', [BonCommandeController::class, 'validateBon'])->middleware('permission:config:bon_commande:validate');
         Route::patch('bons-commande/{id}/rejeter', [BonCommandeController::class, 'rejectBon'])->middleware('permission:config:bon_commande:validate');
-        Route::patch('bons-commande/{id}/recevoir', [BonCommandeController::class, 'receive'])->middleware('permission:config:bon_commande:receive');
+         Route::patch('bons-commande/{id}/recevoir', [BonCommandeController::class, 'receive'])->middleware('permission:config:bon_commande:receive');
+         Route::patch('bons-commande/{id}/receptions/{mouvementId}/valider', [BonCommandeController::class, 'validateReception'])->middleware('permission:config:bon_commande:validate');
+         Route::patch('bons-commande/{id}/receptions/{mouvementId}/rejeter', [BonCommandeController::class, 'rejectReception'])->middleware('permission:config:bon_commande:validate');
         Route::patch('bons-commande/{id}/cloturer', [BonCommandeController::class, 'cloturer'])->middleware('permission:config:bon_commande:update');
 
         // ---------- Retours ----------
@@ -326,13 +328,17 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
         Route::get('bon-commande', [RapportController::class, 'bonCommande'])->middleware('permission:rapport:commande');
         Route::get('bon-livraison', [RapportController::class, 'bonLivraison'])->middleware('permission:rapport:commande');
         Route::get('stock', [RapportController::class, 'rapportStock'])->middleware('permission:rapport:stock');
+        Route::get('stock/export', [RapportController::class, 'exportStockCsv'])->middleware('permission:rapport:stock');
         Route::get('stock-logique-physique', [RapportController::class, 'rapportStockPhysiqueLogique'])->middleware('permission:rapport:stock');
         Route::get('variation-stock', [RapportController::class, 'variationStock'])->middleware('permission:rapport:stock');
         Route::get('variation-stock/calcul', [RapportController::class, 'variationStockCalcul'])->middleware('permission:rapport:stock');
         Route::get('client', [RapportController::class, 'rapportClient'])->middleware('permission:rapport:client');
+        Route::get('client/export', [RapportController::class, 'exportClientCsv'])->middleware('permission:rapport:client');
         Route::get('sortie', [RapportController::class, 'rapportSortie'])->middleware('permission:rapport:stock');
+        Route::get('sortie/export', [RapportController::class, 'exportSortieCsv'])->middleware('permission:rapport:stock');
         Route::get('sortie-full', [RapportController::class, 'rapportSortieFull'])->middleware('permission:rapport:stock');
         Route::get('achat-full', [RapportController::class, 'rapportAchatFull'])->middleware('permission:rapport:stock');
+        Route::get('achat-full/export', [RapportController::class, 'exportAchatCsv'])->middleware('permission:rapport:stock');
         Route::get('fournisseur', [RapportController::class, 'rapportFournisseur'])->middleware('permission:rapport:stock');
         Route::get('mouvement-produit', [RapportController::class, 'mouvementProduit'])->middleware('permission:rapport:stock');
         Route::get('inventaire-theorique', [RapportController::class, 'inventaireTheorique'])->middleware('permission:rapport:inventaire');
@@ -341,6 +347,7 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
         Route::get('rupture-stock', [RapportController::class, 'ruptureStock'])->middleware('permission:rapport:stock');
         // Stock bas visible par tout utilisateur authentifié (pas de permission requise)
         Route::get('stock-bas', [RapportController::class, 'stockBas']);
+        Route::get('variations-prix', [RapportController::class, 'variationsPrix'])->middleware('permission:rapport:stock');
     });
 
     // ============================================================

@@ -31,6 +31,7 @@ class BonCommandeController extends Controller
             $partenaireId = $request->input('partenaire_id');
             $dateDebut = $request->input('date_debut');
             $dateFin = $request->input('date_fin');
+            $validationReceptions = $request->boolean('validation_receptions');
             $sortBy = $request->input('sort_by', 'id');
             $sortOrder = $request->input('sort_order', 'desc');
 
@@ -72,6 +73,16 @@ class BonCommandeController extends Controller
                 $query->whereDate('date_commande', '<=', $dateFin);
             }
 
+            if ($validationReceptions) {
+                $query->whereExists(function ($sub) {
+                    $sub->select(DB::raw('1'))
+                        ->from('mouvement_stock')
+                        ->whereColumn('mouvement_stock.reference_document', 'bon_commande.numero_commande')
+                        ->where('mouvement_stock.id_type_mouvement', 1)
+                        ->where('mouvement_stock.statut_validation', 'EN ATTENTE');
+                });
+            }
+
             $data = $query->orderBy($sortBy, $sortOrder)->paginate($perPage);
 
             // Ajouter le prix actuel (dernier prix d'achat) et le montant recalculé au prix actuel
@@ -90,6 +101,15 @@ class BonCommandeController extends Controller
                     $montantActuel += $ligne->quantite_commandee * $prixActuel;
                 }
                 $bon->montant_actuel = round($montantActuel, 2);
+
+                if ($validationReceptions) {
+                    $bon->receptions_en_attente = MouvementStock::where('reference_document', $bon->numero_commande)
+                        ->where('id_type_mouvement', 1)
+                        ->where('statut_validation', 'EN ATTENTE')
+                        ->with(['lot.produit', 'lot.magasin'])
+                        ->orderBy('id')
+                        ->get();
+                }
             }
 
             return response()->json([
@@ -316,11 +336,11 @@ class BonCommandeController extends Controller
         try {
             $bonCommande = BonCommande::findOrFail($id);
 
-            // Vérifier que le bon est en brouillon (sauf ADMIN)
-            if ($bonCommande->statut !== 'BROUILLON' && !Auth::user()->hasRole('ADMIN')) {
+            // Vérifier que le bon est en attente de validation (sauf ADMIN)
+            if ($bonCommande->statut_validation !== 'EN ATTENTE' && !Auth::user()->hasRole('ADMIN')) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Seul un bon en brouillon peut être modifié'
+                    'message' => 'Seul un bon en attente de validation peut être modifié'
                 ], 403);
             }
 
@@ -364,10 +384,10 @@ class BonCommandeController extends Controller
         try {
             $bonCommande = BonCommande::findOrFail($id);
 
-            if ($bonCommande->statut !== 'BROUILLON' && !Auth::user()->hasRole('ADMIN')) {
+            if ($bonCommande->statut_validation !== 'EN ATTENTE' && !Auth::user()->hasRole('ADMIN')) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Seul un bon en brouillon peut être supprimé'
+                    'message' => 'Seul un bon en attente de validation peut être supprimé'
                 ], 403);
             }
 
@@ -408,7 +428,6 @@ class BonCommandeController extends Controller
                 'statut_validation' => 'VALIDÉ',
                 'valide_par' => Auth::id(),
                 'date_validation' => now(),
-                'statut' => 'ENVOYÉ',
             ]);
 
             // Mettre à jour les notifications existantes
@@ -457,7 +476,6 @@ class BonCommandeController extends Controller
                 'statut_validation' => 'REJETÉ',
                 'valide_par' => Auth::id(),
                 'date_validation' => now(),
-                'statut' => 'CLOTURE',
             ]);
 
             // Mettre à jour les notifications existantes
@@ -504,12 +522,16 @@ class BonCommandeController extends Controller
                 ], 403);
             }
 
-            if (!in_array($bonCommande->statut, ['ENVOYÉ', 'REÇU PARTIELLEMENT']) && !($hasCorrections && $bonCommande->statut === 'REÇU')) {
+            if ($bonCommande->statut !== 'BROUILLON' && $bonCommande->statut !== 'REÇU PARTIELLEMENT' && !($hasCorrections && $bonCommande->statut === 'REÇU')) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Seul un bon envoyé peut être réceptionné'
+                    'message' => 'Ce bon ne peut pas être réceptionné'
                 ], 403);
             }
+
+            // Un brouillon peut être réceptionné directement : la réception vaut
+            // validation du bon. Le stock est pris en compte à la validation des
+            // réceptions dans « Validation → Bon de commande ».
 
             $validated = $request->validate([
                 'receptions' => 'nullable|array',
@@ -533,7 +555,9 @@ class BonCommandeController extends Controller
             }
 
             // Déterminer si le bon restera partiel (REÇU PARTIELLEMENT) après cette opération.
-            // Si oui, les lots créés seront en BROUILLON et à valider dans la page « Entrée stock ».
+            // Chaque réception crée des lots en BROUILLON et des mouvements en EN ATTENTE :
+            // ils doivent être validés dans la page « Validation → Bon de commande » pour que
+            // le stock soit pris en charge (visible dans les lots).
             $quantitesApres = [];
             foreach ($bonCommande->lignes as $ligne) {
                 $quantitesApres[$ligne->id] = $ligne->quantite_recue;
@@ -590,7 +614,7 @@ class BonCommandeController extends Controller
                             $mouv->quantite += $delta;
                             $mouv->save();
                         } else {
-                            $this->creerLotReception($bonCommande, $ligne, $delta, null, now()->toDateString(), null, null, null, $restePartiel, $referenceReception);
+                            $this->creerLotReception($bonCommande, $ligne, $delta, null, now()->toDateString(), null, null, null, true, $referenceReception);
                         }
                     } else {
                         // Diminution : retirer du stock des lots de réception (du plus récent au plus ancien)
@@ -654,7 +678,7 @@ class BonCommandeController extends Controller
                         $reception['prix_achat_ht_unitaire'] ?? null,
                         $reception['date_reception'] ?? null,
                         $reception['reference_document'] ?? null,
-                        $restePartiel,
+                        true,
                         $referenceReception
                     );
 
@@ -670,6 +694,10 @@ class BonCommandeController extends Controller
                 } else {
                     $bonCommande->statut = 'REÇU PARTIELLEMENT';
                 }
+                // La réception valide implicitement le bon (même s'il était en attente/brouillon)
+                $bonCommande->statut_validation = 'VALIDÉ';
+                $bonCommande->valide_par = Auth::id();
+                $bonCommande->date_validation = now();
                 $bonCommande->save();
 
                 DB::commit();
@@ -705,8 +733,8 @@ class BonCommandeController extends Controller
 
     /**
      * Créer un lot de réception + son mouvement d'entrée.
-     * Si $brouillon = true (bon partiellement reçu), le lot est créé en 'BROUILLON'
-     * et le mouvement en 'EN ATTENTE' : il devra être validé dans la page « Entrée stock ».
+     * Toute réception est créée en attente : elle doit être validée dans
+     * Validation > Bon de commande avant d'être prise en compte dans le stock.
      */
     private function creerLotReception(BonCommande $bonCommande, LigneCommande $ligne, int $quantite, ?string $numeroLot, string $datePeremption, $prixAchat, $dateReception = null, $referenceDocument = null, bool $brouillon = false, $referenceReception = null)
     {
@@ -769,17 +797,24 @@ class BonCommandeController extends Controller
     }
 
     /**
-     * Clôturer un bon de commande
+     * Clôturer un bon de commande (uniquement s'il est reçu partiellement).
      */
     public function cloturer($id)
     {
         try {
             $bonCommande = BonCommande::findOrFail($id);
 
-            if (in_array($bonCommande->statut, ['REÇU', 'CLOTURE'])) {
+            if ($bonCommande->statut !== 'REÇU PARTIELLEMENT') {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Ce bon ne peut plus être clôturé'
+                    'message' => 'Seul un bon reçu partiellement peut être clôturé'
+                ], 403);
+            }
+
+            if ($bonCommande->statut_validation !== 'VALIDÉ') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Le bon de commande doit être validé avant sa clôture'
                 ], 403);
             }
 
@@ -800,4 +835,68 @@ class BonCommandeController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Valider une réception depuis le workflow des bons de commande.
+     */
+    public function validateReception($id, $mouvementId)
+    {
+        return $this->updateReceptionValidation($id, $mouvementId, 'VALIDÉ');
+    }
+
+    /**
+     * Rejeter une réception depuis le workflow des bons de commande.
+     */
+    public function rejectReception($id, $mouvementId)
+    {
+        return $this->updateReceptionValidation($id, $mouvementId, 'REJETÉ');
+    }
+
+    private function updateReceptionValidation($id, $mouvementId, string $statut)
+    {
+        try {
+            $bonCommande = BonCommande::findOrFail($id);
+            $mouvement = MouvementStock::with('lot')
+                ->where('id', $mouvementId)
+                ->where('reference_document', $bonCommande->numero_commande)
+                ->where('id_type_mouvement', 1)
+                ->where('statut_validation', 'EN ATTENTE')
+                ->firstOrFail();
+
+            DB::transaction(function () use ($mouvement, $statut) {
+                $mouvement->update([
+                    'statut_validation' => $statut,
+                    'valide_par' => Auth::id(),
+                    'date_validation' => now(),
+                ]);
+
+                $lot = $mouvement->lot;
+                if ($lot && $lot->statut_validation === 'BROUILLON') {
+                    $lot->update([
+                        'statut_validation' => $statut === 'VALIDÉ' ? 'VALIDÉ' : 'REJETÉ',
+                        'valide_par' => Auth::id(),
+                        'date_validation' => now(),
+                    ]);
+
+                    if ($statut === 'VALIDÉ') {
+                        $lot->enregistrerHistoriquePrix('Validation de la réception du bon de commande');
+                    }
+                }
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $mouvement->fresh(['lot.produit']),
+                'message' => $statut === 'VALIDÉ'
+                    ? 'Réception validée et prise en compte dans le stock'
+                    : 'Réception rejetée'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage() ?: 'Erreur lors du traitement de la réception',
+            ], 422);
+        }
+    }
+
 }

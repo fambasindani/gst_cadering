@@ -125,6 +125,7 @@ export function Dashboard() {
 
   const userPermissions = user?.permissions ?? [];
   const isAdmin = user?.role?.nom === 'ADMIN' || user?.role?.nom === 'Administrateur';
+  const canViewVariations = isAdmin || userPermissions.includes('rapport:stock');
 
   const quickLinks = flattenMenuItems(menuItems).filter((item) => {
     if (!item.permission) return true;
@@ -455,9 +456,20 @@ export function Dashboard() {
             ) : !data?.alertes?.variations_prix?.length ? (
               <div className="text-center py-10 text-gray-400 text-sm">Aucune variation de prix</div>
             ) : (
-              data.alertes.variations_prix.slice(0, 5).map((v: VariationPrix) => (
-                <VariationPrixRow key={v.id} variation={v} onClick={() => navigate(`/produits/${v.id}`)} />
-              ))
+              <>
+                {data.alertes.variations_prix.slice(0, 5).map((v: VariationPrix) => (
+                  <VariationPrixRow key={v.id} variation={v} disabled={!canViewVariations} onClick={() => navigate(`/produits/${v.id}`)} />
+                ))}
+                {(canViewVariations) && (
+                  <button
+                    onClick={() => navigate('/rapports/variations-prix')}
+                    className="w-full mt-2 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-blue-700 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
+                  >
+                    <ArrowRight className="w-3.5 h-3.5" />
+                    Voir toutes les variations
+                  </button>
+                )}
+              </>
             )}
           </CardContent>
         </Card>
@@ -582,15 +594,11 @@ function TopFournisseurRow({ fournisseur, rank }: { fournisseur: TopFournisseur;
   );
 }
 
-function VariationPrixRow({ variation, onClick }: { variation: VariationPrix; onClick: () => void }) {
+function VariationPrixRow({ variation, onClick, disabled = false }: { variation: VariationPrix; onClick: () => void; disabled?: boolean }) {
   const isHausse = variation.type === 'hausse';
   const Icon = isHausse ? ArrowUpRight : ArrowDownRight;
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="w-full flex items-center gap-3 px-2 py-1.5 rounded-lg bg-gray-50 transition-all hover:bg-gray-100 hover:shadow-sm active:scale-[0.99] cursor-pointer group text-left"
-    >
+  const content = (
+    <>
       <span className={cn(
         'flex h-6 w-6 shrink-0 items-center justify-center rounded-full',
         isHausse ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700',
@@ -606,7 +614,23 @@ function VariationPrixRow({ variation, onClick }: { variation: VariationPrix; on
       <span className={cn('text-xs font-bold', isHausse ? 'text-emerald-600' : 'text-red-600')}>
         {isHausse ? '+' : ''}{variation.pourcentage}%
       </span>
-      <ArrowRight className="w-3.5 h-3.5 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />
+      {!disabled && <ArrowRight className="w-3.5 h-3.5 text-gray-300 opacity-0 group-hover:opacity-100 transition-opacity" />}
+    </>
+  );
+  if (disabled) {
+    return (
+      <div className="w-full flex items-center gap-3 px-2 py-1.5 rounded-lg bg-gray-50">
+        {content}
+      </div>
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="w-full flex items-center gap-3 px-2 py-1.5 rounded-lg bg-gray-50 transition-all hover:bg-gray-100 hover:shadow-sm active:scale-[0.99] cursor-pointer group text-left"
+    >
+      {content}
     </button>
   );
 }
