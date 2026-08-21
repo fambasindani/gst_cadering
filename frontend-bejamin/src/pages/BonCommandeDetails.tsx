@@ -12,7 +12,6 @@ import { useToast } from '../hooks/useToast';
 import { ConfirmModal } from '../components/ui/confirm-modal';
 import { Modal } from '../components/ui/modal';
 import { bonCommandeService } from '../services/bon-commande';
-import { tauxConversionService } from '../services/taux-conversion';
 import { BonCommandePDF } from '../components/pdf/BonCommandePDF';
 import { ReceptionPDF } from '../components/pdf/ReceptionPDF';
 import type { BonCommande, ReceptionListe } from '../types/bon-commande';
@@ -38,7 +37,6 @@ export function BonCommandeDetails() {
 
   const [bon, setBon] = useState<BonCommande | null>(null);
   const [loading, setLoading] = useState(true);
-  const [tauxCdf, setTauxCdf] = useState<number | null>(null);
   const [receptionDetail, setReceptionDetail] = useState<ReceptionListe | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(false);
@@ -51,12 +49,6 @@ export function BonCommandeDetails() {
     try {
       const res = await bonCommandeService.get(Number(id));
       if (res.success) setBon(res.data);
-      try {
-        const taux = await tauxConversionService.getActuel();
-        if (taux.success && taux.data) setTauxCdf(Number(taux.data.taux));
-      } catch {
-        // taux indisponible
-      }
     } catch {
       //
     } finally {
@@ -312,9 +304,6 @@ export function BonCommandeDetails() {
                   <div className="text-xl font-bold text-gray-900 font-mono">{formatCurrency(total, deviseCode)}</div>
                   {bon.statut === 'REÇU PARTIELLEMENT' || bon.statut === 'REÇU' ? (
                     <div className="text-sm text-gray-500 mt-1">Reçu (prix réception): {formatCurrency(totalRecu, deviseCode)}</div>
-                  ) : null}
-                  {tauxCdf != null ? (
-                    <div className="text-sm text-gray-500 mt-1">Total (CDF): {formatCurrency(totalRecu * tauxCdf, 'CDF')}</div>
                   ) : null}
                 </div>
               </div>

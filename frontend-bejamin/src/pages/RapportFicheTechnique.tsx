@@ -50,6 +50,10 @@ export function RapportFicheTechnique() {
   const [pageSize, setPageSize] = useState(20);
   const [deleteTarget, setDeleteTarget] = useState<EntreeFicheTechnique | null>(null);
 
+  const [filterClient, setFilterClient] = useState('');
+  const [filterDateFrom, setFilterDateFrom] = useState('');
+  const [filterDateTo, setFilterDateTo] = useState('');
+
   useEffect(() => {
     (async () => {
       try {
@@ -67,6 +71,9 @@ export function RapportFicheTechnique() {
     setLoadingHistory(true);
     try {
       const params: Record<string, string> = { per_page: String(pageSize), page: String(currentPage) };
+      if (filterClient) params.partenaire_id = filterClient;
+      if (filterDateFrom) params.date_from = filterDateFrom;
+      if (filterDateTo) params.date_to = filterDateTo;
       const res = await entreeFicheTechniqueService.list(params);
       if (res.success) {
         setHistory(res.data.data);
@@ -76,7 +83,7 @@ export function RapportFicheTechnique() {
     } catch { /* */ } finally {
       setLoadingHistory(false);
     }
-  }, [currentPage, pageSize]);
+  }, [currentPage, pageSize, filterClient, filterDateFrom, filterDateTo]);
 
   useEffect(() => { fetchHistory(); }, [fetchHistory]);
 
@@ -248,6 +255,46 @@ export function RapportFicheTechnique() {
           </Button>
         </CardHeader>
         <CardContent>
+          <div className="flex flex-wrap items-end gap-3 mb-4">
+            <div className="flex-1 min-w-[200px]">
+              <Label className="text-xs font-semibold text-gray-500 mb-1 block">Client</Label>
+              <SearchableSelect
+                options={compagnies.map(c => ({ id: c.id, nom: c.nom }))}
+                value={filterClient}
+                onValueChange={setFilterClient}
+                placeholder="Tous les clients"
+                searchPlaceholder="Rechercher..."
+              />
+            </div>
+            <div className="min-w-[160px]">
+              <Label className="text-xs font-semibold text-gray-500 mb-1 block">Date début</Label>
+              <input
+                type="date"
+                value={filterDateFrom}
+                onChange={(e) => setFilterDateFrom(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-royal-500 focus:ring-royal-500"
+              />
+            </div>
+            <div className="min-w-[160px]">
+              <Label className="text-xs font-semibold text-gray-500 mb-1 block">Date fin</Label>
+              <input
+                type="date"
+                value={filterDateTo}
+                onChange={(e) => setFilterDateTo(e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:border-royal-500 focus:ring-royal-500"
+              />
+            </div>
+            {(filterClient || filterDateFrom || filterDateTo) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => { setFilterClient(''); setFilterDateFrom(''); setFilterDateTo(''); }}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                Effacer les filtres
+              </Button>
+            )}
+          </div>
           {loadingHistory ? (
             <div className="text-center py-8 text-gray-400"><Loader2 className="w-6 h-6 animate-spin mx-auto" /></div>
           ) : history.length === 0 ? (
