@@ -19,6 +19,7 @@ import { formatCurrency } from '../lib/format';
 
 const statutConfig: Record<string, { label: string; color: string }> = {
   BROUILLON: { label: 'Brouillon / attente', color: 'bg-amber-100 text-amber-800' },
+  'EN ATTENTE': { label: 'En attente réception', color: 'bg-orange-100 text-orange-800' },
   'REÇU PARTIELLEMENT': { label: 'Reçu partiellement', color: 'bg-purple-100 text-purple-800' },
   REÇU: { label: 'Reçu', color: 'bg-emerald-100 text-emerald-800' },
   CLOTURE: { label: 'Clôturé', color: 'bg-red-100 text-red-800' },

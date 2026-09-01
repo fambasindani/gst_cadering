@@ -43,12 +43,12 @@ export function StockMouvementProduitDetails() {
       };
       if (searchParams.get('date_debut')) params.date_debut = searchParams.get('date_debut') as string;
       if (searchParams.get('date_fin')) params.date_fin = searchParams.get('date_fin') as string;
-      const [pRes, mRes] = await Promise.all([
+      const [pResult, mResult] = await Promise.allSettled([
         produitService.get(Number(id)),
         mouvementStockService.list(params),
       ]);
-      if (pRes.success) setProduit(pRes.data);
-      if (mRes.success) setMouvements(mRes.data.data);
+      if (pResult.status === 'fulfilled' && pResult.value.success) setProduit(pResult.value.data);
+      if (mResult.status === 'fulfilled' && mResult.value.success) setMouvements(mResult.value.data.data);
     } catch {
       //
     } finally {

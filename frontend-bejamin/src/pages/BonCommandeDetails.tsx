@@ -24,6 +24,7 @@ import { formatCurrency } from '../lib/format';
 
 const statutConfig: Record<string, { label: string; color: string; icon: typeof Clock }> = {
   BROUILLON: { label: 'Brouillon', color: 'bg-amber-100 text-amber-800 border-amber-200', icon: Clock },
+  'EN ATTENTE': { label: 'En attente', color: 'bg-orange-100 text-orange-800 border-orange-200', icon: Clock },
   'REÇU PARTIELLEMENT': { label: 'Reçu partiellement', color: 'bg-purple-100 text-purple-800 border-purple-200', icon: Truck },
   REÇU: { label: 'Reçu', color: 'bg-emerald-100 text-emerald-800 border-emerald-200', icon: CheckCircle },
   CLOTURE: { label: 'Clôturé', color: 'bg-red-100 text-red-800 border-red-200', icon: Clock },
@@ -390,7 +391,7 @@ export function BonCommandeDetails() {
               <CardTitle className="text-lg font-semibold">Actions</CardTitle>
             </CardHeader>
             <CardContent className="p-4 space-y-2">
-              {bon.statut === 'BROUILLON' || bon.statut === 'REÇU PARTIELLEMENT' || (isAdmin && bon.statut === 'REÇU') ? (
+              {bon.statut === 'BROUILLON' || bon.statut === 'EN ATTENTE' || bon.statut === 'REÇU PARTIELLEMENT' || (isAdmin && bon.statut === 'REÇU') ? (
                 <Button onClick={() => navigate(`/reception/${id}`)}
                   className="w-full justify-start bg-royal-600 hover:bg-royal-700 text-white">
                   <PackagePlus className="w-4 h-4 mr-2" />

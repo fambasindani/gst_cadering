@@ -36,6 +36,8 @@ class Utilisateur extends Authenticatable
         'derniere_connexion' => 'datetime',
     ];
 
+    protected $appends = ['full_name'];
+
     // Authentification
     public function getAuthPassword()
     {

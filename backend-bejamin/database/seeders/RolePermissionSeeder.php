@@ -60,6 +60,12 @@ class RolePermissionSeeder extends Seeder
                 'config:notifications:view', 'config:notifications:update',
                 // Rapports
                 'rapport:stock', 'rapport:commande', 'rapport:inventaire', 'rapport:client',
+                // Traçabilité
+                'config:tracabilite:view', 'config:tracabilite:create', 'config:tracabilite:update', 'config:tracabilite:delete',
+                'config:cuisson:view', 'config:cuisson:create', 'config:cuisson:update', 'config:cuisson:delete',
+                'config:atelier:view', 'config:atelier:create', 'config:atelier:update', 'config:atelier:delete',
+                'config:suivi_chlore:view', 'config:suivi_chlore:create', 'config:suivi_chlore:update', 'config:suivi_chlore:delete',
+                'config:controle_livraison:view', 'config:controle_livraison:create', 'config:controle_livraison:update', 'config:controle_livraison:delete',
             ];
             $respStock->permissions()->sync(Permission::whereIn('code', $codes)->pluck('id'));
         }
@@ -73,14 +79,26 @@ class RolePermissionSeeder extends Seeder
                 'config:produits:view',
                 // Partenaires (view + création)
                 'config:partenaires:view', 'config:partenaires:create',
+                // Départements (view) — requis pour la tracabilité
+                'config:departements:view',
+                // Devises (view) — requis pour les détails produit
+                'config:devises:view',
                 // Bons de commande (view + création)
                 'config:bon_commande:view', 'config:bon_commande:create',
                 // Avoirs (view + création)
                 'facturation:avoir:view', 'facturation:avoir:create',
+                // Lots (view) — requis pour la tracabilité
+                'config:lots:view',
                 // Notifications
                 'config:notifications:view',
                 // Rapports
                 'rapport:commande', 'rapport:client',
+                // Traçabilité
+                'config:tracabilite:view', 'config:tracabilite:create',
+                'config:cuisson:view', 'config:cuisson:create',
+                'config:atelier:view', 'config:atelier:create',
+                'config:suivi_chlore:view', 'config:suivi_chlore:create',
+                'config:controle_livraison:view', 'config:controle_livraison:create',
             ];
             $commercial->permissions()->sync(Permission::whereIn('code', $codes)->pluck('id'));
         }
@@ -94,6 +112,10 @@ class RolePermissionSeeder extends Seeder
                 'config:categories:view',
                 // Produits (view)
                 'config:produits:view',
+                // Départements (view) — requis pour la tracabilité
+                'config:departements:view',
+                // Devises (view) — requis pour les détails produit
+                'config:devises:view',
                 // Lots (view + création)
                 'config:lots:view', 'config:lots:create',
                 // Mouvements (view + création)
@@ -116,6 +138,12 @@ class RolePermissionSeeder extends Seeder
                 'config:notifications:view', 'config:notifications:update',
                 // Rapports
                 'rapport:stock',
+                // Traçabilité
+                'config:tracabilite:view', 'config:tracabilite:create',
+                'config:cuisson:view', 'config:cuisson:create',
+                'config:atelier:view', 'config:atelier:create',
+                'config:suivi_chlore:view', 'config:suivi_chlore:create',
+                'config:controle_livraison:view', 'config:controle_livraison:create',
             ];
             $magasinier->permissions()->sync(Permission::whereIn('code', $codes)->pluck('id'));
         }
@@ -138,6 +166,12 @@ class RolePermissionSeeder extends Seeder
                 // Rapports
                 'rapport:stock', 'rapport:commande', 'rapport:client',
                 'rapport:inventaire',
+                // Traçabilité
+                'config:tracabilite:view',
+                'config:cuisson:view',
+                'config:atelier:view',
+                'config:suivi_chlore:view',
+                'config:controle_livraison:view',
             ];
             $consultation->permissions()->sync(Permission::whereIn('code', $codes)->pluck('id'));
         }

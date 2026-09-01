@@ -522,7 +522,7 @@ class BonCommandeController extends Controller
                 ], 403);
             }
 
-            if ($bonCommande->statut !== 'BROUILLON' && $bonCommande->statut !== 'REÇU PARTIELLEMENT' && !($hasCorrections && $bonCommande->statut === 'REÇU')) {
+            if ($bonCommande->statut !== 'BROUILLON' && $bonCommande->statut !== 'EN ATTENTE' && $bonCommande->statut !== 'REÇU PARTIELLEMENT' && !($hasCorrections && $bonCommande->statut === 'REÇU')) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Ce bon ne peut pas être réceptionné'
@@ -687,23 +687,16 @@ class BonCommandeController extends Controller
                     $ligne->save();
                 }
 
-                // Mettre à jour le statut du bon
+                // Mettre à jour le statut du bon : la réception passe en attente de validation
                 $bonCommande->refresh();
-                if ($bonCommande->isComplete()) {
-                    $bonCommande->statut = 'REÇU';
-                } else {
-                    $bonCommande->statut = 'REÇU PARTIELLEMENT';
-                }
-                // La réception valide implicitement le bon (même s'il était en attente/brouillon)
-                $bonCommande->statut_validation = 'VALIDÉ';
-                $bonCommande->valide_par = Auth::id();
-                $bonCommande->date_validation = now();
+                $bonCommande->statut = 'EN ATTENTE';
                 $bonCommande->save();
 
                 DB::commit();
 
                 $data = $bonCommande->load(['partenaire', 'magasinDestination', 'lignes'])->toArray();
                 $data['reference_reception'] = $referenceReception;
+                $data['reception_complete'] = $bonCommande->isComplete();
 
                 return response()->json([
                     'success' => true,
@@ -855,7 +848,7 @@ class BonCommandeController extends Controller
     private function updateReceptionValidation($id, $mouvementId, string $statut)
     {
         try {
-            $bonCommande = BonCommande::findOrFail($id);
+            $bonCommande = BonCommande::with('lignes')->findOrFail($id);
             $mouvement = MouvementStock::with('lot')
                 ->where('id', $mouvementId)
                 ->where('reference_document', $bonCommande->numero_commande)
@@ -863,7 +856,7 @@ class BonCommandeController extends Controller
                 ->where('statut_validation', 'EN ATTENTE')
                 ->firstOrFail();
 
-            DB::transaction(function () use ($mouvement, $statut) {
+            DB::transaction(function () use ($mouvement, $statut, $bonCommande) {
                 $mouvement->update([
                     'statut_validation' => $statut,
                     'valide_par' => Auth::id(),
@@ -880,6 +873,24 @@ class BonCommandeController extends Controller
 
                     if ($statut === 'VALIDÉ') {
                         $lot->enregistrerHistoriquePrix('Validation de la réception du bon de commande');
+                    }
+                }
+
+                // Si le bon est EN ATTENTE, vérifier s'il reste des mouvements en attente
+                if ($bonCommande->statut === 'EN ATTENTE') {
+                    $resteEnAttente = MouvementStock::where('reference_document', $bonCommande->numero_commande)
+                        ->where('id_type_mouvement', 1)
+                        ->where('statut_validation', 'EN ATTENTE')
+                        ->exists();
+
+                    if (!$resteEnAttente) {
+                        // Plus aucun mouvement en attente → calculer le statut final
+                        $bonCommande->refresh();
+                        $bonCommande->statut = $bonCommande->isComplete() ? 'REÇU' : 'REÇU PARTIELLEMENT';
+                        $bonCommande->statut_validation = 'VALIDÉ';
+                        $bonCommande->valide_par = Auth::id();
+                        $bonCommande->date_validation = now();
+                        $bonCommande->save();
                     }
                 }
             });

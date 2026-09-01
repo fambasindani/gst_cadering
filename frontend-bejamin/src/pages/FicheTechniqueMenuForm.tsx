@@ -71,12 +71,12 @@ export function FicheTechniqueMenuForm() {
     }).catch(() => {});
     (async () => {
       try {
-        const [m, c] = await Promise.all([
+        const [mResult, cResult] = await Promise.allSettled([
           api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/magasins'),
           partenaireService.getClients({ per_page: '500' }),
         ]);
-        if (m.success) setMagasins(m.data.data);
-        if (c.success) setClients(c.data.data);
+        if (mResult.status === 'fulfilled' && mResult.value.success) setMagasins(mResult.value.data.data);
+        if (cResult.status === 'fulfilled' && cResult.value.success) setClients(cResult.value.data.data);
       } catch { /* */ }
     })();
   }, []);

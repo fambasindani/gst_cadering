@@ -17,6 +17,7 @@ import { cn } from '../lib/utils';
 import { formatCurrency } from '../lib/format';
 
 const statutConfig: Record<string, { label: string; color: string }> = {
+  'EN ATTENTE': { label: 'En attente', color: 'bg-orange-100 text-orange-800 border-orange-200' },
   'REÇU PARTIELLEMENT': { label: 'Reçu partiellement', color: 'bg-purple-100 text-purple-800 border-purple-200' },
   BROUILLON: { label: 'Brouillon', color: 'bg-amber-100 text-amber-800 border-amber-200' },
   REÇU: { label: 'Reçu', color: 'bg-emerald-100 text-emerald-800 border-emerald-200' },
@@ -41,7 +42,7 @@ export function ReceptionList() {
       const params: Record<string, string> = {
         per_page: String(pageSize),
         page: String(currentPage),
-        statut: 'BROUILLON,REÇU PARTIELLEMENT',
+        statut: 'BROUILLON,EN ATTENTE,REÇU PARTIELLEMENT',
       };
       if (searchTerm) params.search = searchTerm;
       const res = await bonCommandeService.list(params);

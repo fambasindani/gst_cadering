@@ -24,6 +24,21 @@ import { SortieStockForm } from './pages/SortieStockForm';
 import { SortieForm } from './pages/SortieForm';
 import { StockMouvementProduit } from './pages/StockMouvementProduit';
 import { StockMouvementProduitDetails } from './pages/StockMouvementProduitDetails';
+import { TracabiliteList } from './pages/TracabiliteList';
+import { TracabiliteForm } from './pages/TracabiliteForm';
+import { TracabiliteDetails } from './pages/TracabiliteDetails';
+import { CuissonList } from './pages/CuissonList';
+import { CuissonForm } from './pages/CuissonForm';
+import { CuissonDetails } from './pages/CuissonDetails';
+import { AtelierList } from './pages/AtelierList';
+import { AtelierForm } from './pages/AtelierForm';
+import { AtelierDetails } from './pages/AtelierDetails';
+import { SuiviChloreList } from './pages/SuiviChloreList';
+import { SuiviChloreForm } from './pages/SuiviChloreForm';
+import { SuiviChloreDetails } from './pages/SuiviChloreDetails';
+import { ControleLivraisonList } from './pages/ControleLivraisonList';
+import { ControleLivraisonForm } from './pages/ControleLivraisonForm';
+import { ControleLivraisonDetails } from './pages/ControleLivraisonDetails';
 import { RetourStock } from './pages/RetourStock';
 import { RetourForm } from './pages/RetourForm';
 import { RetourDetail } from './pages/RetourDetail';
@@ -130,6 +145,26 @@ function App() {
           <Route path="stock/retour/:id" element={<RetourDetail />} />
           <Route path="stock/mouvement-produit" element={<StockMouvementProduit />} />
           <Route path="stock/mouvement-produit/:id" element={<StockMouvementProduitDetails />} />
+          <Route path="stock/tracabilite" element={<TracabiliteList />} />
+          <Route path="stock/tracabilite/creer" element={<TracabiliteForm />} />
+          <Route path="stock/tracabilite/:id/modifier" element={<TracabiliteForm />} />
+          <Route path="stock/tracabilite/:id" element={<TracabiliteDetails />} />
+          <Route path="stock/cuisson" element={<CuissonList />} />
+          <Route path="stock/cuisson/creer" element={<CuissonForm />} />
+          <Route path="stock/cuisson/:id/modifier" element={<CuissonForm />} />
+          <Route path="stock/cuisson/:id" element={<CuissonDetails />} />
+          <Route path="stock/atelier" element={<AtelierList />} />
+          <Route path="stock/atelier/creer" element={<AtelierForm />} />
+          <Route path="stock/atelier/:id/modifier" element={<AtelierForm />} />
+          <Route path="stock/atelier/:id" element={<AtelierDetails />} />
+          <Route path="stock/suivi-chlore" element={<SuiviChloreList />} />
+          <Route path="stock/suivi-chlore/creer" element={<SuiviChloreForm />} />
+          <Route path="stock/suivi-chlore/:id/modifier" element={<SuiviChloreForm />} />
+          <Route path="stock/suivi-chlore/:id" element={<SuiviChloreDetails />} />
+          <Route path="stock/controle-livraison" element={<ControleLivraisonList />} />
+          <Route path="stock/controle-livraison/creer" element={<ControleLivraisonForm />} />
+          <Route path="stock/controle-livraison/:id/modifier" element={<ControleLivraisonForm />} />
+          <Route path="stock/controle-livraison/:id" element={<ControleLivraisonDetails />} />
           <Route path="stock/avoir" element={<AvoirList />} />
           <Route path="stock/avoir/creer" element={<AvoirForm />} />
           <Route path="stock/avoir/:id" element={<AvoirDetails />} />

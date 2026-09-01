@@ -61,6 +61,17 @@ subItems: [
     ]
   },
   { 
+    title: 'Traçabilité', 
+    icon: 'ClipboardList', 
+    path: '/stock/cuisson',
+    subItems: [
+      { title: 'Cuisson', path: '/stock/cuisson', permission: 'config:cuisson:view' },
+      { title: 'Atelier', path: '/stock/atelier', permission: 'config:atelier:view' },
+      { title: 'Suivi chlore', path: '/stock/suivi-chlore', permission: 'config:suivi_chlore:view' },
+      { title: 'Contrôle livraison', path: '/stock/controle-livraison', permission: 'config:controle_livraison:view' },
+    ]
+  },
+  { 
     title: 'Recettes', 
     icon: 'BookOpen', 
     path: '/recettes',

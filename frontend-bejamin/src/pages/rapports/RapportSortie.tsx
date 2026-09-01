@@ -57,8 +57,6 @@ export function RapportSortie() {
         setData(res.data);
         setSearched(true);
       }
-      const tres = await tauxConversionService.getActuel();
-      if (tres.success && tres.data) setTauxCdf(tres.data.taux);
     } catch {
       //
     } finally {
@@ -67,6 +65,12 @@ export function RapportSortie() {
   };
 
   useEffect(() => { fetchData(); /* eslint-disable-line react-hooks/exhaustive-deps */ }, []);
+
+  useEffect(() => {
+    tauxConversionService.getActuel()
+      .then((tres) => { if (tres.success && tres.data) setTauxCdf(tres.data.taux); })
+      .catch(() => {});
+  }, []);
 
   const deviseCode = devise === 'CDF' ? 'CDF' : '$';
 

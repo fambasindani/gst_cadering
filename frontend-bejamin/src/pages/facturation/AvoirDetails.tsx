@@ -34,14 +34,18 @@ export function AvoirDetails() {
     try {
       const res = await avoirService.get(Number(id));
       if (res.success) setAvoir(res.data);
-      const tres = await tauxConversionService.getActuel();
-      if (tres.success && tres.data) setTauxCdf(tres.data.taux);
     } catch {
       toast('Erreur de chargement', 'error');
     } finally {
       setLoading(false);
     }
   }, [id]);
+
+  useEffect(() => {
+    tauxConversionService.getActuel()
+      .then((tres) => { if (tres.success && tres.data) setTauxCdf(tres.data.taux); })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 

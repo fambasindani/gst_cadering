@@ -219,6 +219,46 @@ class PermissionSeeder extends Seeder
             ['nom' => 'Voir les notifications', 'code' => 'config:notifications:view'],
             ['nom' => 'Gérer les notifications', 'code' => 'config:notifications:update'],
 
+            // ============================================================
+            // CONFIG - Traçabilité
+            // ============================================================
+            ['nom' => 'Voir les traçabilités', 'code' => 'config:tracabilite:view'],
+            ['nom' => 'Créer une traçabilité', 'code' => 'config:tracabilite:create'],
+            ['nom' => 'Modifier une traçabilité', 'code' => 'config:tracabilite:update'],
+            ['nom' => 'Supprimer une traçabilité', 'code' => 'config:tracabilite:delete'],
+
+            // ============================================================
+            // CONFIG - Traçabilité : Cuissons
+            // ============================================================
+            ['nom' => 'Voir les cuissons', 'code' => 'config:cuisson:view'],
+            ['nom' => 'Créer une cuisson', 'code' => 'config:cuisson:create'],
+            ['nom' => 'Modifier une cuisson', 'code' => 'config:cuisson:update'],
+            ['nom' => 'Supprimer une cuisson', 'code' => 'config:cuisson:delete'],
+
+            // ============================================================
+            // CONFIG - Traçabilité : Ateliers
+            // ============================================================
+            ['nom' => 'Voir les ateliers', 'code' => 'config:atelier:view'],
+            ['nom' => 'Créer un atelier', 'code' => 'config:atelier:create'],
+            ['nom' => 'Modifier un atelier', 'code' => 'config:atelier:update'],
+            ['nom' => 'Supprimer un atelier', 'code' => 'config:atelier:delete'],
+
+            // ============================================================
+            // CONFIG - Traçabilité : Suivi chlore
+            // ============================================================
+            ['nom' => 'Voir les suivis chlore', 'code' => 'config:suivi_chlore:view'],
+            ['nom' => 'Créer un suivi chlore', 'code' => 'config:suivi_chlore:create'],
+            ['nom' => 'Modifier un suivi chlore', 'code' => 'config:suivi_chlore:update'],
+            ['nom' => 'Supprimer un suivi chlore', 'code' => 'config:suivi_chlore:delete'],
+
+            // ============================================================
+            // CONFIG - Traçabilité : Contrôle livraisons
+            // ============================================================
+            ['nom' => 'Voir les contrôles livraison', 'code' => 'config:controle_livraison:view'],
+            ['nom' => 'Créer un contrôle livraison', 'code' => 'config:controle_livraison:create'],
+            ['nom' => 'Modifier un contrôle livraison', 'code' => 'config:controle_livraison:update'],
+            ['nom' => 'Supprimer un contrôle livraison', 'code' => 'config:controle_livraison:delete'],
+
         ];
 
         foreach ($permissions as $permission) {

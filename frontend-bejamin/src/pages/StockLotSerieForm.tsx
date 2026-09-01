@@ -40,16 +40,16 @@ export function StockLotSerieForm() {
   });
 
   useEffect(() => {
-    Promise.all([
+    Promise.allSettled([
       bonCommandeService.getProduits({ per_page: '500' }),
       bonCommandeService.getMagasins({ per_page: '500' }),
       bonCommandeService.getPartenaires({ per_page: '500' }),
       bonCommandeService.getDevises({ per_page: '500' }),
     ]).then(([pr, vr, par, dr]) => {
-      if (pr.success) setProduits(pr.data.data);
-      if (vr.success) setMagasins(vr.data.data);
-      if (par.success) setPartenaires(par.data.data);
-      if (dr.success) setDevises(dr.data.data);
+      if (pr.status === 'fulfilled' && pr.value.success) setProduits(pr.value.data.data);
+      if (vr.status === 'fulfilled' && vr.value.success) setMagasins(vr.value.data.data);
+      if (par.status === 'fulfilled' && par.value.success) setPartenaires(par.value.data.data);
+      if (dr.status === 'fulfilled' && dr.value.success) setDevises(dr.value.data.data);
     }).catch(() => {});
   }, []);
 

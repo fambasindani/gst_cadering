@@ -51,8 +51,6 @@ export function AvoirList() {
         setTotal(res.data.total);
         setLastPage(res.data.last_page);
       }
-      const tres = await tauxConversionService.getActuel();
-      if (tres.success && tres.data) setTauxCdf(tres.data.taux);
     } catch {
       //
     } finally {
@@ -61,6 +59,12 @@ export function AvoirList() {
   }, [currentPage, searchTerm, pageSize]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
+
+  useEffect(() => {
+    tauxConversionService.getActuel()
+      .then((tres) => { if (tres.success && tres.data) setTauxCdf(tres.data.taux); })
+      .catch(() => {});
+  }, []);
 
   const handleDelete = async () => {
     if (!deleteTarget) return;

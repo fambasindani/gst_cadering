@@ -52,8 +52,6 @@ export function RapportRecette() {
         setTotal(res.data.total);
         setLastPage(res.data.last_page);
       }
-      const tres = await tauxConversionService.getActuel();
-      if (tres.success && tres.data) setTauxCdf(tres.data.taux);
     } catch {
       //
     } finally {
@@ -64,14 +62,20 @@ export function RapportRecette() {
   useEffect(() => { fetchData(); }, [fetchData]);
 
   useEffect(() => {
+    tauxConversionService.getActuel()
+      .then((tres) => { if (tres.success && tres.data) setTauxCdf(tres.data.taux); })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
     (async () => {
       try {
-        const [ft, c] = await Promise.all([
+        const [ftResult, cResult] = await Promise.allSettled([
           ficheTechniqueService.list({ per_page: '500' }),
           partenaireService.getClients({ per_page: '500' }),
         ]);
-        if (ft.success) setFiches(ft.data.data);
-        if (c.success) setClients(c.data.data);
+        if (ftResult.status === 'fulfilled' && ftResult.value.success) setFiches(ftResult.value.data.data);
+        if (cResult.status === 'fulfilled' && cResult.value.success) setClients(cResult.value.data.data);
       } catch { /* */ }
     })();
   }, []);

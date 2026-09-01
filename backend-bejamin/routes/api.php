@@ -32,7 +32,12 @@ use App\Http\Controllers\Api\Config\{
     FicheTechniqueMenuController,
     EntreeFicheTechniqueController,
     NotificationController,
-    PurgeController
+    PurgeController,
+    TracabiliteController,
+    CuissonController,
+    AtelierController,
+    SuiviChloreController,
+    ControleLivraisonController
 };
 
 /*
@@ -301,6 +306,56 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
         Route::delete('entree-fiche-technique/{id}', [EntreeFicheTechniqueController::class, 'destroy'])->middleware('permission:config:recette:delete');
 
         // ============================================================
+        // TRACABILITE
+        // ============================================================
+        Route::get('tracabilites', [TracabiliteController::class, 'index'])->middleware('permission:config:tracabilite:view');
+        Route::post('tracabilites', [TracabiliteController::class, 'store'])->middleware('permission:config:tracabilite:create');
+        Route::post('tracabilites/bulk', [TracabiliteController::class, 'storeMultiple'])->middleware('permission:config:tracabilite:create');
+        Route::get('tracabilites/{id}', [TracabiliteController::class, 'show'])->middleware('permission:config:tracabilite:view');
+        Route::put('tracabilites/{id}', [TracabiliteController::class, 'update'])->middleware('permission:config:tracabilite:update');
+        Route::delete('tracabilites/{id}', [TracabiliteController::class, 'destroy'])->middleware('permission:config:tracabilite:delete');
+
+        // ============================================================
+        // CUISSONS TRACABILITE
+        // ============================================================
+        Route::get('cuissons', [CuissonController::class, 'index'])->middleware('permission:config:cuisson:view');
+        Route::post('cuissons', [CuissonController::class, 'store'])->middleware('permission:config:cuisson:create');
+        Route::post('cuissons/bulk', [CuissonController::class, 'storeBulk'])->middleware('permission:config:cuisson:create');
+        Route::get('cuissons/{id}', [CuissonController::class, 'show'])->middleware('permission:config:cuisson:view');
+        Route::put('cuissons/{id}', [CuissonController::class, 'update'])->middleware('permission:config:cuisson:update');
+        Route::delete('cuissons/{id}', [CuissonController::class, 'destroy'])->middleware('permission:config:cuisson:delete');
+
+        // ============================================================
+        // ATELIERS TRACABILITE
+        // ============================================================
+        Route::get('ateliers', [AtelierController::class, 'index'])->middleware('permission:config:atelier:view');
+        Route::post('ateliers', [AtelierController::class, 'store'])->middleware('permission:config:atelier:create');
+        Route::post('ateliers/bulk', [AtelierController::class, 'storeBulk'])->middleware('permission:config:atelier:create');
+        Route::get('ateliers/{id}', [AtelierController::class, 'show'])->middleware('permission:config:atelier:view');
+        Route::put('ateliers/{id}', [AtelierController::class, 'update'])->middleware('permission:config:atelier:update');
+        Route::delete('ateliers/{id}', [AtelierController::class, 'destroy'])->middleware('permission:config:atelier:delete');
+
+        // ============================================================
+        // SUIVI CHLORE
+        // ============================================================
+        Route::get('suivis-chlore', [SuiviChloreController::class, 'index'])->middleware('permission:config:suivi_chlore:view');
+        Route::post('suivis-chlore', [SuiviChloreController::class, 'store'])->middleware('permission:config:suivi_chlore:create');
+        Route::post('suivis-chlore/bulk', [SuiviChloreController::class, 'storeBulk'])->middleware('permission:config:suivi_chlore:create');
+        Route::get('suivis-chlore/{id}', [SuiviChloreController::class, 'show'])->middleware('permission:config:suivi_chlore:view');
+        Route::put('suivis-chlore/{id}', [SuiviChloreController::class, 'update'])->middleware('permission:config:suivi_chlore:update');
+        Route::delete('suivis-chlore/{id}', [SuiviChloreController::class, 'destroy'])->middleware('permission:config:suivi_chlore:delete');
+
+        // ============================================================
+        // CONTROLES LIVRAISONS
+        // ============================================================
+        Route::get('controles-livraison', [ControleLivraisonController::class, 'index'])->middleware('permission:config:controle_livraison:view');
+        Route::post('controles-livraison', [ControleLivraisonController::class, 'store'])->middleware('permission:config:controle_livraison:create');
+        Route::post('controles-livraison/bulk', [ControleLivraisonController::class, 'storeBulk'])->middleware('permission:config:controle_livraison:create');
+        Route::get('controles-livraison/{id}', [ControleLivraisonController::class, 'show'])->middleware('permission:config:controle_livraison:view');
+        Route::put('controles-livraison/{id}', [ControleLivraisonController::class, 'update'])->middleware('permission:config:controle_livraison:update');
+        Route::delete('controles-livraison/{id}', [ControleLivraisonController::class, 'destroy'])->middleware('permission:config:controle_livraison:delete');
+
+        // ============================================================
         // NOTIFICATIONS
         // ============================================================
         Route::get('notifications', [NotificationController::class, 'index'])->middleware('permission:config:notifications:view');
@@ -370,7 +425,7 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
         Route::get('tables/liste', [AuditController::class, 'tables'])->middleware('permission:audit:view');
         Route::get('actions/liste', [AuditController::class, 'actions'])->middleware('permission:audit:view');
         Route::get('export', [AuditController::class, 'export'])->middleware('permission:audit:export');
-        Route::delete('clean', [AuditController::class, 'clean'])->middleware('permission:audit:delete');
+
         Route::get('{id}', [AuditController::class, 'show'])->middleware('permission:audit:view')->where('id', '[0-9]+');
     });
 });

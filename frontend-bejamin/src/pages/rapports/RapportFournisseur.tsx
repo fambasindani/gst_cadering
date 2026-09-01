@@ -42,8 +42,6 @@ export function RapportFournisseur() {
       if (res.success) {
         setData(res.data);
       }
-      const tres = await tauxConversionService.getActuel();
-      if (tres.success && tres.data) setTauxCdf(tres.data.taux);
     } catch {
       //
     } finally {
@@ -52,6 +50,12 @@ export function RapportFournisseur() {
   };
 
   useEffect(() => { fetchData(); }, [dateFrom, dateTo]);
+
+  useEffect(() => {
+    tauxConversionService.getActuel()
+      .then((tres) => { if (tres.success && tres.data) setTauxCdf(tres.data.taux); })
+      .catch(() => {});
+  }, []);
 
   const colMontantLabel = devise === 'CDF' ? 'Montant total (CDF)' : 'Montant total';
   const colMoyenneLabel = devise === 'CDF' ? 'Moyenne/commande (CDF)' : 'Moyenne/commande';

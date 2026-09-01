@@ -65,12 +65,12 @@ export function EntreeRecette() {
   useEffect(() => {
     (async () => {
       try {
-        const [ft, c] = await Promise.all([
+        const [ftResult, cResult] = await Promise.allSettled([
           ficheTechniqueService.list({ per_page: '500', actif: '1' }),
           partenaireService.getClients({ actif: '1' }),
         ]);
-        if (ft.success) setFiches(ft.data.data);
-        if (c.success) setClients(c.data.data);
+        if (ftResult.status === 'fulfilled' && ftResult.value.success) setFiches(ftResult.value.data.data);
+        if (cResult.status === 'fulfilled' && cResult.value.success) setClients(cResult.value.data.data);
       } catch { /* */ }
     })();
   }, []);

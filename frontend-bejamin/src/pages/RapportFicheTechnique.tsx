@@ -57,12 +57,12 @@ export function RapportFicheTechnique() {
   useEffect(() => {
     (async () => {
       try {
-        const [m, c] = await Promise.all([
+        const [mResult, cResult] = await Promise.allSettled([
           ficheTechniqueMenuService.list({ per_page: '500' }),
           partenaireService.getClients({ per_page: '500' }),
         ]);
-        if (m.success) setMenus(m.data.data.filter(x => x.actif !== false));
-        if (c.success) setCompagnies(c.data.data);
+        if (mResult.status === 'fulfilled' && mResult.value.success) setMenus(mResult.value.data.data.filter((x: { actif?: boolean }) => x.actif !== false));
+        if (cResult.status === 'fulfilled' && cResult.value.success) setCompagnies(cResult.value.data.data);
       } catch { /* */ }
     })();
   }, []);

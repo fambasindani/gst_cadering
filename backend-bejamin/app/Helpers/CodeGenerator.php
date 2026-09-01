@@ -61,4 +61,9 @@ class CodeGenerator
     {
         return self::generate('fiche_technique_menu', 'code', 'FM');
     }
+
+    public static function tracabilite(): string
+    {
+        return self::generate('tracabilite', 'numero_tracabilite', 'TR');
+    }
 }

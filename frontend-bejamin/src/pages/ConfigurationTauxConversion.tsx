@@ -59,16 +59,16 @@ export function ConfigurationTauxConversion() {
       };
       if (searchTerm) params.search = searchTerm;
 
-      const [res, actuel] = await Promise.all([
+      const [resResult, actuelResult] = await Promise.allSettled([
         tauxConversionService.list(params),
         tauxConversionService.getActuel(),
       ]);
-      if (res.success) {
-        setData(res.data.data);
-        setTotal(res.data.total);
-        setLastPage(res.data.last_page);
+      if (resResult.status === 'fulfilled' && resResult.value.success) {
+        setData(resResult.value.data.data);
+        setTotal(resResult.value.data.total);
+        setLastPage(resResult.value.data.last_page);
       }
-      if (actuel.success) setTauxActuel(actuel.data);
+      if (actuelResult.status === 'fulfilled' && actuelResult.value.success) setTauxActuel(actuelResult.value.data);
     } catch {
       // silent
     } finally {

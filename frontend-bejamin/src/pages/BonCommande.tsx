@@ -23,6 +23,7 @@ import { formatCurrency } from '../lib/format';
 
 const statutConfig: Record<string, { label: string; color: string }> = {
   BROUILLON: { label: 'Brouillon', color: 'bg-amber-100 text-amber-800' },
+  'EN ATTENTE': { label: 'En attente', color: 'bg-orange-100 text-orange-800' },
   'REÇU PARTIELLEMENT': { label: 'Reçu partiellement', color: 'bg-purple-100 text-purple-800' },
   REÇU: { label: 'Reçu', color: 'bg-emerald-100 text-emerald-800' },
   CLOTURE: { label: 'Clôturé', color: 'bg-red-100 text-red-800' },
@@ -134,6 +135,7 @@ export function BonCommande() {
             <SelectContent>
               <SelectItem value="_all">Tous les statuts</SelectItem>
               <SelectItem value="BROUILLON">Brouillon</SelectItem>
+              <SelectItem value="EN ATTENTE">En attente</SelectItem>
                <SelectItem value="REÇU PARTIELLEMENT">Reçu partiellement</SelectItem>
                <SelectItem value="REÇU">Reçu</SelectItem>
                <SelectItem value="CLOTURE">Clôturé</SelectItem>

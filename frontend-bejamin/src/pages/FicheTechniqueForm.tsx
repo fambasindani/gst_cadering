@@ -94,12 +94,12 @@ export function FicheTechniqueForm() {
     produitService.list().then(r => { if (r.success) setProduits(r.data.data.filter(p => p.actif !== false).map(p => ({ id: p.id, nom: p.nom, code_article: p.code_article }))); }).catch(() => {});
     (async () => {
       try {
-        const [v, u] = await Promise.all([
+        const [vResult, uResult] = await Promise.allSettled([
           api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/magasins'),
           api.get<{ success: boolean; data: { data: { id: number; nom: string; symbole: string }[] } }>('/config/unites'),
         ]);
-        if (v.success) setMagasins(v.data.data);
-        if (u.success) setUnites(u.data.data);
+        if (vResult.status === 'fulfilled' && vResult.value.success) setMagasins(vResult.value.data.data);
+        if (uResult.status === 'fulfilled' && uResult.value.success) setUnites(uResult.value.data.data);
       } catch { /* */ }
     })();
   }, []);

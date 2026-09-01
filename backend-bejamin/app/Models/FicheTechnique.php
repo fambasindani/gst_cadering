@@ -22,7 +22,8 @@ class FicheTechnique extends Model
         'cout_total',
         'cout_unitaire',
         'prix_kg',
-        'actif'
+        'actif',
+        'id_produit_fini'
     ];
 
     protected $casts = [

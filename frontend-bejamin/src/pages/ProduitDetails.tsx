@@ -44,14 +44,14 @@ export function ProduitDetails() {
     if (!id) return;
     setLoading(true);
     try {
-      const [pRes, sRes, dRes] = await Promise.all([
+      const [pResult, sResult, dResult] = await Promise.allSettled([
         produitService.get(Number(id)),
         produitService.getStock(Number(id)),
         produitService.getDevises({ per_page: '200', sort_by: 'nom', sort_order: 'asc' }),
       ]);
-      if (pRes.success) setProduit(pRes.data);
-      if (sRes.success) setStock(sRes.data);
-      if (dRes.success) setDevises(dRes.data.data);
+      if (pResult.status === 'fulfilled' && pResult.value.success) setProduit(pResult.value.data);
+      if (sResult.status === 'fulfilled' && sResult.value.success) setStock(sResult.value.data);
+      if (dResult.status === 'fulfilled' && dResult.value.success) setDevises(dResult.value.data.data);
     } catch {
       //
     } finally {

@@ -42,8 +42,6 @@ export function ConsommationsClients() {
       if (res.success) {
         setData(res.data);
       }
-      const tres = await tauxConversionService.getActuel();
-      if (tres.success && tres.data) setTauxCdf(tres.data.taux);
     } catch {
       //
     } finally {
@@ -52,6 +50,12 @@ export function ConsommationsClients() {
   };
 
   useEffect(() => { fetchData(); }, [dateFrom, dateTo]);
+
+  useEffect(() => {
+    tauxConversionService.getActuel()
+      .then((tres) => { if (tres.success && tres.data) setTauxCdf(tres.data.taux); })
+      .catch(() => {});
+  }, []);
 
   const colMoyenneLabel = devise === 'CDF' ? 'Moy/commande (CDF)' : 'Moy/commande';
 

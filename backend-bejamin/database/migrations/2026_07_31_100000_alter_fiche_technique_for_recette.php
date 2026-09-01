@@ -62,7 +62,7 @@ return new class extends Migration
         });
 
         Schema::table('fiche_technique', function (Blueprint $table) {
-            $table->dropColumn(['poids_portion', 'prix_kg']);
+            $table->dropColumn(['poids_portion', 'unite_poids_portion', 'prix_kg']);
         });
     }
 };

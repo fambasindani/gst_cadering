@@ -55,9 +55,11 @@ export function SearchableSelect({
   const selected = options.find(o => getOptionValue(o) === value);
 
   const filtered = search.trim()
-    ? options.filter(o =>
-        o.nom.toLowerCase().includes(search.toLowerCase())
-      )
+    ? options.filter(o => {
+        const q = search.toLowerCase();
+        return o.nom.toLowerCase().includes(q) ||
+          (o.sousTitre && o.sousTitre.toLowerCase().includes(q));
+      })
     : options;
 
   const updatePosition = useCallback(() => {

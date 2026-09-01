@@ -26,7 +26,7 @@ export function ReceptionForm() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [lastReception, setLastReception] = useState<{ bon: BonCommande; reception: ReceptionPDFData } | null>(null);
+  const [lastReception, setLastReception] = useState<{ bon: BonCommande; reception: ReceptionPDFData; receptionComplete: boolean } | null>(null);
   const [receptionData, setReceptionData] = useState<Record<number, {
     quantite_recue: string;
     quantite_recue_correction: string;
@@ -175,14 +175,14 @@ export function ReceptionForm() {
         corrections,
       });
       if (res.success) {
-        const statut = res.data?.statut;
+        const receptionComplete = (res.data as unknown as { reception_complete?: boolean })?.reception_complete;
         const referenceReception = (res.data as unknown as { reference_reception?: string })?.reference_reception;
         const msg = corrections.length > 0
-          ? (statut === 'REÇU' ? 'Réception corrigée avec succès (complète)' : 'Réception corrigée avec succès')
-          : (statut === 'REÇU' ? 'Réception complète effectuée avec succès' : 'Réception partielle effectuée avec succès');
+          ? (receptionComplete ? 'Réception corrigée avec succès (complète)' : 'Réception corrigée avec succès')
+          : (receptionComplete ? 'Réception complète effectuée avec succès' : 'Réception partielle effectuée avec succès');
         toast(msg, 'success');
 
-        const updatedBon = { ...bon, statut, quantite_recue: undefined } as BonCommande;
+        const updatedBon = { ...bon, statut: res.data?.statut || bon.statut, quantite_recue: undefined } as BonCommande;
         const recLignes = receptions.map((r) => {
           const l = lignes.find((x) => x.id === r.id_ligne_commande);
           const prix = Number(r.prix_achat_ht_unitaire) || Number(l?.prix_unitaire_ht) || 0;
@@ -202,6 +202,7 @@ export function ReceptionForm() {
 
         setLastReception({
           bon: updatedBon,
+          receptionComplete: !!receptionComplete,
           reception: {
             reference_reception: referenceReception || 'REC-' + Date.now(),
             date: recLignes[0]?.date ?? new Date().toISOString().split('T')[0],
@@ -248,7 +249,7 @@ export function ReceptionForm() {
     );
   }
 
-  const statutNonReceptionnable = !(bon.statut === 'BROUILLON' || bon.statut === 'REÇU PARTIELLEMENT' || (isAdmin && bon.statut === 'REÇU'));
+  const statutNonReceptionnable = !(bon.statut === 'BROUILLON' || bon.statut === 'EN ATTENTE' || bon.statut === 'REÇU PARTIELLEMENT' || (isAdmin && bon.statut === 'REÇU'));
   const lignes = bon.lignes || [];
 
   const totalQuantite = Object.values(receptionData).reduce((sum, rd) => sum + (Number(rd.quantite_recue) || 0), 0);
@@ -269,7 +270,7 @@ export function ReceptionForm() {
               </div>
               <h2 className="text-2xl font-bold text-gray-900">Réception enregistrée</h2>
               <p className="text-sm text-gray-500 mt-1">
-                {bon.numero_commande} — {bon.statut === 'REÇU' ? 'réception complète' : 'réception partielle'}
+                {bon.numero_commande} — {lastReception.receptionComplete ? 'réception complète' : 'réception partielle'}
               </p>
               <p className="text-sm text-gray-500 mt-1">
                 Référence de réception : <span className="font-mono font-medium text-emerald-700">{lastReception.reception.reference_reception}</span>
@@ -326,13 +327,7 @@ export function ReceptionForm() {
               </PDFDownloadLink>
               <Button
                 variant="outline"
-                onClick={() => {
-                  if (bon.statut === 'REÇU') {
-                    navigate('/bon-commande');
-                  } else {
-                    navigate('/reception');
-                  }
-                }}
+                onClick={() => navigate('/bon-commande')}
                 className="w-full sm:w-auto h-11 px-6 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl"
               >
                 Terminer
