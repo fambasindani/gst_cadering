@@ -32,9 +32,47 @@ class CodeGenerator
         return self::generate('produits', 'code_article', 'PROD');
     }
 
+    public static function produitCode(string $nom): string
+    {
+        $year = date('Y');
+        $month = date('m');
+        $week = str_pad((int) now()->weekOfYear, 3, '0', STR_PAD_LEFT);
+        $slug = strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', trim($nom)));
+        $base = "{$slug}/{$week}/{$month}/{$year}";
+
+        if (!DB::table('produits')->where('code_article', $base)->exists()) {
+            return $base;
+        }
+
+        $suffix = 1;
+        while (DB::table('produits')->where('code_article', "{$base}/{$suffix}")->exists()) {
+            $suffix++;
+        }
+        return "{$base}/{$suffix}";
+    }
+
     public static function bonCommande(): string
     {
         return self::generate('bon_commande', 'numero_commande', 'BC');
+    }
+
+    public static function bonCommandeCode(string $fournisseurNom): string
+    {
+        $year = date('Y');
+        $month = date('m');
+        $week = str_pad((int) now()->weekOfYear, 3, '0', STR_PAD_LEFT);
+        $slug = strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', trim($fournisseurNom)));
+        $base = "{$slug}/{$week}/{$month}/{$year}";
+
+        if (!DB::table('bon_commande')->where('numero_commande', $base)->exists()) {
+            return $base;
+        }
+
+        $suffix = 1;
+        while (DB::table('bon_commande')->where('numero_commande', "{$base}/{$suffix}")->exists()) {
+            $suffix++;
+        }
+        return "{$base}/{$suffix}";
     }
 
     public static function lot(): string

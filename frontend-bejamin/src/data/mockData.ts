@@ -148,6 +148,7 @@ subItems: [
       { title: 'Rupture Stock', path: '/rapports/rupture-stock', permission: 'rapport:stock' },
       { title: 'Stock bas', path: '/rapports/stock-bas' },
       { title: 'Variations de prix', path: '/rapports/variations-prix', permission: 'rapport:stock' },
+      { title: 'Consommation Client', path: '/rapports/consommations', permission: 'rapport:client' },
     ]
   },
 ];

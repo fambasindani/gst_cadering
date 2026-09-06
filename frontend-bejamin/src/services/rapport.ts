@@ -1,4 +1,5 @@
 import { api } from './api';
+import { downloadCsv } from '../lib/exportCsv';
 import type {
   RapportResponse,
   BonCommandeRapport,
@@ -12,10 +13,12 @@ import type {
   FournisseurRapport,
   InventaireRapportData,
   ConsommationsClientsData,
+  ConsommationClientDetail,
   RuptureStockData,
   StockBasData,
 } from '../types/rapport';
 import type { VariationsPrixResponse } from '../types/dashboard';
+import type { MouvementStock } from '../types/validation';
 
 export const rapportService = {
   bonCommande: (params?: Record<string, string>) =>
@@ -23,6 +26,9 @@ export const rapportService = {
 
   bonLivraison: (params?: Record<string, string>) =>
     api.get<RapportResponse<BonLivraisonRapport>>('/rapports/bon-livraison', { params }),
+
+  bonLivraisonExport: (params?: Record<string, string>) =>
+    downloadCsv('/rapports/bon-livraison/export', params ?? {}, 'rapport-bon-livraison.csv'),
 
   rapportStock: (params?: Record<string, string>) =>
     api.get<RapportResponse<RapportStockData>>('/rapports/stock', { params }),
@@ -53,6 +59,9 @@ export const rapportService = {
   achatFull: (params?: Record<string, string>) =>
     api.get<RapportResponse<AchatFullData>>('/rapports/achat-full', { params }),
 
+  mouvementDetail: (id: number) =>
+    api.get<{ success: boolean; data: MouvementStock }>(`/rapports/mouvement/${id}`),
+
   rapportFournisseur: (params?: Record<string, string>) =>
     api.get<RapportResponse<FournisseurRapport[]>>('/rapports/fournisseur', { params }),
 
@@ -61,6 +70,9 @@ export const rapportService = {
 
   consommationsClients: (params?: Record<string, string>) =>
     api.get<RapportResponse<ConsommationsClientsData>>('/rapports/consommations-clients', { params }),
+
+  consommationClientDetail: (clientId: number, params?: Record<string, string>) =>
+    api.get<{ success: boolean; data: ConsommationClientDetail }>('/rapports/consommations-clients/' + clientId, { params }),
 
   ruptureStock: (params?: Record<string, string>) =>
     api.get<RapportResponse<RuptureStockData>>('/rapports/rupture-stock', { params }),

@@ -1,7 +1,7 @@
 export interface MouvementStock {
   id: number;
   id_lot: number;
-  lot?: { id: number; numero_lot: string; quantite_disponible: number; prix_achat_ht_unitaire?: number | null; date_peremption?: string | null; produit?: { id: number; nom: string; code_article: string } | null; magasin?: { id: number; nom: string } | null; partenaire?: { id: number; nom: string } | null } | null;
+  lot?: { id: number; numero_lot: string; quantite_disponible: number; prix_achat_ht_unitaire?: number | null; devise?: { id: number; code: string } | null; date_peremption?: string | null; produit?: { id: number; nom: string; code_article: string; unite?: { id: number; nom: string } | null } | null; magasin?: { id: number; nom: string } | null; partenaire?: { id: number; nom: string } | null } | null;
   id_type_mouvement: number;
   type_mouvement?: { id: number; libelle: string; sens: number } | null;
   id_partenaire: number | null;

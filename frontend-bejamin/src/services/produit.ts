@@ -26,6 +26,9 @@ export const produitService = {
   getStock: (id: number) =>
     api.get<StockResponse>(`/config/produits/${id}/stock`),
 
+  getDernierPrixCommande: (id: number) =>
+    api.get<{ success: boolean; data: { prix_commande: number; id_devise: number; date: string; origine: string } | null }>(`/config/produits/${id}/dernier-prix-commande`),
+
   getCategories: (params?: Record<string, string>) =>
     api.get<{ success: boolean; data: { data: { id: number; nom: string }[] } }>('/config/categories', { params }),
 

@@ -116,6 +116,7 @@ export interface ClientRapport {
 }
 
 export interface RapportClientLigne {
+  id: number;
   numero: number;
   id_client: number;
   client: string;
@@ -150,6 +151,7 @@ export interface SortieParProduit {
 }
 
 export interface RapportSortieLigne {
+  id: number;
   numero: number;
   date: string;
   article: string;
@@ -160,7 +162,10 @@ export interface RapportSortieLigne {
   quantite: number;
   valeur: number;
   local: string;
+  id_client?: number;
   client?: string;
+  id_departement?: number;
+  departement?: string;
   numero_lot: string;
   statut?: string;
 }
@@ -178,6 +183,7 @@ export interface RapportSortieData {
 }
 
 export interface RapportAchatLigne {
+  id: number;
   numero: number;
   date: string;
   fournisseur: string;
@@ -287,6 +293,23 @@ export interface ConsommationsClientsData {
     total_clients: number;
     total_commandes: number;
     total_produits: number;
+  };
+}
+
+export interface ConsommationClientDetail {
+  client: Partenaire;
+  mouvements: MouvementStock[];
+  details_produits: {
+    produit: { id: number; nom: string; code_article: string } | null;
+    quantite_totale: number;
+    valeur_totale: number;
+    nombre_sorties: number;
+  }[];
+  statistiques: {
+    total_sorties: number;
+    total_produits: number;
+    total_valeur: number;
+    moyenne_par_sortie: number;
   };
 }
 

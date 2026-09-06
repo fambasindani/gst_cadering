@@ -15,6 +15,7 @@ import type { RapportStockData } from '../../types/rapport';
 import { RefreshCw, Package, Download, Calendar, DollarSign } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { downloadCsv } from '../../lib/exportCsv';
+import { DataTablePagination } from '../../components/ui/DataTablePagination';
 
 function formatNumber(v: number): string {
   return (v ?? 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
@@ -47,6 +48,11 @@ export function RapportStock() {
 
   const lignes = data?.lignes ?? [];
   const stats = data?.statistiques;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const displayed = lignes.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const total = lignes.length;
+  const lastPage = Math.ceil(total / pageSize);
 
   const fetchData = async () => {
     setLoading(true);
@@ -275,7 +281,7 @@ export function RapportStock() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {lignes.map((l, i) => (
+                  {displayed.map((l, i) => (
                     <TableRow key={l.numero} className={cn('hover:bg-royal-50/50 transition-colors', i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50')}>
                       <TableCell className="text-sm font-medium text-gray-700">{l.numero}</TableCell>
                       <TableCell className="font-medium text-gray-900">{l.designation}</TableCell>
@@ -293,6 +299,7 @@ export function RapportStock() {
                   ))}
                 </TableBody>
               </Table>
+              <DataTablePagination currentPage={currentPage} lastPage={lastPage} pageSize={pageSize} total={total} onPageChange={setCurrentPage} onPageSizeChange={setPageSize} />
             </div>
           )}
         </CardContent>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Config;
 use App\Http\Controllers\Controller;
 use App\Models\Produit;
 use App\Models\HistoriquePrix;
+use App\Models\PrixCommande;
 use App\Models\Magasin;
 use App\Models\Devise;
 use Illuminate\Http\Request;
@@ -60,7 +61,7 @@ class ProduitController extends Controller
     {
         try {
             $validated = $request->validate([
-                'code_article' => 'nullable|string|max:50|unique:produits,code_article',
+                'code_article' => 'nullable|string|max:50|unique:produits,code_article|regex:/^[A-Z0-9 _-]+\/\d{1,3}\/\d{2}\/\d{4}(\/\d+)?$/i',
                 'code_barre' => 'nullable|string|max:50|unique:produits,code_barre',
                 'nom' => 'required|string|max:200',
                 'description' => 'nullable|string',
@@ -78,11 +79,13 @@ class ProduitController extends Controller
                 'seuils_magasin' => 'nullable|array',
                 'seuils_magasin.*.id_magasin' => 'required|exists:magasins,id',
                 'seuils_magasin.*.seuil_alerte' => 'required|integer|min:0',
+            ], [
+                'code_article.regex' => 'Le code doit respecter le format NOM/SEMAINE/MM/YYYY (ex: POMME/036/08/2026)',
             ]);
 
-            // Auto-générer le code article si non fourni
+            // Auto-générer le code article si non fourni : NOM/SEMAINE/MM/YYYY
             if (empty($validated['code_article'])) {
-                $validated['code_article'] = CodeGenerator::produit();
+                $validated['code_article'] = CodeGenerator::produitCode($validated['nom']);
             }
 
             // Créer le produit
@@ -106,6 +109,16 @@ class ProduitController extends Controller
                 'date_application' => $validated['date_application'] ?? now(),
                 'commentaire' => $validated['commentaire_prix'] ?? 'Prix initial',
                 'id_utilisateur' => Auth::id(),
+            ]);
+
+            // Prix initial dans prix_commande
+            PrixCommande::create([
+                'id_produit' => $produit->id,
+                'prix_commande' => $validated['prix_achat_ht'],
+                'id_devise' => $validated['id_devise'],
+                'date' => $validated['date_application'] ?? now(),
+                'origine' => 'initial',
+                'commentaire' => 'Prix initial à la création du produit',
             ]);
 
             // Seuils d'alerte spécifiques par magasin
@@ -176,7 +189,7 @@ class ProduitController extends Controller
             $produit = Produit::findOrFail($id);
 
             $validated = $request->validate([
-                'code_article' => "sometimes|required|string|max:50|unique:produits,code_article,{$id}",
+                'code_article' => "sometimes|required|string|max:50|unique:produits,code_article,{$id}|regex:/^[A-Z0-9 _-]+\/\d{1,3}\/\d{2}\/\d{4}(\/\d+)?$/i",
                 'code_barre' => "nullable|string|max:50|unique:produits,code_barre,{$id}",
                 'nom' => 'sometimes|required|string|max:200',
                 'description' => 'nullable|string',
@@ -189,6 +202,8 @@ class ProduitController extends Controller
                 'seuils_magasin' => 'nullable|array',
                 'seuils_magasin.*.id_magasin' => 'required|exists:magasins,id',
                 'seuils_magasin.*.seuil_alerte' => 'required|integer|min:0',
+            ], [
+                'code_article.regex' => 'Le code doit respecter le format NOM/SEMAINE/MM/YYYY (ex: POMME/036/08/2026)',
             ]);
 
             $produit->update($validated);
@@ -371,6 +386,32 @@ public function getStock($id)
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la modification du statut'
+            ], 500);
+        }
+    }
+
+    /**
+     * Dernier prix de commande d'un produit (table prix_commande)
+     */
+    public function dernierPrixCommande($id)
+    {
+        try {
+            $produit = Produit::findOrFail($id);
+            $dernier = PrixCommande::dernierPrix($id);
+
+            return response()->json([
+                'success' => true,
+                'data' => $dernier ? [
+                    'prix_commande' => (float) $dernier->prix_commande,
+                    'id_devise' => $dernier->id_devise,
+                    'date' => $dernier->date->format('Y-m-d'),
+                    'origine' => $dernier->origine,
+                ] : null,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la récupération du prix',
             ], 500);
         }
     }

@@ -8,7 +8,11 @@ use App\Models\LigneCommande;
 use App\Models\Lot;
 use App\Models\MouvementStock;
 use App\Models\Notification;
+use App\Models\Partenaire;
+use App\Models\PrixCommande;
 use App\Models\Utilisateur;
+use App\Jobs\EnvoyerAlerteReception;
+use App\Jobs\EnvoyerAlertePrixBonCommande;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
@@ -134,7 +138,7 @@ class BonCommandeController extends Controller
     {
         try {
             $validated = $request->validate([
-                'numero_commande' => 'nullable|string|max:50|unique:bon_commande,numero_commande',
+                'numero_commande' => 'nullable|string|max:50|unique:bon_commande,numero_commande|regex:/^[A-Z0-9 _-]+\/\d{1,3}\/\d{2}\/\d{4}(\/\d+)?$/i',
                 'id_partenaire' => 'required|exists:partenaires,id',
                 'id_magasin_destination' => 'required|exists:magasins,id',
                 'date_commande' => 'required|date',
@@ -146,14 +150,18 @@ class BonCommandeController extends Controller
                 'lignes.*.quantite_commandee' => 'required|integer|min:1',
                 'lignes.*.prix_unitaire_ht' => 'required|numeric|min:0',
                 'lignes.*.id_devise' => 'required|exists:devises,id',
+            ], [
+                'numero_commande.regex' => 'Le numéro doit respecter le format FOURNISSEUR/SEMAINE/MM/YYYY (ex: AIRFRANCE/036/08/2026)',
             ]);
 
             DB::beginTransaction();
 
             try {
-                // Auto-générer le numéro de commande si non fourni
+                // Auto-générer le numéro de commande si non fourni : FOURNISSEUR/SEMAINE/MM/YYYY
                 if (empty($validated['numero_commande'])) {
-                    $validated['numero_commande'] = CodeGenerator::bonCommande();
+                    $partenaire = Partenaire::find($validated['id_partenaire']);
+                    $nomFournisseur = $partenaire ? $partenaire->nom : 'BON';
+                    $validated['numero_commande'] = CodeGenerator::bonCommandeCode($nomFournisseur);
                 }
 
                 // Créer le bon de commande
@@ -187,6 +195,62 @@ class BonCommandeController extends Controller
                 // Mettre à jour le montant total
                 $bonCommande->update(['montant_total_ht' => $total]);
 
+                // Comparer prix de chaque ligne vs dernier prix_commande
+                $alertesPrix = [];
+                foreach ($validated['lignes'] as $ligne) {
+                    $dernierPrix = PrixCommande::dernierPrix($ligne['id_produit']);
+                    $prixBc = (float) $ligne['prix_unitaire_ht'];
+
+                    // Insérer le prix du bon de commande dans prix_commande
+                    PrixCommande::create([
+                        'id_produit' => $ligne['id_produit'],
+                        'prix_commande' => $prixBc,
+                        'id_devise' => $ligne['id_devise'],
+                        'date' => $validated['date_commande'],
+                        'origine' => 'bon_commande',
+                        'commentaire' => 'Bon de commande #' . $validated['numero_commande'],
+                    ]);
+
+                    if ($dernierPrix && abs((float) $dernierPrix->prix_commande - $prixBc) > 0.001) {
+                        $ecart = $prixBc - (float) $dernierPrix->prix_commande;
+                        $pct = $dernierPrix->prix_commande > 0
+                            ? round(($ecart / (float) $dernierPrix->prix_commande) * 100, 1)
+                            : 0;
+                        $signe = $ecart > 0 ? '+' : '';
+                        $produit = \App\Models\Produit::find($ligne['id_produit']);
+                        $alertesPrix[] = [
+                            'type' => 'prix',
+                            'produit' => $produit->nom ?? 'Produit #' . $ligne['id_produit'],
+                            'ancien' => number_format((float) $dernierPrix->prix_commande, 2) . ' $',
+                            'nouveau' => number_format($prixBc, 2) . ' $',
+                            'difference' => $signe . number_format($ecart, 2) . ' $ (' . $signe . $pct . '%)',
+                        ];
+                    }
+                }
+
+                // Envoyer notifications + email si alertes
+                if (!empty($alertesPrix)) {
+                    $partenaire = Partenaire::find($validated['id_partenaire']);
+                    $messageAlerte = count($alertesPrix) . ' prix différent(s) pour le bon #' . $validated['numero_commande'];
+                    $users = Utilisateur::actif()->get();
+                    foreach ($users as $user) {
+                        Notification::create([
+                            'type' => 'alerte_prix_commande',
+                            'message' => $messageAlerte,
+                            'id_utilisateur' => $user->id,
+                            'reference_type' => BonCommande::class,
+                            'reference_id' => $bonCommande->id,
+                        ]);
+                    }
+
+                    EnvoyerAlertePrixBonCommande::dispatch(
+                        $alertesPrix,
+                        $validated['numero_commande'],
+                        $partenaire->nom ?? 'N/A',
+                        $validated['date_commande']
+                    );
+                }
+
                 DB::commit();
 
                 // Créer/mettre à jour une notification pour tous les utilisateurs actifs ayant la permission
@@ -213,7 +277,10 @@ class BonCommandeController extends Controller
 
                 return response()->json([
                     'success' => true,
-                    'data' => $bonCommande->load(['partenaire', 'magasinDestination', 'devise', 'lignes.produit']),
+                    'data' => array_merge(
+                        $bonCommande->load(['partenaire', 'magasinDestination', 'devise', 'lignes.produit'])->toArray(),
+                        ['alertes_prix' => $alertesPrix]
+                    ),
                     'message' => 'Bon de commande créé avec succès'
                 ], 201);
 
@@ -384,21 +451,36 @@ class BonCommandeController extends Controller
         try {
             $bonCommande = BonCommande::findOrFail($id);
 
-            if ($bonCommande->statut_validation !== 'EN ATTENTE' && !Auth::user()->hasRole('ADMIN')) {
+            if ($bonCommande->statut !== 'BROUILLON') {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Seul un bon en attente de validation peut être supprimé'
+                    'message' => 'Seul un bon en brouillon peut être supprimé'
                 ], 403);
             }
 
-            // Supprimer les lignes
-            $bonCommande->lignes()->delete();
-            $bonCommande->delete();
+            DB::beginTransaction();
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Bon de commande supprimé avec succès'
-            ]);
+            try {
+                // Supprimer les prix_commande liés à ce bon (origine bon_commande + reception)
+                PrixCommande::where('commentaire', 'LIKE', '%' . $bonCommande->numero_commande . '%')
+                    ->whereIn('origine', ['bon_commande', 'reception'])
+                    ->delete();
+
+                // Supprimer les lignes et le bon
+                $bonCommande->lignes()->delete();
+                $bonCommande->delete();
+
+                DB::commit();
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Bon de commande supprimé avec succès'
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
 
         } catch (\Exception $e) {
             return response()->json([
@@ -687,6 +769,90 @@ class BonCommandeController extends Controller
                     $ligne->save();
                 }
 
+                // 3. Comparer prix/quantité et créer alertes + inserer nouveau prix
+                $alertes = [];
+                foreach ($validated['receptions'] ?? [] as $reception) {
+                    $ligne = LigneCommande::with('produit')->find($reception['id_ligne_commande']);
+                    if (!$ligne) continue;
+
+                    $prixRecu = (float) ($reception['prix_achat_ht_unitaire'] ?? $ligne->prix_unitaire_ht);
+                    $qteRecue = (int) $reception['quantite_recue'];
+                    $qteCommandee = (int) $ligne->quantite_commandee;
+
+                    // Comparer le prix de réception avec le dernier prix dans prix_commande
+                    $dernierPrixCmd = PrixCommande::dernierPrix($ligne->id_produit);
+                    if ($dernierPrixCmd && abs((float) $dernierPrixCmd->prix_commande - $prixRecu) > 0.001) {
+                        $ecart = $prixRecu - (float) $dernierPrixCmd->prix_commande;
+                        $pct = $dernierPrixCmd->prix_commande > 0
+                            ? round(($ecart / (float) $dernierPrixCmd->prix_commande) * 100, 1)
+                            : 0;
+                        $signe = $ecart > 0 ? '+' : '';
+                        $alertes[] = [
+                            'type' => 'prix',
+                            'produit' => $ligne->produit->nom ?? 'Produit #' . $ligne->id_produit,
+                            'ancien' => number_format((float) $dernierPrixCmd->prix_commande, 2) . ' $',
+                            'nouveau' => number_format($prixRecu, 2) . ' $',
+                            'difference' => $signe . number_format($ecart, 2) . ' $ (' . $signe . $pct . '%)',
+                        ];
+                    }
+
+                    // Comparer quantité reçue vs quantité commandée
+                    if ($qteRecue !== $qteCommandee) {
+                        $ecartQte = $qteRecue - $qteCommandee;
+                        $signeQte = $ecartQte > 0 ? '+' : '';
+                        $alertes[] = [
+                            'type' => 'quantite',
+                            'produit' => $ligne->produit->nom ?? 'Produit #' . $ligne->id_produit,
+                            'ancien' => $qteCommandee . ' unités',
+                            'nouveau' => $qteRecue . ' unités',
+                            'difference' => $signeQte . $ecartQte . ' unité(s)',
+                        ];
+                    }
+
+                    // Insérer le nouveau prix de réception dans prix_commande
+                    PrixCommande::create([
+                        'id_produit' => $ligne->id_produit,
+                        'prix_commande' => $prixRecu,
+                        'id_devise' => $ligne->id_devise,
+                        'date' => $reception['date_reception'] ?? now()->toDateString(),
+                        'origine' => 'reception',
+                        'commentaire' => 'Réception du bon #' . $bonCommande->numero_commande,
+                    ]);
+
+                    // Insérer aussi dans historique_prix (dernier prix visible sur la fiche produit)
+                    \App\Models\HistoriquePrix::create([
+                        'id_produit' => $ligne->id_produit,
+                        'prix_achat_ht' => $prixRecu,
+                        'id_devise' => $ligne->id_devise,
+                        'date_application' => $reception['date_reception'] ?? now()->toDateString(),
+                        'commentaire' => 'Réception du bon #' . $bonCommande->numero_commande,
+                        'id_utilisateur' => Auth::id(),
+                    ]);
+                }
+
+                // Envoyer notification + email si alertes
+                if (!empty($alertes)) {
+                    $users = Utilisateur::where('actif', true)->get();
+                    $messageAlerte = count($alertes) . ' alerte(s) pour la réception du bon #' . $bonCommande->numero_commande;
+                    foreach ($users as $user) {
+                        Notification::create([
+                            'type' => 'alerte_reception',
+                            'message' => $messageAlerte,
+                            'id_utilisateur' => $user->id,
+                            'reference_type' => BonCommande::class,
+                            'reference_id' => $bonCommande->id,
+                        ]);
+                    }
+
+                    // Dispatch job email (queue database — offline-safe)
+                    EnvoyerAlerteReception::dispatch(
+                        $alertes,
+                        $bonCommande->numero_commande,
+                        $bonCommande->partenaire->nom ?? 'N/A',
+                        now()->format('d/m/Y')
+                    );
+                }
+
                 // Mettre à jour le statut du bon : la réception passe en attente de validation
                 $bonCommande->refresh();
                 $bonCommande->statut = 'EN ATTENTE';
@@ -697,6 +863,7 @@ class BonCommandeController extends Controller
                 $data = $bonCommande->load(['partenaire', 'magasinDestination', 'lignes'])->toArray();
                 $data['reference_reception'] = $referenceReception;
                 $data['reception_complete'] = $bonCommande->isComplete();
+                $data['alertes'] = $alertes;
 
                 return response()->json([
                     'success' => true,
@@ -873,6 +1040,14 @@ class BonCommandeController extends Controller
 
                     if ($statut === 'VALIDÉ') {
                         $lot->enregistrerHistoriquePrix('Validation de la réception du bon de commande');
+                    }
+
+                    // Si rejeté, supprimer le prix_commande inséré lors de cette réception
+                    if ($statut === 'REJETÉ') {
+                        PrixCommande::where('id_produit', $lot->id_produit)
+                            ->where('origine', 'reception')
+                            ->where('commentaire', 'LIKE', '%Réception du bon #' . $bonCommande->numero_commande . '%')
+                            ->delete();
                     }
                 }
 

@@ -54,7 +54,18 @@ class RapportController extends Controller
 
             foreach ($bcs->get() as $bc) {
                 foreach ($bc->lignes as $ligne) {
-                    $montant = (float) $ligne->prix_unitaire_ht * (int) $ligne->quantite_commandee;
+                    // Prix de réception (mouvement_stock + lot) au lieu du prix de commande
+                    $mouvements = MouvementStock::where('reference_document', $bc->numero_commande)
+                        ->where('id_type_mouvement', 1)
+                        ->where('statut_validation', 'VALIDÉ')
+                        ->whereHas('lot', fn($q) => $q->where('id_produit', $ligne->id_produit))
+                        ->with('lot')
+                        ->get();
+                    if ($mouvements->isNotEmpty()) {
+                        $montant = $mouvements->sum(fn($m) => $m->quantite * (float) ($m->lot->prix_achat_ht_unitaire ?? $ligne->prix_unitaire_ht));
+                    } else {
+                        $montant = (float) $ligne->prix_unitaire_ht * (int) $ligne->quantite_commandee;
+                    }
                     $catId = $ligne->produit ? $ligne->produit->id_categorie : null;
                     if ($isFood($catId)) {
                         $achatsFood += $montant;
@@ -164,6 +175,7 @@ class RapportController extends Controller
             $dateFin = $request->input('date_fin');
             $magasinId = $request->input('magasin_id');
             $statut = $request->input('statut');
+            $fournisseur = $request->input('fournisseur');
 
             $query = BonCommande::with(['partenaire', 'magasinDestination', 'lignes.produit']);
 
@@ -179,14 +191,30 @@ class RapportController extends Controller
             if ($statut) {
                 $query->where('statut', $statut);
             }
+            if ($fournisseur) {
+                $query->whereHas('partenaire', function ($q) use ($fournisseur) {
+                    $q->where('nom', 'LIKE', "%{$fournisseur}%");
+                });
+            }
 
             $data = $query->orderBy('date_commande', 'desc')->get();
 
-            // Calcul des totaux
-            $totalCommande = $data->sum('montant_total_ht');
+            // Montant basé sur les prix de réception (mouvement_stock + lot)
+            $totalCommande = 0;
             $totalLignes = 0;
             foreach ($data as $bon) {
                 $totalLignes += $bon->lignes->count();
+                $mouvements = MouvementStock::where('reference_document', $bon->numero_commande)
+                    ->where('id_type_mouvement', 1)
+                    ->where('statut_validation', 'VALIDÉ')
+                    ->with('lot')
+                    ->get();
+                $montantRecu = 0;
+                foreach ($mouvements as $m) {
+                    $montantRecu += $m->quantite * (float) ($m->lot->prix_achat_ht_unitaire ?? 0);
+                }
+                $bon->montant_recu = $montantRecu;
+                $totalCommande += $montantRecu;
             }
 
             return response()->json([
@@ -212,6 +240,26 @@ class RapportController extends Controller
     }
 
     /**
+     * 1bis. Export CSV Bon de Commande
+     */
+    public function exportBonCommandeCsv(Request $request)
+    {
+        $payload = $this->bonCommande($request)->getData(true);
+        return $this->csvResponse('rapport-bon-commande', [
+            'N° commande', 'Date', 'Fournisseur', 'Magasin', 'Nb lignes', 'Montant HT',
+        ], array_map(static function ($b) {
+            return [
+                $b['numero_commande'],
+                $b['date_commande'] ? date('d/m/Y', strtotime($b['date_commande'])) : '-',
+                $b['partenaire']['nom'] ?? '-',
+                $b['magasin_destination']['nom'] ?? '-',
+                is_array($b['lignes']) ? count($b['lignes']) : 0,
+                $b['montant_total_ht'] ?? 0,
+            ];
+        }, $payload['data']['bons_commande'] ?? []));
+    }
+
+    /**
      * 2. Rapport Bon de Livraison
      */
     public function bonLivraison(Request $request)
@@ -220,6 +268,7 @@ class RapportController extends Controller
             $dateDebut = $request->input('date_debut');
             $dateFin = $request->input('date_fin');
             $magasinId = $request->input('magasin_id');
+            $fournisseur = $request->input('fournisseur');
 
             $query = BonCommande::with(['partenaire', 'magasinDestination', 'lignes.produit'])
                 ->whereIn('statut', ['REÇU', 'REÇU PARTIELLEMENT']);
@@ -232,6 +281,11 @@ class RapportController extends Controller
             }
             if ($magasinId) {
                 $query->where('id_magasin_destination', $magasinId);
+            }
+            if ($fournisseur) {
+                $query->whereHas('partenaire', function ($q) use ($fournisseur) {
+                    $q->where('nom', 'LIKE', "%{$fournisseur}%");
+                });
             }
 
             $data = $query->orderBy('date_commande', 'desc')->get();
@@ -694,7 +748,26 @@ class RapportController extends Controller
     }
 
     /**
-     * 5. Rapport Client
+     * 2bis. Export CSV Bon de Livraison
+     */
+    public function exportBonLivraisonCsv(Request $request)
+    {
+        $payload = $this->bonLivraison($request)->getData(true);
+        return $this->csvResponse('rapport-bon-livraison', [
+            'N° commande', 'Date', 'Fournisseur', 'Magasin', 'Qté reçue',
+        ], array_map(static function ($b) {
+            return [
+                $b['numero_commande'],
+                $b['date_commande'] ? date('d/m/Y', strtotime($b['date_commande'])) : '-',
+                $b['partenaire']['nom'] ?? '-',
+                $b['magasin_destination']['nom'] ?? '-',
+                is_array($b['lignes']) ? array_sum(array_map(fn($l) => (float)($l['quantite_recue'] ?? 0), $b['lignes'])) : 0,
+            ];
+        }, $payload['data']['bons_livraison'] ?? []));
+    }
+
+    /**
+     * 3. Rapport Client
      */
     public function rapportClient(Request $request)
     {
@@ -761,6 +834,7 @@ class RapportController extends Controller
                 }
 
                 $lignes[] = [
+                    'id' => $sortie->id,
                     'numero' => $numero,
                     'id_client' => $sortie->id_partenaire,
                     'client' => optional($sortie->partenaire)->nom,
@@ -825,6 +899,8 @@ class RapportController extends Controller
             $magasinId = $request->input('magasin_id');
             $localTerm = $request->input('local');
             $clientTerm = $request->input('client');
+            $clientId = $request->input('client_id');
+            $departementId = $request->input('departement_id');
 
             $query = MouvementStock::with([
                 'lot.produit.unite',
@@ -832,6 +908,7 @@ class RapportController extends Controller
                 'lot.devise',
                 'typeMouvement',
                 'partenaire',
+                'departement',
             ])
                 ->where('id_type_mouvement', 2) // Sortie consommation
                 ->whereIn('statut_validation', ['VALIDÉ', 'REJETÉ']);
@@ -842,7 +919,17 @@ class RapportController extends Controller
             if ($dateFin) {
                 $query->whereDate('date_mouvement', '<=', $dateFin);
             }
-
+            if ($clientId) {
+                $query->where('id_partenaire', $clientId);
+            } elseif ($clientTerm) {
+                $query->whereHas('partenaire', function($q) use ($clientTerm) {
+                    $q->where('nom', 'LIKE', "%{$clientTerm}%")
+                      ->orWhere('code_iata', 'LIKE', "%{$clientTerm}%");
+                });
+            }
+            if ($departementId) {
+                $query->where('id_departement', $departementId);
+            }
             if ($magasinId) {
                 $query->whereHas('lot', function($q) use ($magasinId) {
                     $q->where('id_magasin', $magasinId);
@@ -851,11 +938,6 @@ class RapportController extends Controller
                 $query->whereHas('lot.magasin', function($q) use ($localTerm) {
                     $q->where('nom', 'LIKE', "%{$localTerm}%")
                       ->orWhere('code', 'LIKE', "%{$localTerm}%");
-                });
-            } elseif ($clientTerm) {
-                $query->whereHas('partenaire', function($q) use ($clientTerm) {
-                    $q->where('nom', 'LIKE', "%{$clientTerm}%")
-                      ->orWhere('code_iata', 'LIKE', "%{$clientTerm}%");
                 });
             }
 
@@ -890,6 +972,7 @@ class RapportController extends Controller
                 }
 
                 $lignes[] = [
+                    'id' => $sortie->id,
                     'numero' => $numero,
                     'date' => $sortie->date_mouvement,
                     'article' => $produit->nom,
@@ -900,7 +983,10 @@ class RapportController extends Controller
                     'quantite' => (int) $sortie->quantite,
                     'valeur' => $valeur,
                     'local' => optional($sortie->lot->magasin)->nom,
+                    'id_client' => $sortie->id_partenaire,
                     'client' => optional($sortie->partenaire)->nom,
+                    'id_departement' => $sortie->id_departement,
+                    'departement' => optional($sortie->departement)->nom,
                     'numero_lot' => $sortie->lot->numero_lot,
                     'statut' => $sortie->statut_validation,
                 ];
@@ -1013,6 +1099,7 @@ class RapportController extends Controller
             $dateDebut = $request->input('date_debut');
             $dateFin = $request->input('date_fin');
             $fournisseurTerm = $request->input('fournisseur');
+            $fournisseurId = $request->input('fournisseur_id');
             $magasinId = $request->input('magasin_id');
 
             $query = MouvementStock::with([
@@ -1034,6 +1121,10 @@ class RapportController extends Controller
             if ($magasinId) {
                 $query->whereHas('lot', function($q) use ($magasinId) {
                     $q->where('id_magasin', $magasinId);
+                });
+            } elseif ($fournisseurId) {
+                $query->whereHas('lot.partenaire', function($q) use ($fournisseurId) {
+                    $q->where('id', $fournisseurId);
                 });
             } elseif ($fournisseurTerm) {
                 $query->whereHas('lot.partenaire', function($q) use ($fournisseurTerm) {
@@ -1080,6 +1171,7 @@ class RapportController extends Controller
                 }
 
                 $lignes[] = [
+                    'id' => $entree->id,
                     'numero' => $numero,
                     'date' => $entree->date_mouvement,
                     'fournisseur' => $fournisseur,
@@ -1119,6 +1211,36 @@ class RapportController extends Controller
                 'message' => 'Erreur lors de la génération du rapport',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function rapportMouvementDetail(Request $request, $id)
+    {
+        try {
+            $mouvement = \App\Models\MouvementStock::with([
+                'lot.produit.unite',
+                'lot.magasin',
+                'lot.partenaire',
+                'lot.devise',
+                'typeMouvement',
+                'partenaire',
+                'magasin',
+                'departement',
+                'utilisateur',
+                'validePar',
+            ])->findOrFail($id);
+
+            return response()->json([
+                'success' => true,
+                'data' => $mouvement,
+                'message' => 'Détail du mouvement récupéré avec succès'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mouvement non trouvé'
+            ], 404);
         }
     }
 
@@ -1181,10 +1303,22 @@ class RapportController extends Controller
             $data = [];
             foreach ($fournisseurs as $fournisseur) {
                 $totalCommandes = $fournisseur->bonCommandes->count();
-                $totalMontant = $fournisseur->bonCommandes->sum('montant_total_ht');
                 $totalProduits = $fournisseur->bonCommandes->sum(function($bon) {
                     return $bon->lignes->sum('quantite_recue');
                 });
+
+                // Montant basé sur les prix de réception (mouvement_stock + lot)
+                $totalMontant = 0;
+                foreach ($fournisseur->bonCommandes as $bon) {
+                    $mouvements = MouvementStock::where('reference_document', $bon->numero_commande)
+                        ->where('id_type_mouvement', 1)
+                        ->where('statut_validation', 'VALIDÉ')
+                        ->with('lot')
+                        ->get();
+                    foreach ($mouvements as $m) {
+                        $totalMontant += $m->quantite * (float) ($m->lot->prix_achat_ht_unitaire ?? 0);
+                    }
+                }
 
                 $data[] = [
                     'fournisseur' => $fournisseur,
@@ -1210,6 +1344,20 @@ class RapportController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function exportFournisseurCsv(Request $request)
+    {
+        $payload = $this->rapportFournisseur($request)->getData(true);
+        return $this->csvResponse('rapport-fournisseurs', [
+            'Fournisseur', 'N° commandes', 'Montant total', 'Produits', 'Moyenne/commande',
+        ], array_map(static fn ($f) => [
+            $f['fournisseur']['nom'],
+            $f['statistiques']['total_commandes'],
+            $f['statistiques']['total_montant'],
+            $f['statistiques']['total_produits'],
+            $f['statistiques']['moyenne_par_commande'],
+        ], $payload['data'] ?? []));
     }
 
     /**
@@ -1416,50 +1564,55 @@ class RapportController extends Controller
     {
         try {
             $clientId = $request->input('client_id');
-            $dateDebut = $request->input('date_debut', now()->startOfMonth());
-            $dateFin = $request->input('date_fin', now());
+            $dateDebut = $request->input('date_debut');
+            $dateFin = $request->input('date_fin');
 
-            // Récupérer les clients aériens
-            $query = Partenaire::with([
-                'bonCommandes' => function($q) use ($dateDebut, $dateFin) {
-                    $q->where('statut', 'REÇU')
-                      ->whereBetween('date_commande', [$dateDebut, $dateFin])
-                      ->with('lignes.produit');
-                }
-            ])->where('type_client', 'aerien');
-
+            // Récupérer tous les clients (aériens et non aériens)
+            $clientsQuery = Partenaire::whereIn('type_client', ['aerien', 'non_aerien']);
             if ($clientId) {
-                $query->where('id', $clientId);
+                $clientsQuery->where('id', $clientId);
             }
-
-            $clients = $query->get();
+            $clients = $clientsQuery->get();
 
             $consommations = [];
             foreach ($clients as $client) {
-                $totalCommandes = $client->bonCommandes->count();
+                // Sorties de stock validées pour ce client (type 2 = sortie)
+                $mouvementsQuery = MouvementStock::with(['lot.produit.unite', 'typeMouvement'])
+                    ->where('id_partenaire', $client->id)
+                    ->where('id_type_mouvement', 2)
+                    ->where('statut_validation', 'VALIDÉ');
+
+                if ($dateDebut && $dateFin) {
+                    $mouvementsQuery->whereBetween('date_mouvement', [$dateDebut, $dateFin]);
+                }
+
+                $mouvements = $mouvementsQuery->get();
+
+                $totalSorties = $mouvements->count();
                 $totalProduits = 0;
                 $detailsParProduit = [];
 
-                foreach ($client->bonCommandes as $bon) {
-                    foreach ($bon->lignes as $ligne) {
-                        $totalProduits += $ligne->quantite_recue;
-                        $key = $ligne->id_produit;
+                foreach ($mouvements as $mouvement) {
+                    $totalProduits += abs($mouvement->quantite);
+                    $produit = $mouvement->lot->produit ?? null;
+                    if ($produit) {
+                        $key = $produit->id;
                         if (!isset($detailsParProduit[$key])) {
                             $detailsParProduit[$key] = [
-                                'produit' => $ligne->produit,
+                                'produit' => $produit,
                                 'quantite_totale' => 0,
                             ];
                         }
-                        $detailsParProduit[$key]['quantite_totale'] += $ligne->quantite_recue;
+                        $detailsParProduit[$key]['quantite_totale'] += abs($mouvement->quantite);
                     }
                 }
 
-                if ($totalCommandes > 0) {
+                if ($totalSorties > 0) {
                     $consommations[] = [
                         'client' => $client,
-                        'total_commandes' => $totalCommandes,
+                        'total_commandes' => $totalSorties,
                         'total_produits' => $totalProduits,
-                        'moyenne_par_commande' => $totalProduits / $totalCommandes,
+                        'moyenne_par_commande' => round($totalProduits / $totalSorties, 2),
                         'details_produits' => array_values($detailsParProduit),
                     ];
                 }
@@ -1485,6 +1638,91 @@ class RapportController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function consommationClientDetail(Request $request, $clientId)
+    {
+        try {
+            $dateDebut = $request->input('date_debut');
+            $dateFin = $request->input('date_fin');
+
+            $client = Partenaire::findOrFail($clientId);
+
+            $mouvementsQuery = MouvementStock::with(['lot.produit.unite', 'lot.magasin', 'typeMouvement', 'partenaire'])
+                ->where('id_partenaire', $clientId)
+                ->where('id_type_mouvement', 2)
+                ->where('statut_validation', 'VALIDÉ');
+
+            if ($dateDebut && $dateFin) {
+                $mouvementsQuery->whereBetween('date_mouvement', [$dateDebut, $dateFin]);
+            }
+
+            $mouvements = $mouvementsQuery->orderByDesc('date_mouvement')->get();
+
+            $totalProduits = 0;
+            $totalValeur = 0;
+            $detailsParProduit = [];
+
+            foreach ($mouvements as $mouvement) {
+                $qty = abs($mouvement->quantite);
+                $prix = $mouvement->lot->prix_achat_ht_unitaire ?? 0;
+                $valeur = $qty * $prix;
+                $totalProduits += $qty;
+                $totalValeur += $valeur;
+
+                $produit = $mouvement->lot->produit ?? null;
+                $produitId = $produit?->id ?? 0;
+                if (!isset($detailsParProduit[$produitId])) {
+                    $detailsParProduit[$produitId] = [
+                        'produit' => $produit,
+                        'quantite_totale' => 0,
+                        'valeur_totale' => 0,
+                        'nombre_sorties' => 0,
+                    ];
+                }
+                $detailsParProduit[$produitId]['quantite_totale'] += $qty;
+                $detailsParProduit[$produitId]['valeur_totale'] += $valeur;
+                $detailsParProduit[$produitId]['nombre_sorties']++;
+            }
+
+            usort($detailsParProduit, fn($a, $b) => $b['valeur_totale'] <=> $a['valeur_totale']);
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'client' => $client,
+                    'mouvements' => $mouvements,
+                    'details_produits' => array_values($detailsParProduit),
+                    'statistiques' => [
+                        'total_sorties' => $mouvements->count(),
+                        'total_produits' => $totalProduits,
+                        'total_valeur' => $totalValeur,
+                        'moyenne_par_sortie' => $mouvements->count() > 0 ? round($totalProduits / $mouvements->count(), 2) : 0,
+                    ]
+                ],
+                'message' => 'Détail consommation client récupéré avec succès'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la récupération du détail',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function exportConsommationsClientsCsv(Request $request)
+    {
+        $payload = $this->consommationsClients($request)->getData(true);
+        return $this->csvResponse('consommations-clients', [
+            'Client', 'N° commandes', 'Produits', 'Moyenne/commande',
+        ], array_map(static fn ($c) => [
+            $c['client']['nom'],
+            $c['total_commandes'],
+            $c['total_produits'],
+            $c['moyenne_par_commande'],
+        ], $payload['data']['consommations'] ?? []));
     }
 
     /**
@@ -1652,7 +1890,6 @@ class RapportController extends Controller
             }
 
             $derniersPrix = $query
-                ->orderBy('historique_prix.date_application', 'desc')
                 ->orderBy('historique_prix.id', 'desc')
                 ->get(['historique_prix.id_produit', 'historique_prix.prix_achat_ht', 'historique_prix.date_application', 'produits.nom']);
 
@@ -1660,17 +1897,15 @@ class RapportController extends Controller
                 ->groupBy('id_produit')
                 ->map(function ($entrees) {
                     $entrees = $entrees->values();
-                    $nouveau = $entrees->first();
-                    $ancien = $entrees->get(1);
-                    if (!$ancien) {
+                    if ($entrees->count() < 2) {
                         return null;
                     }
+
+                    $nouveau = $entrees->first();
+                    $ancien = $entrees->get(1);
                     $ancienPrix = (float) $ancien->prix_achat_ht;
                     $nouveauPrix = (float) $nouveau->prix_achat_ht;
                     $variation = $nouveauPrix - $ancienPrix;
-                    if (abs($variation) < 0.0001) {
-                        return null;
-                    }
                     return [
                         'id' => (int) $nouveau->id_produit,
                         'nom' => $nouveau->nom,
@@ -1678,7 +1913,7 @@ class RapportController extends Controller
                         'nouveau_prix' => $nouveauPrix,
                         'variation' => round($variation, 2),
                         'pourcentage' => $ancienPrix != 0 ? round(($variation / $ancienPrix) * 100, 1) : 0,
-                        'type' => $variation > 0 ? 'hausse' : 'baisse',
+                        'type' => $variation > 0.0001 ? 'hausse' : ($variation < -0.0001 ? 'baisse' : 'stable'),
                         'date' => Carbon::parse($nouveau->date_application)->format('d/m/Y'),
                     ];
                 })
@@ -1694,6 +1929,7 @@ class RapportController extends Controller
                         'total' => $variations->count(),
                         'hausses' => $variations->where('type', 'hausse')->count(),
                         'baisses' => $variations->where('type', 'baisse')->count(),
+                        'stables' => $variations->where('type', 'stable')->count(),
                     ]
                 ],
                 'message' => 'Variations de prix récupérées avec succès'

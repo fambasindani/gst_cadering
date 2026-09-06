@@ -178,6 +178,7 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
         Route::delete('produits/{id}', [ProduitController::class, 'destroy'])->middleware('permission:config:produits:delete');
         Route::patch('produits/{id}/toggle', [ProduitController::class, 'toggleActif'])->middleware('permission:config:produits:update');
         Route::get('produits/{id}/stock', [ProduitController::class, 'getStock'])->middleware('permission:config:produits:view');
+        Route::get('produits/{id}/dernier-prix-commande', [ProduitController::class, 'dernierPrixCommande'])->middleware('permission:config:produits:view');
 
         // ---------- Historique Prix ----------
         Route::get('historique-prix', [HistoriquePrixController::class, 'index'])->middleware('permission:config:historique_prix:view');
@@ -381,7 +382,9 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
     // ============================================================
     Route::prefix('rapports')->group(function () {
         Route::get('bon-commande', [RapportController::class, 'bonCommande'])->middleware('permission:rapport:commande');
+        Route::get('bon-commande/export', [RapportController::class, 'exportBonCommandeCsv'])->middleware('permission:rapport:commande');
         Route::get('bon-livraison', [RapportController::class, 'bonLivraison'])->middleware('permission:rapport:commande');
+        Route::get('bon-livraison/export', [RapportController::class, 'exportBonLivraisonCsv'])->middleware('permission:rapport:commande');
         Route::get('stock', [RapportController::class, 'rapportStock'])->middleware('permission:rapport:stock');
         Route::get('stock/export', [RapportController::class, 'exportStockCsv'])->middleware('permission:rapport:stock');
         Route::get('stock-logique-physique', [RapportController::class, 'rapportStockPhysiqueLogique'])->middleware('permission:rapport:stock');
@@ -394,11 +397,15 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
         Route::get('sortie-full', [RapportController::class, 'rapportSortieFull'])->middleware('permission:rapport:stock');
         Route::get('achat-full', [RapportController::class, 'rapportAchatFull'])->middleware('permission:rapport:stock');
         Route::get('achat-full/export', [RapportController::class, 'exportAchatCsv'])->middleware('permission:rapport:stock');
+        Route::get('mouvement/{id}', [RapportController::class, 'rapportMouvementDetail'])->middleware('permission:rapport:stock');
         Route::get('fournisseur', [RapportController::class, 'rapportFournisseur'])->middleware('permission:rapport:stock');
+        Route::get('fournisseur/export', [RapportController::class, 'exportFournisseurCsv'])->middleware('permission:rapport:stock');
         Route::get('mouvement-produit', [RapportController::class, 'mouvementProduit'])->middleware('permission:rapport:stock');
         Route::get('inventaire-theorique', [RapportController::class, 'inventaireTheorique'])->middleware('permission:rapport:inventaire');
         Route::get('inventaire-valorisee', [RapportController::class, 'inventaireTheoriqueValorisee'])->middleware('permission:rapport:inventaire');
         Route::get('consommations-clients', [RapportController::class, 'consommationsClients'])->middleware('permission:rapport:client');
+        Route::get('consommations-clients/{clientId}', [RapportController::class, 'consommationClientDetail'])->middleware('permission:rapport:client');
+        Route::get('consommations-clients/export', [RapportController::class, 'exportConsommationsClientsCsv'])->middleware('permission:rapport:client');
         Route::get('rupture-stock', [RapportController::class, 'ruptureStock'])->middleware('permission:rapport:stock');
         // Stock bas visible par tout utilisateur authentifié (pas de permission requise)
         Route::get('stock-bas', [RapportController::class, 'stockBas']);

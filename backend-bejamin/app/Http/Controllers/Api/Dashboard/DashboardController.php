@@ -235,7 +235,6 @@ class DashboardController extends Controller
                 ->whereNull('historique_prix.deleted_at')
                 ->whereNotNull('historique_prix.prix_achat_ht')
                 ->where('historique_prix.date_application', '<=', $dateFin)
-                ->orderBy('historique_prix.date_application', 'desc')
                 ->orderBy('historique_prix.id', 'desc')
                 ->get(['historique_prix.id_produit', 'historique_prix.prix_achat_ht', 'historique_prix.date_application', 'produits.nom']);
 
@@ -243,17 +242,15 @@ class DashboardController extends Controller
                 ->groupBy('id_produit')
                 ->map(function ($entrees) {
                     $entrees = $entrees->values();
-                    $nouveau = $entrees->first();
-                    $ancien = $entrees->get(1);
-                    if (!$ancien) {
+                    if ($entrees->count() < 2) {
                         return null;
                     }
+
+                    $nouveau = $entrees->first();
+                    $ancien = $entrees->get(1);
                     $ancienPrix = (float) $ancien->prix_achat_ht;
                     $nouveauPrix = (float) $nouveau->prix_achat_ht;
                     $variation = $nouveauPrix - $ancienPrix;
-                    if (abs($variation) < 0.0001) {
-                        return null;
-                    }
                     return [
                         'id' => (int) $nouveau->id_produit,
                         'nom' => $nouveau->nom,
@@ -261,7 +258,7 @@ class DashboardController extends Controller
                         'nouveau_prix' => $nouveauPrix,
                         'variation' => round($variation, 2),
                         'pourcentage' => $ancienPrix != 0 ? round(($variation / $ancienPrix) * 100, 1) : 0,
-                        'type' => $variation > 0 ? 'hausse' : 'baisse',
+                        'type' => $variation > 0.0001 ? 'hausse' : ($variation < -0.0001 ? 'baisse' : 'stable'),
                         'date' => Carbon::parse($nouveau->date_application)->format('d/m/Y'),
                         'date_application' => $nouveau->date_application,
                     ];

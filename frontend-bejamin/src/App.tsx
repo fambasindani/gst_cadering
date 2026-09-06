@@ -71,15 +71,21 @@ import { FicheTechniqueMenuDetails } from './pages/FicheTechniqueMenuDetails';
 import { RapportFicheTechnique } from './pages/RapportFicheTechnique';
 import { RapportFicheTechniqueDetails } from './pages/RapportFicheTechniqueDetails';
 import { BonCommandeRapport } from './pages/rapports/BonCommandeRapport';
+import { BonCommandeRapportDetails } from './pages/rapports/BonCommandeRapportDetails';
 import { BonLivraisonRapport } from './pages/rapports/BonLivraisonRapport';
+import { BonLivraisonRapportDetails } from './pages/rapports/BonLivraisonRapportDetails';
 import { RapportStock } from './pages/rapports/RapportStock';
 import { VariationStock } from './pages/rapports/VariationStock';
 import { RapportClient } from './pages/rapports/RapportClient';
+import { RapportClientDetails } from './pages/rapports/RapportClientDetails';
 import { RapportSortie } from './pages/rapports/RapportSortie';
+import { RapportSortieDetails } from './pages/rapports/RapportSortieDetails';
 import { RapportAchat } from './pages/rapports/RapportAchat';
+import { RapportAchatDetails } from './pages/rapports/RapportAchatDetails';
 import { RapportFournisseur } from './pages/rapports/RapportFournisseur';
 import { InventaireTheorique } from './pages/rapports/InventaireTheorique';
 import { ConsommationsClients } from './pages/rapports/ConsommationsClients';
+import { ConsommationClientDetails } from './pages/rapports/ConsommationClientDetails';
 import { RuptureStock } from './pages/rapports/RuptureStock';
 import { StockBas } from './pages/rapports/StockBas';
 import { VariationsPrix } from './pages/rapports/VariationsPrix';
@@ -181,15 +187,21 @@ function App() {
           <Route path="recettes/rapport-ft" element={<RapportFicheTechnique />} />
           <Route path="recettes/rapport-ft/:id" element={<RapportFicheTechniqueDetails />} />
           <Route path="rapports/bon-commande" element={<BonCommandeRapport />} />
+          <Route path="rapports/bon-commande/:id" element={<BonCommandeRapportDetails />} />
           <Route path="rapports/bon-livraison" element={<BonLivraisonRapport />} />
+          <Route path="rapports/bon-livraison/:id" element={<BonLivraisonRapportDetails />} />
           <Route path="rapports/stock" element={<RapportStock />} />
           <Route path="rapports/variation-stock" element={<VariationStock />} />
           <Route path="rapports/client" element={<RapportClient />} />
+          <Route path="rapports/client/:id" element={<RapportClientDetails />} />
           <Route path="rapports/sortie" element={<RapportSortie />} />
-          <Route path="rapports/achat" element={<RapportAchat />} />
+          <Route path="rapports/sortie/:id" element={<RapportSortieDetails />} />
+           <Route path="rapports/achat" element={<RapportAchat />} />
+           <Route path="rapports/achat/:id" element={<RapportAchatDetails />} />
           <Route path="rapports/fournisseur" element={<RapportFournisseur />} />
           <Route path="rapports/inventaire-theorique" element={<InventaireTheorique />} />
           <Route path="rapports/consommations" element={<ConsommationsClients />} />
+          <Route path="rapports/consommations/:id" element={<ConsommationClientDetails />} />
           <Route path="rapports/rupture-stock" element={<RuptureStock />} />
           <Route path="rapports/stock-bas" element={<StockBas />} />
           <Route path="rapports/variations-prix" element={<VariationsPrix />} />

@@ -202,9 +202,10 @@ public function show($id)
 {
     try {
         $mouvement = MouvementStock::with([
-            'lot.produit',
+            'lot.produit.unite',
             'lot.magasin',
             'lot.partenaire',
+            'lot.devise',
             'typeMouvement',
             'partenaire',
             'magasin',

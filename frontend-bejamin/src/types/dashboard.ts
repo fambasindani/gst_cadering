@@ -40,7 +40,7 @@ export interface VariationPrix {
   nouveau_prix: number;
   variation: number;
   pourcentage: number;
-  type: 'hausse' | 'baisse';
+  type: 'hausse' | 'baisse' | 'stable';
   date: string;
 }
 
@@ -52,6 +52,7 @@ export interface VariationsPrixResponse {
       total: number;
       hausses: number;
       baisses: number;
+      stables: number;
     };
   };
   message: string;

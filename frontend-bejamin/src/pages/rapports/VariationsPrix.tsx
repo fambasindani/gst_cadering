@@ -8,9 +8,10 @@ import { RapportTablePDF } from '../../components/pdf/RapportTablePDF';
 import type { Column } from '../../components/pdf/RapportTablePDF';
 import { rapportService } from '../../services/rapport';
 import type { VariationPrix } from '../../types/dashboard';
-import { RefreshCw, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Calendar, Download } from 'lucide-react';
+import { RefreshCw, TrendingUp, TrendingDown, ArrowUpRight, ArrowDownRight, Minus, Calendar, Download } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { formatCurrency } from '../../lib/format';
+import { DataTablePagination } from '../../components/ui/DataTablePagination';
 
 function formatDateFr(iso: string): string {
   if (!iso) return '';
@@ -21,11 +22,13 @@ function formatDateFr(iso: string): string {
 export function VariationsPrix() {
   const navigate = useNavigate();
   const [data, setData] = useState<VariationPrix[]>([]);
-  const [stats, setStats] = useState<{ total: number; hausses: number; baisses: number }>({ total: 0, hausses: 0, baisses: 0 });
+  const [stats, setStats] = useState<{ total: number; hausses: number; baisses: number; stables: number }>({ total: 0, hausses: 0, baisses: 0, stables: 0 });
   const [loading, setLoading] = useState(true);
   const [dateDebut, setDateDebut] = useState('');
   const [dateFin, setDateFin] = useState('');
   const [search, setSearch] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -50,6 +53,9 @@ export function VariationsPrix() {
   const filtered = search.trim()
     ? data.filter((v) => v.nom.toLowerCase().includes(search.toLowerCase()))
     : data;
+  const displayed = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const total = filtered.length;
+  const lastPage = Math.ceil(total / pageSize);
 
   const pdfColumns: Column[] = [
     { key: 'produit', label: 'Produit', width: '16%', render: (r) => r.produit },
@@ -65,9 +71,9 @@ export function VariationsPrix() {
     produit: v.nom,
     ancien: formatCurrency(v.ancien_prix, '$'),
     nouveau: formatCurrency(v.nouveau_prix, '$'),
-    variation: `${v.type === 'hausse' ? '+' : ''}${formatCurrency(v.variation, '$')}`,
-    pourcentage: `${v.type === 'hausse' ? '+' : ''}${v.pourcentage} %`,
-    type: v.type === 'hausse' ? 'Hausse' : 'Baisse',
+    variation: v.type === 'stable' ? formatCurrency(v.variation, '$') : `${v.type === 'hausse' ? '+' : ''}${formatCurrency(v.variation, '$')}`,
+    pourcentage: v.type === 'stable' ? `${v.pourcentage} %` : `${v.type === 'hausse' ? '+' : ''}${v.pourcentage} %`,
+    type: v.type === 'hausse' ? 'Hausse' : v.type === 'baisse' ? 'Baisse' : 'Stable',
     date: v.date || '-',
   }));
 
@@ -92,6 +98,7 @@ export function VariationsPrix() {
                     { label: 'Total variations', value: String(stats.total) },
                     { label: 'Hausses', value: String(stats.hausses) },
                     { label: 'Baisses', value: String(stats.baisses) },
+                    { label: 'Stables', value: String(stats.stables) },
                   ]}
                 />
               }
@@ -112,12 +119,12 @@ export function VariationsPrix() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <Card className="border-0 shadow-sm">
           <CardContent className="p-5 flex items-center gap-3">
             <span className="p-2.5 rounded-lg bg-blue-50"><TrendingUp className="w-5 h-5 text-blue-600" /></span>
             <div>
-              <p className="text-xs text-gray-500 font-medium">Total variations</p>
+              <p className="text-xs text-gray-500 font-medium">Total</p>
               <p className="text-xl font-bold text-gray-900">{stats.total}</p>
             </div>
           </CardContent>
@@ -137,6 +144,15 @@ export function VariationsPrix() {
             <div>
               <p className="text-xs text-gray-500 font-medium">Baisses</p>
               <p className="text-xl font-bold text-red-700">{stats.baisses}</p>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-5 flex items-center gap-3">
+            <span className="p-2.5 rounded-lg bg-gray-100"><Minus className="w-5 h-5 text-gray-600" /></span>
+            <div>
+              <p className="text-xs text-gray-500 font-medium">Stables</p>
+              <p className="text-xl font-bold text-gray-600">{stats.stables}</p>
             </div>
           </CardContent>
         </Card>
@@ -208,7 +224,7 @@ export function VariationsPrix() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((v, i) => (
+                  {displayed.map((v, i) => (
                     <tr
                       key={v.id}
                       onClick={() => navigate(`/produits/${v.id}`)}
@@ -217,19 +233,19 @@ export function VariationsPrix() {
                       <td className="px-4 py-3 font-medium text-gray-900">{v.nom}</td>
                       <td className="px-4 py-3 text-right font-mono text-gray-600">{formatCurrency(v.ancien_prix, '$')}</td>
                       <td className="px-4 py-3 text-right font-mono font-medium text-gray-900">{formatCurrency(v.nouveau_prix, '$')}</td>
-                      <td className={cn('px-4 py-3 text-right font-mono font-semibold', v.type === 'hausse' ? 'text-emerald-700' : 'text-red-700')}>
+                      <td className={cn('px-4 py-3 text-right font-mono font-semibold', v.type === 'hausse' ? 'text-emerald-700' : v.type === 'baisse' ? 'text-red-700' : 'text-gray-500')}>
                         {v.type === 'hausse' ? '+' : ''}{formatCurrency(v.variation, '$')}
                       </td>
-                      <td className={cn('px-4 py-3 text-right font-mono font-semibold', v.type === 'hausse' ? 'text-emerald-700' : 'text-red-700')}>
+                      <td className={cn('px-4 py-3 text-right font-mono font-semibold', v.type === 'hausse' ? 'text-emerald-700' : v.type === 'baisse' ? 'text-red-700' : 'text-gray-500')}>
                         {v.type === 'hausse' ? '+' : ''}{v.pourcentage} %
                       </td>
                       <td className="px-4 py-3 text-center">
                         <span className={cn(
                           'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium',
-                          v.type === 'hausse' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700',
+                          v.type === 'hausse' ? 'bg-emerald-100 text-emerald-700' : v.type === 'baisse' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-600',
                         )}>
-                          {v.type === 'hausse' ? <ArrowUpRight className="w-3 h-3" /> : <ArrowDownRight className="w-3 h-3" />}
-                          {v.type === 'hausse' ? 'Hausse' : 'Baisse'}
+                          {v.type === 'hausse' ? <ArrowUpRight className="w-3 h-3" /> : v.type === 'baisse' ? <ArrowDownRight className="w-3 h-3" /> : <Minus className="w-3 h-3" />}
+                          {v.type === 'hausse' ? 'Hausse' : v.type === 'baisse' ? 'Baisse' : 'Stable'}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-center text-sm text-gray-600">{v.date || formatDateFr('')}</td>
@@ -237,6 +253,7 @@ export function VariationsPrix() {
                   ))}
                 </tbody>
               </table>
+              <DataTablePagination currentPage={currentPage} lastPage={lastPage} pageSize={pageSize} total={total} onPageChange={setCurrentPage} onPageSizeChange={setPageSize} />
             </div>
           )}
         </CardContent>

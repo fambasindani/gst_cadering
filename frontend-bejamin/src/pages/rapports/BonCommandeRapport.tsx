@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -7,20 +8,26 @@ import { Button } from '../../components/ui/button';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { RapportTablePDF } from '../../components/pdf/RapportTablePDF';
 import type { Column } from '../../components/pdf/RapportTablePDF';
+import { SearchableSelect } from '../../components/ui/SearchableSelect';
 import { rapportService } from '../../services/rapport';
+import { partenaireService } from '../../services/partenaire';
 import { tauxConversionService } from '../../services/taux-conversion';
 import { DeviseSelect } from '../../components/ui/DeviseSelect';
+import { downloadCsv } from '../../lib/exportCsv';
 import type { BonCommandeRapport } from '../../types/rapport';
-import { RefreshCw, FileText, ShoppingCart, Download } from 'lucide-react';
+import { RefreshCw, FileText, ShoppingCart, Download, Eye } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { formatCurrency } from '../../lib/format';
 import { DataTablePagination } from '../../components/ui/DataTablePagination';
 
 export function BonCommandeRapport() {
+  const navigate = useNavigate();
   const [data, setData] = useState<BonCommandeRapport | null>(null);
   const [loading, setLoading] = useState(true);
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [fournisseurId, setFournisseurId] = useState('');
+  const [fournisseurs, setFournisseurs] = useState<{ id: number; nom: string }[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [tauxCdf, setTauxCdf] = useState<number | null>(null);
@@ -33,12 +40,16 @@ export function BonCommandeRapport() {
   const displayed = bons.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const handlePageSizeChange = (size: number) => { setPageSize(size); setCurrentPage(1); };
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const params: Record<string, string> = {};
       if (dateFrom) params.date_debut = dateFrom;
       if (dateTo) params.date_fin = dateTo;
+      if (fournisseurId) {
+        const f = fournisseurs.find(x => String(x.id) === fournisseurId);
+        if (f) params.fournisseur = f.nom;
+      }
       const res = await rapportService.bonCommande(params);
       if (res.success) {
         setData(res.data);
@@ -48,15 +59,32 @@ export function BonCommandeRapport() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [dateFrom, dateTo, fournisseurId, fournisseurs]);
 
-  useEffect(() => { fetchData(); }, [dateFrom, dateTo]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   useEffect(() => {
     tauxConversionService.getActuel()
       .then((tres) => { if (tres.success && tres.data) setTauxCdf(tres.data.taux); })
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    partenaireService.getFournisseurs()
+      .then((res) => { if (res.success && res.data?.data) setFournisseurs(res.data.data); })
+      .catch(() => {});
+  }, []);
+
+  const handleExportCsv = () => {
+    const params: Record<string, string> = {};
+    if (dateFrom) params.date_debut = dateFrom;
+    if (dateTo) params.date_fin = dateTo;
+    if (fournisseurId) {
+      const f = fournisseurs.find(x => String(x.id) === fournisseurId);
+      if (f) params.fournisseur = f.nom;
+    }
+    downloadCsv('/rapports/bon-commande/export', params, 'rapport-bon-commande.csv').catch(() => {});
+  };
 
   const colMontantLabel = devise === 'CDF' ? 'Montant (CDF)' : 'Montant HT';
 
@@ -81,6 +109,11 @@ export function BonCommandeRapport() {
     };
   });
 
+  const periodLabel = () => {
+    if (!dateFrom && !dateTo) return 'Toutes les périodes';
+    return `Du ${dateFrom || '...'} au ${dateTo || '...'}`;
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -90,11 +123,16 @@ export function BonCommandeRapport() {
         </div>
         <div className="flex items-center gap-2">
           {bons.length > 0 && (
+            <Button variant="outline" onClick={handleExportCsv} className="border-gray-300 text-gray-700 hover:bg-gray-50">
+              <Download className="w-4 h-4 mr-1.5" /> CSV / Excel
+            </Button>
+          )}
+          {bons.length > 0 && (
             <PDFDownloadLink
               document={
                 <RapportTablePDF
                   title="Rapport bons de commande"
-                  subtitle={dateFrom || dateTo ? `Du ${dateFrom || '...'} au ${dateTo || '...'}` : undefined}
+                  subtitle={periodLabel()}
                   columns={pdfColumns}
                   rows={pdfRows}
                   stats={stats ? [
@@ -117,7 +155,7 @@ export function BonCommandeRapport() {
               )}
             </PDFDownloadLink>
           )}
-          <Button variant="outline" onClick={() => { setDateFrom(''); setDateTo(''); }} className="border-gray-300 text-gray-700 hover:bg-gray-50" title="Actualiser">
+          <Button variant="outline" onClick={() => { setDateFrom(''); setDateTo(''); setFournisseurId(''); }} className="border-gray-300 text-gray-700 hover:bg-gray-50" title="Actualiser">
             <RefreshCw className={cn('h-4 w-4 mr-2', loading && 'animate-spin')} />
             Actualiser
           </Button>
@@ -125,7 +163,7 @@ export function BonCommandeRapport() {
       </div>
 
       <div className="flex flex-col sm:flex-row items-center gap-4">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-2">
             <label className="text-sm text-gray-600 font-medium whitespace-nowrap">Du :</label>
             <input
@@ -144,19 +182,30 @@ export function BonCommandeRapport() {
               className="px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:border-royal-500 focus:ring-royal-500"
             />
           </div>
-          {(dateFrom || dateTo) && (
+          <div className="flex items-center gap-2 min-w-[220px]">
+            <label className="text-sm text-gray-600 font-medium whitespace-nowrap">Fournisseur :</label>
+            <SearchableSelect
+              options={[{ id: 0, nom: 'Tous les fournisseurs' }, ...fournisseurs]}
+              value={fournisseurId || '0'}
+              onValueChange={(v) => setFournisseurId(v === '0' ? '' : v)}
+              placeholder="Tous les fournisseurs"
+              searchPlaceholder="Rechercher un fournisseur..."
+              emptyMessage="Aucun fournisseur"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-600 font-medium whitespace-nowrap">Devise :</label>
+            <DeviseSelect value={devise} onChange={setDevise} />
+          </div>
+          {(dateFrom || dateTo || fournisseurId) && (
             <button
               type="button"
-              onClick={() => { setDateFrom(''); setDateTo(''); }}
+              onClick={() => { setDateFrom(''); setDateTo(''); setFournisseurId(''); }}
               className="px-2 py-1.5 text-xs text-gray-500 hover:text-gray-700 border border-gray-200 rounded-md hover:bg-gray-50"
             >
               Effacer
             </button>
           )}
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-600 font-medium whitespace-nowrap">Devise :</label>
-            <DeviseSelect value={devise} onChange={setDevise} />
-          </div>
         </div>
       </div>
 
@@ -218,13 +267,14 @@ export function BonCommandeRapport() {
                     <TableHead className="font-semibold text-gray-600">Magasin</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Nb lignes</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">{colMontantLabel}</TableHead>
+                    <TableHead className="text-center font-semibold text-gray-600 w-20">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {Array.from({ length: 5 }).map((_, i) => (
                     <TableRow key={i} className="animate-pulse">
-                      {Array.from({ length: 6 }).map((_, j) => (
-                        <TableCell key={j}><div className="h-5 bg-gray-200 rounded" style={{ width: `${60 + j * 15}px` }} /></TableCell>
+                      {Array.from({ length: 7 }).map((_, j) => (
+                        <TableCell key={j}><div className="h-5 bg-gray-200 rounded" style={{ width: `${60 + j * 10}px` }} /></TableCell>
                       ))}
                     </TableRow>
                   ))}
@@ -248,6 +298,7 @@ export function BonCommandeRapport() {
                     <TableHead className="font-semibold text-gray-600">Magasin</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">Nb lignes</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">{colMontantLabel}</TableHead>
+                    <TableHead className="text-center font-semibold text-gray-600 w-20">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -261,6 +312,15 @@ export function BonCommandeRapport() {
                       <TableCell className="text-sm text-gray-600">{b.magasin_destination?.nom ?? '-'}</TableCell>
                       <TableCell className="text-right font-mono text-sm text-gray-600">{b.lignes?.length ?? 0}</TableCell>
                       <TableCell className="text-right font-mono text-sm font-semibold text-gray-900">{devise === 'CDF' && tauxCdf != null ? formatCurrency(montant * tauxCdf, 'CDF') : formatCurrency(montant, '$')}</TableCell>
+                      <TableCell className="text-center">
+                        <button
+                          onClick={() => navigate(`/rapports/bon-commande/${b.id}`)}
+                          className="p-1.5 rounded-md text-gray-400 hover:text-royal-700 hover:bg-royal-50 transition-colors"
+                          title="Voir les détails"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      </TableCell>
                     </TableRow>
                     );
                   })}

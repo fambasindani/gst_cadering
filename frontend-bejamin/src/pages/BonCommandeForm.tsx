@@ -12,9 +12,9 @@ import {
 import { useToast } from '../hooks/useToast';
 import { bonCommandeService } from '../services/bon-commande';
 import { produitService } from '../services/produit';
-import { ArrowLeft, Save, Loader2, Plus, Trash2, FileText, Building2, MapPin, CalendarDays, DollarSign, MessageSquare, Package, Hash, ShoppingCart } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Plus, Trash2, FileText, Building2, MapPin, CalendarDays, DollarSign, MessageSquare, Package, Hash, ShoppingCart, RefreshCw, AlertTriangle, X } from 'lucide-react';
 import { cn } from '../lib/utils';
-import { formatCurrency } from '../lib/format';
+import { formatCurrency, generateCodePreview } from '../lib/format';
 
 interface SelectOption { id: number; nom: string; code_article?: string; symbole?: string; code?: string }
 
@@ -57,6 +57,8 @@ export function BonCommandeForm() {
   });
 
   const [lignes, setLignes] = useState<LigneRow[]>([newLigne()]);
+  const [alertesPrix, setAlertesPrix] = useState<Array<{ type: string; produit: string; ancien: string; nouveau: string; difference: string }>>([]);
+  const [showAlertModal, setShowAlertModal] = useState(false);
 
   useEffect(() => {
     bonCommandeService.getPartenaires({ type: 'fournisseur' }).then((res) => { if (res.success) setFournisseurs(res.data.data); });
@@ -97,6 +99,13 @@ export function BonCommandeForm() {
     if (fieldErrors[field]) setFieldErrors(prev => { const n = { ...prev }; delete n[field]; return n; });
   };
 
+  const numeroPreview = (() => {
+    if (!values.id_partenaire) return '';
+    const f = fournisseurs.find(p => String(p.id) === values.id_partenaire);
+    if (!f) return '';
+    return generateCodePreview(f.nom);
+  })();
+
   const updateLigne = (key: string, field: string, value: string) => {
     setLignes(prev => prev.map(l => l.key === key ? { ...l, [field]: value } : l));
   };
@@ -104,15 +113,10 @@ export function BonCommandeForm() {
   const onProduitChange = (key: string, produitId: string) => {
     updateLigne(key, 'id_produit', produitId);
     if (!produitId) return;
-    produitService.get(Number(produitId)).then((res) => {
-      if (!res.success) return;
-      const hp = res.data.historique_prix;
-      if (hp && hp.length > 0) {
-        const prixTries = [...hp].sort((a, b) => new Date(b.date_application).getTime() - new Date(a.date_application).getTime());
-        const dernier = prixTries[0];
-        updateLigne(key, 'prix_unitaire_ht', String(dernier.prix_achat_ht));
-        if (dernier.id_devise) updateLigne(key, 'id_devise', String(dernier.id_devise));
-      }
+    produitService.getDernierPrixCommande(Number(produitId)).then((res) => {
+      if (!res.success || !res.data) return;
+      updateLigne(key, 'prix_unitaire_ht', String(res.data.prix_commande));
+      if (res.data.id_devise) updateLigne(key, 'id_devise', String(res.data.id_devise));
     }).catch(() => {});
   };
 
@@ -129,11 +133,18 @@ export function BonCommandeForm() {
       if (isEdit && id) {
         await bonCommandeService.update(Number(id), payload);
         toast('Bon modifié avec succès', 'success');
+        navigate('/bon-commande');
       } else {
-        await bonCommandeService.create(payload as never);
+        const res = await bonCommandeService.create(payload as never);
+        const alertesRecues = (res as unknown as { data?: { alertes_prix?: Array<{ type: string; produit: string; ancien: string; nouveau: string; difference: string }> } })?.data?.alertes_prix || [];
         toast('Bon créé avec succès', 'success');
+        if (alertesRecues.length > 0) {
+          setAlertesPrix(alertesRecues);
+          setShowAlertModal(true);
+        } else {
+          navigate('/bon-commande');
+        }
       }
-      navigate('/bon-commande');
     } catch (err: unknown) {
       const error = err as { errors?: Record<string, string[]>; message?: string };
       if (error.errors) {
@@ -191,8 +202,20 @@ export function BonCommandeForm() {
 
                 <div>
                   <LabelIcon icon={Hash} required error={fieldErrors.numero_commande}>Numéro de commande</LabelIcon>
-                  <Input value={values.numero_commande} onChange={(e) => set('numero_commande', e.target.value)}
-                    placeholder="Ex: BC-2026-001" className={cn('h-11 border-gray-200 shadow-sm', errorClass(fieldErrors.numero_commande))} />
+                  <div className="flex gap-2">
+                    <Input value={values.numero_commande} onChange={(e) => set('numero_commande', e.target.value)}
+                      placeholder={numeroPreview || "Ex: AIRFRANCE/036/08/2026"} className={cn('h-11 border-gray-200 shadow-sm flex-1', errorClass(fieldErrors.numero_commande))} />
+                    {!isEdit && values.id_partenaire && (
+                      <button type="button" onClick={() => set('numero_commande', numeroPreview)}
+                        title="Générer le numéro"
+                        className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-royal-700 bg-royal-50 hover:bg-royal-100 rounded-lg border border-royal-200 shrink-0">
+                        <RefreshCw className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                  {!isEdit && values.id_partenaire && !values.numero_commande && (
+                    <p className="text-xs text-gray-400 mt-1">Aperçu : {numeroPreview}</p>
+                  )}
                   {fieldErrors.numero_commande && <p className="text-xs text-red-500 mt-1">{fieldErrors.numero_commande}</p>}
                 </div>
 
@@ -382,6 +405,60 @@ export function BonCommandeForm() {
           </Button>
         </div>
       </form>
+
+      {showAlertModal && alertesPrix.length > 0 && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden">
+            <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                  <AlertTriangle className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">Alerte prix — Différences détectées</h3>
+                  <p className="text-sm text-white/80">{alertesPrix.length} prix différent(s) du dernier prix enregistré</p>
+                </div>
+              </div>
+              <button onClick={() => { setShowAlertModal(false); navigate('/bon-commande'); }} className="text-white/80 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-sm text-gray-600 mb-4">
+                Les prix saisis diffèrent du dernier prix enregistré pour ces produits. Un email a été envoyé à tous les utilisateurs.
+              </p>
+              <div className="rounded-xl border border-gray-200 overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
+                      <th className="px-4 py-2.5 font-semibold">Produit</th>
+                      <th className="px-4 py-2.5 font-semibold">Dernier prix</th>
+                      <th className="px-4 py-2.5 font-semibold">Prix saisi</th>
+                      <th className="px-4 py-2.5 font-semibold">Différence</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {alertesPrix.map((a, i) => (
+                      <tr key={i} className="border-t border-gray-100">
+                        <td className="px-4 py-2.5 font-medium text-gray-900">{a.produit}</td>
+                        <td className="px-4 py-2.5 text-gray-600">{a.ancien}</td>
+                        <td className="px-4 py-2.5 font-medium text-gray-900">{a.nouveau}</td>
+                        <td className="px-4 py-2.5 font-medium text-red-600">{a.difference}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">
+              <Button onClick={() => { setShowAlertModal(false); navigate('/bon-commande'); }}
+                className="h-10 px-6 bg-royal-700 hover:bg-royal-800 text-white rounded-xl">
+                Compris
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

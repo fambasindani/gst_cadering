@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '../../components/ui/card';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
@@ -10,12 +11,15 @@ import { RapportTablePDF } from '../../components/pdf/RapportTablePDF';
 import type { Column } from '../../components/pdf/RapportTablePDF';
 import { rapportService } from '../../services/rapport';
 import { tauxConversionService } from '../../services/taux-conversion';
+import { partenaireService } from '../../services/partenaire';
 import { DeviseSelect } from '../../components/ui/DeviseSelect';
 import { StatutMouvementBadge } from '../../components/ui/StatutMouvementBadge';
+import { SearchableSelect } from '../../components/ui/SearchableSelect';
 import type { RapportAchatData } from '../../types/rapport';
-import { RefreshCw, Package, Download, Calendar, Store, DollarSign } from 'lucide-react';
+import { RefreshCw, Package, Download, Calendar, Store, DollarSign, Eye } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { downloadCsv } from '../../lib/exportCsv';
+import { DataTablePagination } from '../../components/ui/DataTablePagination';
 
 function formatNumber(v: number): string {
   return (v ?? 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
@@ -33,9 +37,11 @@ function formatDateFr(iso: string): string {
 }
 
 export function RapportAchat() {
+  const navigate = useNavigate();
   const [dateDebut, setDateDebut] = useState('');
   const [dateFin, setDateFin] = useState('');
-  const [fournisseurSearch, setFournisseurSearch] = useState('');
+  const [fournisseurId, setFournisseurId] = useState<number | null>(null);
+  const [fournisseurOptions, setFournisseurOptions] = useState<{ id: number; nom: string }[]>([]);
   const [data, setData] = useState<RapportAchatData | null>(null);
   const [loading, setLoading] = useState(true);
   const [searched, setSearched] = useState(false);
@@ -44,12 +50,29 @@ export function RapportAchat() {
 
   const lignes = data?.lignes ?? [];
   const stats = data?.statistiques;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const displayed = lignes.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const total = lignes.length;
+  const lastPage = Math.ceil(total / pageSize);
 
-  const fetchData = async () => {
+  useEffect(() => {
+    partenaireService.getFournisseurs({ per_page: '500' })
+      .then((res) => { if (res.success && res.data) setFournisseurOptions(res.data.data); })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    tauxConversionService.getActuel()
+      .then((tres) => { if (tres.success && tres.data) setTauxCdf(tres.data.taux); })
+      .catch(() => {});
+  }, []);
+
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const params: Record<string, string> = {};
-      if (fournisseurSearch.trim()) params.fournisseur = fournisseurSearch.trim();
+      if (fournisseurId) params.fournisseur_id = String(fournisseurId);
       if (dateDebut) params.date_debut = dateDebut;
       if (dateFin) params.date_fin = dateFin;
       const res = await rapportService.achatFull(params);
@@ -62,25 +85,25 @@ export function RapportAchat() {
     } finally {
       setLoading(false);
     }
+  }, [fournisseurId, dateDebut, dateFin]);
+
+  useEffect(() => { fetchData(); }, [fetchData]);
+
+  const handleReset = () => {
+    setFournisseurId(null);
+    setDateDebut('');
+    setDateFin('');
   };
-
-  useEffect(() => { fetchData(); /* eslint-disable-line react-hooks/exhaustive-deps */ }, []);
-
-  useEffect(() => {
-    tauxConversionService.getActuel()
-      .then((tres) => { if (tres.success && tres.data) setTauxCdf(tres.data.taux); })
-      .catch(() => {});
-  }, []);
-
-  const deviseCode = devise === 'CDF' ? 'CDF' : '$';
 
   const exportCsv = async () => {
     const params: Record<string, string> = {};
-    if (fournisseurSearch.trim()) params.fournisseur = fournisseurSearch.trim();
+    if (fournisseurId) params.fournisseur_id = String(fournisseurId);
     if (dateDebut) params.date_debut = dateDebut;
     if (dateFin) params.date_fin = dateFin;
     await downloadCsv('/rapports/achat-full/export', params, 'rapport-achats.csv');
   };
+
+  const deviseCode = devise === 'CDF' ? 'CDF' : '$';
 
   const pdfColumns: Column[] = [
     { key: 'numero', label: 'N°', width: '4%', align: 'right', render: (r) => r.numero },
@@ -106,6 +129,8 @@ export function RapportAchat() {
     fournisseur: l.fournisseur || '—',
     statut: l.statut === 'REJETÉ' ? 'Rejeté' : 'Validé',
   }));
+
+  const selectedFournisseur = fournisseurOptions.find((f) => f.id === fournisseurId);
 
   return (
     <div className="space-y-6">
@@ -133,7 +158,7 @@ export function RapportAchat() {
                   orientation="landscape"
                   columns={pdfColumns}
                   rows={pdfRows}
-                  period={`Période : du ${formatDateFr(dateDebut)} au ${formatDateFr(dateFin)}${fournisseurSearch ? ` — Fournisseur : ${fournisseurSearch}` : ''}`}
+                  period={`Période : du ${formatDateFr(dateDebut || '')} au ${formatDateFr(dateFin || '')}${selectedFournisseur ? ` — Fournisseur : ${selectedFournisseur.nom}` : ''}`}
                   stats={[
                     { label: 'Lignes', value: formatNumber(stats?.total_lignes ?? 0) },
                     { label: 'Qté totale', value: formatNumber(stats?.total_quantite ?? 0) },
@@ -152,6 +177,9 @@ export function RapportAchat() {
               )}
             </PDFDownloadLink>
           )}
+          <Button variant="outline" onClick={handleReset} className="border-gray-300 text-gray-700 hover:bg-gray-50">
+            Réinitialiser
+          </Button>
           <Button variant="outline" onClick={fetchData} className="border-gray-300 text-gray-700 hover:bg-gray-50" title="Actualiser">
             <RefreshCw className={cn('h-4 w-4 mr-2', loading && 'animate-spin')} />
             Actualiser
@@ -167,19 +195,18 @@ export function RapportAchat() {
                 <Store className="w-4 h-4 text-gray-400" />
                 Fournisseur
               </label>
-              <Input
-                type="text"
-                value={fournisseurSearch}
-                onChange={(e) => setFournisseurSearch(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') fetchData(); }}
-                placeholder="Nom du fournisseur"
-                className="h-11 border-gray-200 shadow-sm"
+              <SearchableSelect
+                options={fournisseurOptions.map((f) => ({ id: f.id, nom: f.nom }))}
+                value={fournisseurId ? String(fournisseurId) : ''}
+                onValueChange={(val: string) => setFournisseurId(val ? Number(val) : null)}
+                placeholder="Tous les fournisseurs"
+                className="h-11"
               />
             </div>
             <div>
               <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-1.5">
                 <Calendar className="w-4 h-4 text-gray-400" />
-                Periode
+                Période
               </label>
               <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                 <div className="flex items-center gap-2">
@@ -215,6 +242,50 @@ export function RapportAchat() {
           </div>
         </CardContent>
       </Card>
+
+      {!loading && lignes.length > 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-lg bg-royal-50">
+                  <Package className="w-5 h-5 text-royal-700" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 font-medium">Lignes</p>
+                  <p className="text-xl font-bold text-gray-900">{stats?.total_lignes ?? 0}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-lg bg-emerald-50">
+                  <Package className="w-5 h-5 text-emerald-700" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 font-medium">Qté totale</p>
+                  <p className="text-xl font-bold text-gray-900">{formatNumber(stats?.total_quantite ?? 0)}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-0 shadow-sm">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-lg bg-amber-50">
+                  <Package className="w-5 h-5 text-amber-700" />
+                </div>
+                <div>
+                  <p className="text-xs text-gray-500 font-medium">Valeur totale</p>
+                  <p className="text-xl font-bold text-gray-900 font-mono">{devise === 'CDF' && tauxCdf != null ? formatMoney((stats?.total_valeur ?? 0) * tauxCdf, 'CDF') : formatMoney(stats?.total_valeur ?? 0, '$')}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <Card className="border-0 shadow-sm">
         <CardContent>
@@ -259,12 +330,13 @@ export function RapportAchat() {
                     <TableHead className="text-right font-semibold text-gray-600">{devise === 'CDF' ? 'Valeur (CDF)' : 'Valeur'}</TableHead>
                     <TableHead className="font-semibold text-gray-600">Fournisseur</TableHead>
                     <TableHead className="font-semibold text-gray-600">Statut</TableHead>
+                    <TableHead className="w-12"></TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {lignes.map((l, i) => {
-                    const rejete = l.statut === 'REJETÉ';
-                    return (
+                   {displayed.map((l, i) => {
+                     const rejete = l.statut === 'REJETÉ';
+                     return (
                     <TableRow key={l.numero} className={cn('hover:bg-royal-50/50 transition-colors', i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50', rejete && 'opacity-60')}>
                       <TableCell className="text-sm font-medium text-gray-700">{l.numero}</TableCell>
                       <TableCell className="text-sm text-gray-600">{formatDateFr(l.date)}</TableCell>
@@ -275,11 +347,21 @@ export function RapportAchat() {
                       <TableCell className={cn('text-right font-mono text-sm font-semibold', rejete ? 'text-gray-500 line-through' : 'text-gray-900')}>{devise === 'CDF' && tauxCdf != null ? formatMoney(l.valeur * tauxCdf, 'CDF') : formatMoney(l.valeur, '$')}</TableCell>
                       <TableCell className="text-sm text-gray-600">{l.fournisseur || '—'}</TableCell>
                       <TableCell><StatutMouvementBadge statut={l.statut} /></TableCell>
+                      <TableCell>
+                        <button
+                          onClick={() => navigate(`/rapports/achat/${l.id}`)}
+                          className="p-1.5 rounded-lg text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                          title="Détails"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      </TableCell>
                     </TableRow>
                     );
                   })}
                 </TableBody>
               </Table>
+              <DataTablePagination currentPage={currentPage} lastPage={lastPage} pageSize={pageSize} total={total} onPageChange={setCurrentPage} onPageSizeChange={setPageSize} />
             </div>
           )}
         </CardContent>

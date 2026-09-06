@@ -1,21 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent } from '../../components/ui/card';
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '../../components/ui/table';
 import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import { RapportTablePDF } from '../../components/pdf/RapportTablePDF';
 import type { Column } from '../../components/pdf/RapportTablePDF';
+import { SearchableSelect } from '../../components/ui/SearchableSelect';
 import { rapportService } from '../../services/rapport';
+import { partenaireService } from '../../services/partenaire';
 import { tauxConversionService } from '../../services/taux-conversion';
 import { DeviseSelect } from '../../components/ui/DeviseSelect';
 import { StatutMouvementBadge } from '../../components/ui/StatutMouvementBadge';
-import type { RapportClientData } from '../../types/rapport';
-import { RefreshCw, Package, Download, Calendar, Search, DollarSign } from 'lucide-react';
-import { cn } from '../../lib/utils';
 import { downloadCsv } from '../../lib/exportCsv';
+import type { RapportClientData } from '../../types/rapport';
+import { RefreshCw, Package, Download, Eye } from 'lucide-react';
+import { cn } from '../../lib/utils';
+import { DataTablePagination } from '../../components/ui/DataTablePagination';
 
 function formatNumber(v: number): string {
   return (v ?? 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
@@ -26,45 +29,46 @@ function formatMoney(v: number, devise?: string): string {
   return devise ? `${formatted} ${devise}` : formatted;
 }
 
-function formatDateFr(iso: string): string {
-  if (!iso) return '';
-  const [y, m, d] = iso.split('T')[0].split('-');
-  return `${d}/${m}/${y}`;
-}
-
 export function RapportClient() {
+  const navigate = useNavigate();
   const [dateDebut, setDateDebut] = useState('');
   const [dateFin, setDateFin] = useState('');
-  const [clientSearch, setClientSearch] = useState('');
+  const [clientId, setClientId] = useState('');
+  const [clients, setClients] = useState<{ id: number; nom: string }[]>([]);
   const [data, setData] = useState<RapportClientData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [searched, setSearched] = useState(false);
   const [tauxCdf, setTauxCdf] = useState<number | null>(null);
   const [devise, setDevise] = useState<'USD' | 'CDF'>('USD');
 
   const lignes = data?.lignes ?? [];
   const stats = data?.statistiques;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const displayed = lignes.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const total = lignes.length;
+  const lastPage = Math.ceil(total / pageSize);
 
-  const fetchData = async () => {
+  const buildParams = useCallback(() => {
+    const params: Record<string, string> = {};
+    if (clientId) params.client_id = clientId;
+    if (dateDebut) params.date_debut = dateDebut;
+    if (dateFin) params.date_fin = dateFin;
+    return params;
+  }, [clientId, dateDebut, dateFin]);
+
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const params: Record<string, string> = {};
-      if (clientSearch.trim()) params.client = clientSearch.trim();
-      if (dateDebut) params.date_debut = dateDebut;
-      if (dateFin) params.date_fin = dateFin;
-      const res = await rapportService.rapportClient(params);
-      if (res.success) {
-        setData(res.data);
-        setSearched(true);
-      }
+      const res = await rapportService.rapportClient(buildParams());
+      if (res.success) setData(res.data);
     } catch {
       //
     } finally {
       setLoading(false);
     }
-  };
+  }, [buildParams]);
 
-  useEffect(() => { fetchData(); /* eslint-disable-line react-hooks/exhaustive-deps */ }, []);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   useEffect(() => {
     tauxConversionService.getActuel()
@@ -72,24 +76,27 @@ export function RapportClient() {
       .catch(() => {});
   }, []);
 
-  const deviseCode = devise === 'CDF' ? 'CDF' : '$';
+  useEffect(() => {
+    partenaireService.getClients()
+      .then((res) => { if (res.success && res.data?.data) setClients(res.data.data); })
+      .catch(() => {});
+  }, []);
 
-  const exportCsv = async () => {
-    const params: Record<string, string> = {};
-    if (clientSearch.trim()) params.client = clientSearch.trim();
-    if (dateDebut) params.date_debut = dateDebut;
-    if (dateFin) params.date_fin = dateFin;
-    await downloadCsv('/rapports/client/export', params, 'rapport-clients.csv');
+  const handleExportCsv = () => {
+    downloadCsv('/rapports/client/export', buildParams(), 'rapport-clients.csv').catch(() => {});
   };
+
+  const deviseCode = devise === 'CDF' ? 'CDF' : '$';
 
   const pdfColumns: Column[] = [
     { key: 'numero', label: 'N°', width: '4%', align: 'right', render: (r) => r.numero },
-    { key: 'designation', label: 'Designation', width: '22%', render: (r) => r.designation },
-    { key: 'article', label: 'Article', width: '16%', render: (r) => r.article },
-    { key: 'unite', label: 'Unit', width: '6%', render: (r) => r.unite },
-    { key: 'prix', label: 'Prix unit', width: '12%', align: 'right', render: (r) => formatMoney(Number(r.prix_unitaire), deviseCode) },
-    { key: 'qte', label: 'Qté', width: '8%', align: 'right', render: (r) => r.quantite },
-    { key: 'valeur', label: devise === 'CDF' ? 'Valeur (CDF)' : 'Valeur', width: '14%', align: 'right', render: (r) => r.valeur },
+    { key: 'client', label: 'Client', width: '14%', render: (r) => r.client },
+    { key: 'designation', label: 'Designation', width: '18%', render: (r) => r.designation },
+    { key: 'article', label: 'Article', width: '12%', render: (r) => r.article },
+    { key: 'unite', label: 'Unit', width: '5%', render: (r) => r.unite },
+    { key: 'prix', label: 'Prix unit', width: '10%', align: 'right', render: (r) => formatMoney(Number(r.prix_unitaire), deviseCode) },
+    { key: 'qte', label: 'Qté', width: '7%', align: 'right', render: (r) => r.quantite },
+    { key: 'valeur', label: devise === 'CDF' ? 'Valeur (CDF)' : 'Valeur', width: '12%', align: 'right', render: (r) => r.valeur },
     { key: 'statut', label: 'Statut', width: '8%', render: (r) => r.statut },
   ];
 
@@ -97,16 +104,21 @@ export function RapportClient() {
     const valeur = Number(l.valeur) || 0;
     return {
       numero: String(l.numero),
+      client: l.client,
       designation: l.designation,
       article: l.article,
       unite: l.unite,
-      devise: l.devise,
       prix_unitaire: String(devise === 'CDF' && tauxCdf != null ? (Number(l.prix_unitaire) * tauxCdf).toFixed(2) : l.prix_unitaire),
       quantite: String(l.quantite),
       valeur: devise === 'CDF' && tauxCdf != null ? formatMoney(valeur * tauxCdf, 'CDF') : formatMoney(valeur, '$'),
       statut: l.statut === 'REJETÉ' ? 'Rejeté' : 'Validé',
     };
   });
+
+  const periodLabel = () => {
+    if (!dateDebut && !dateFin) return 'Toutes les périodes';
+    return `Du ${dateDebut || '...'} au ${dateFin || '...'}`;
+  };
 
   return (
     <div className="space-y-6">
@@ -122,7 +134,7 @@ export function RapportClient() {
         </div>
         <div className="flex items-center gap-2">
           {lignes.length > 0 && (
-            <Button variant="outline" onClick={() => { exportCsv().catch(() => {}); }} className="border-gray-300 text-gray-700 hover:bg-gray-50">
+            <Button variant="outline" onClick={handleExportCsv} className="border-gray-300 text-gray-700 hover:bg-gray-50">
               <Download className="w-4 h-4 mr-1.5" /> CSV / Excel
             </Button>
           )}
@@ -131,9 +143,9 @@ export function RapportClient() {
               document={
                 <RapportTablePDF
                   title="Rapport clients"
+                  subtitle={periodLabel()}
                   columns={pdfColumns}
                   rows={pdfRows}
-                  period={`Période : du ${formatDateFr(dateDebut)} au ${formatDateFr(dateFin)}${clientSearch ? ` — Client : ${clientSearch}` : ''}`}
                   stats={[
                     { label: 'Lignes', value: formatNumber(stats?.total_lignes ?? 0) },
                     { label: 'Qté totale', value: formatNumber(stats?.total_quantite ?? 0) },
@@ -152,69 +164,101 @@ export function RapportClient() {
               )}
             </PDFDownloadLink>
           )}
-          <Button variant="outline" onClick={fetchData} className="border-gray-300 text-gray-700 hover:bg-gray-50" title="Actualiser">
+          <Button variant="outline" onClick={() => { setDateDebut(''); setDateFin(''); setClientId(''); }} className="border-gray-300 text-gray-700 hover:bg-gray-50" title="Actualiser">
             <RefreshCw className={cn('h-4 w-4 mr-2', loading && 'animate-spin')} />
             Actualiser
           </Button>
         </div>
       </div>
 
-      <Card className="border-0 shadow-sm">
-        <CardContent className="p-5">
-          <div className="flex flex-col lg:flex-row lg:items-end gap-4">
-            <div className="flex-1">
-              <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-1.5">
-                <Search className="w-4 h-4 text-gray-400" />
-                Client
-              </label>
-              <Input
-                type="text"
-                value={clientSearch}
-                onChange={(e) => setClientSearch(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter') fetchData(); }}
-                placeholder="Nom ou code du client"
-                className="h-11 border-gray-200 shadow-sm"
-              />
-            </div>
-            <div>
-              <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-1.5">
-                <Calendar className="w-4 h-4 text-gray-400" />
-                Periode
-              </label>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-600 font-medium">du</span>
-                  <Input
-                    type="date"
-                    value={dateDebut}
-                    onChange={(e) => setDateDebut(e.target.value)}
-                    className="h-11 border-gray-200 shadow-sm w-44"
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-600 font-medium">au</span>
-                  <Input
-                    type="date"
-                    value={dateFin}
-                    onChange={(e) => setDateFin(e.target.value)}
-                    className="h-11 border-gray-200 shadow-sm w-44"
-                  />
-                </div>
+      <div className="flex flex-col sm:flex-row items-center gap-4">
+        <div className="flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2 min-w-[220px]">
+            <label className="text-sm text-gray-600 font-medium whitespace-nowrap">Client :</label>
+            <SearchableSelect
+              options={[{ id: 0, nom: 'Tous les clients' }, ...clients]}
+              value={clientId || '0'}
+              onValueChange={(v) => setClientId(v === '0' ? '' : v)}
+              placeholder="Tous les clients"
+              searchPlaceholder="Rechercher un client..."
+              emptyMessage="Aucun client"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-600 font-medium whitespace-nowrap">Du :</label>
+            <input
+              type="date"
+              value={dateDebut}
+              onChange={(e) => setDateDebut(e.target.value)}
+              className="px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:border-royal-500 focus:ring-royal-500"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-600 font-medium whitespace-nowrap">Au :</label>
+            <input
+              type="date"
+              value={dateFin}
+              onChange={(e) => setDateFin(e.target.value)}
+              className="px-3 py-1.5 text-sm border border-gray-200 rounded-md focus:border-royal-500 focus:ring-royal-500"
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-600 font-medium whitespace-nowrap">Devise :</label>
+            <DeviseSelect value={devise} onChange={setDevise} />
+          </div>
+          {(clientId || dateDebut || dateFin) && (
+            <button
+              type="button"
+              onClick={() => { setClientId(''); setDateDebut(''); setDateFin(''); }}
+              className="px-2 py-1.5 text-xs text-gray-500 hover:text-gray-700 border border-gray-200 rounded-md hover:bg-gray-50"
+            >
+              Effacer
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-lg bg-royal-50">
+                <Package className="w-5 h-5 text-royal-700" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 font-medium">Lignes</p>
+                <p className="text-xl font-bold text-gray-900">{stats?.total_lignes ?? 0}</p>
               </div>
             </div>
-            <div>
-              <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700 mb-1.5">
-                <DollarSign className="w-4 h-4 text-gray-400" />
-                Devise
-              </label>
-              <DeviseSelect value={devise} onChange={setDevise} />
+          </CardContent>
+        </Card>
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-lg bg-emerald-50">
+                <Package className="w-5 h-5 text-emerald-700" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 font-medium">Qté totale</p>
+                <p className="text-xl font-bold text-gray-900">{formatNumber(stats?.total_quantite ?? 0)}</p>
+              </div>
             </div>
-            <Button onClick={fetchData} disabled={loading} className="h-11 px-6 bg-royal-700 hover:bg-royal-800 text-white shadow-sm font-medium">
-              Générer
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-5">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-lg bg-amber-50">
+                <Package className="w-5 h-5 text-amber-700" />
+              </div>
+              <div>
+                <p className="text-xs text-gray-500 font-medium">Valeur totale</p>
+                <p className="text-xl font-bold text-gray-900 font-mono">{devise === 'CDF' && tauxCdf != null ? formatMoney((stats?.total_valeur ?? 0) * tauxCdf, 'CDF') : formatMoney(stats?.total_valeur ?? 0, '$')}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       <Card className="border-0 shadow-sm">
         <CardContent>
@@ -223,7 +267,7 @@ export function RapportClient() {
               <Table>
                 <TableHeader className="bg-gray-50">
                   <TableRow>
-                    {['N°', 'Designation', 'Article', 'Unit', 'Prix unit', 'Qté', devise === 'CDF' ? 'Valeur (CDF)' : 'Valeur', 'Statut'].map((h) => (
+                    {['N°', 'Client', 'Designation', 'Article', 'Unit', 'Prix unit', 'Qté', devise === 'CDF' ? 'Valeur (CDF)' : 'Valeur', 'Statut', 'Actions'].map((h) => (
                       <TableHead key={h} className="font-semibold text-gray-600">{h}</TableHead>
                     ))}
                   </TableRow>
@@ -231,8 +275,8 @@ export function RapportClient() {
                 <TableBody>
                   {Array.from({ length: 5 }).map((_, i) => (
                     <TableRow key={i} className="animate-pulse">
-                      {Array.from({ length: 8 }).map((_, j) => (
-                        <TableCell key={j}><div className="h-5 bg-gray-200 rounded" style={{ width: `${50 + j * 12}px` }} /></TableCell>
+                      {Array.from({ length: 10 }).map((_, j) => (
+                        <TableCell key={j}><div className="h-5 bg-gray-200 rounded" style={{ width: `${50 + j * 10}px` }} /></TableCell>
                       ))}
                     </TableRow>
                   ))}
@@ -243,7 +287,7 @@ export function RapportClient() {
             <div className="text-center py-12 text-gray-500">
               <Package className="w-12 h-12 mx-auto text-gray-300 mb-3" />
               <p className="text-lg font-medium text-gray-700">Aucune donnée</p>
-              <p className="text-sm mt-1">{searched ? 'Aucune consommation client sur la période sélectionnée' : 'Aucune donnée'}</p>
+              <p className="text-sm mt-1">Aucune consommation client trouvée pour cette période</p>
             </div>
           ) : (
             <div className="overflow-x-auto rounded-lg border border-gray-200">
@@ -251,6 +295,7 @@ export function RapportClient() {
                 <TableHeader className="bg-gray-50">
                   <TableRow>
                     <TableHead className="font-semibold text-gray-600 w-12">N°</TableHead>
+                    <TableHead className="font-semibold text-gray-600">Client</TableHead>
                     <TableHead className="font-semibold text-gray-600">Designation</TableHead>
                     <TableHead className="font-semibold text-gray-600">Article</TableHead>
                     <TableHead className="font-semibold text-gray-600">Unit</TableHead>
@@ -258,15 +303,17 @@ export function RapportClient() {
                     <TableHead className="text-right font-semibold text-gray-600">Qté</TableHead>
                     <TableHead className="text-right font-semibold text-gray-600">{devise === 'CDF' ? 'Valeur (CDF)' : 'Valeur'}</TableHead>
                     <TableHead className="font-semibold text-gray-600">Statut</TableHead>
+                    <TableHead className="text-center font-semibold text-gray-600 w-20">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {lignes.map((l, i) => {
+                  {displayed.map((l, i) => {
                     const valeur = Number(l.valeur) || 0;
                     const rejete = l.statut === 'REJETÉ';
                     return (
                     <TableRow key={l.numero} className={cn('hover:bg-royal-50/50 transition-colors', i % 2 === 0 ? 'bg-white' : 'bg-gray-50/50', rejete && 'opacity-60')}>
                       <TableCell className="text-sm font-medium text-gray-700">{l.numero}</TableCell>
+                      <TableCell className="font-medium text-gray-900 text-sm">{l.client}</TableCell>
                       <TableCell className="font-medium text-gray-900">{l.designation}</TableCell>
                       <TableCell className="text-sm text-gray-600 font-mono">{l.article}</TableCell>
                       <TableCell className="text-sm text-gray-600">{l.unite}</TableCell>
@@ -274,11 +321,21 @@ export function RapportClient() {
                       <TableCell className="text-right font-mono text-sm text-gray-700">{l.quantite}</TableCell>
                       <TableCell className={cn('text-right font-mono text-sm font-semibold', rejete ? 'text-gray-500 line-through' : 'text-gray-900')}>{devise === 'CDF' && tauxCdf != null ? formatMoney(valeur * tauxCdf, 'CDF') : formatMoney(valeur, '$')}</TableCell>
                       <TableCell><StatutMouvementBadge statut={l.statut} /></TableCell>
+                      <TableCell className="text-center">
+                        <button
+                          onClick={() => navigate(`/rapports/client/${l.id}`)}
+                          className="p-1.5 rounded-md text-gray-400 hover:text-royal-700 hover:bg-royal-50 transition-colors"
+                          title="Voir les détails"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      </TableCell>
                     </TableRow>
                     );
                   })}
                 </TableBody>
               </Table>
+              <DataTablePagination currentPage={currentPage} lastPage={lastPage} pageSize={pageSize} total={total} onPageChange={setCurrentPage} onPageSizeChange={setPageSize} />
             </div>
           )}
         </CardContent>

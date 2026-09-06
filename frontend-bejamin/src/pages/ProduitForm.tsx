@@ -11,9 +11,10 @@ import { useToast } from '../hooks/useToast';
 import { produitService } from '../services/produit';
 import { BarcodeScanner } from '../components/ui/barcode-scanner';
 import {
-  ArrowLeft, Save, Loader2, Scan, X, Package, Tag, Building2, Ruler, AlertTriangle, DollarSign, CalendarDays, MessageSquare, FileText,
+  ArrowLeft, Save, Loader2, Scan, X, Package, Tag, Building2, Ruler, AlertTriangle, DollarSign, CalendarDays, MessageSquare, FileText, RefreshCw,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
+import { generateCodePreview } from '../lib/format';
 
 interface SelectOption { id: number; nom: string; symbole?: string }
 
@@ -97,6 +98,8 @@ export function ProduitForm() {
     if (fieldErrors[field]) setFieldErrors(prev => { const n = { ...prev }; delete n[field]; return n; });
   };
 
+  const codePreview = values.nom ? generateCodePreview(values.nom) : '';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -175,8 +178,20 @@ export function ProduitForm() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <LabelIcon icon={Tag} error={fieldErrors.code_article}>Code article</LabelIcon>
-                    <Input value={values.code_article} onChange={(e) => set('code_article', e.target.value)}
-                      placeholder="Auto-généré si vide" className={cn('h-11 border-gray-200 shadow-sm', errorClass(fieldErrors.code_article))} />
+                    <div className="flex gap-2">
+                      <Input value={values.code_article} onChange={(e) => set('code_article', e.target.value)}
+                        placeholder={codePreview || "Auto-généré si vide"} className={cn('h-11 border-gray-200 shadow-sm flex-1', errorClass(fieldErrors.code_article))} />
+                      {!isEdit && values.nom && (
+                        <button type="button" onClick={() => set('code_article', codePreview)}
+                          title="Générer le code"
+                          className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-royal-700 bg-royal-50 hover:bg-royal-100 rounded-lg border border-royal-200 shrink-0">
+                          <RefreshCw className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                    {!isEdit && values.nom && !values.code_article && (
+                      <p className="text-xs text-gray-400 mt-1">Aperçu : {codePreview}</p>
+                    )}
                     {fieldErrors.code_article && <p className="text-xs text-red-500 mt-1">{fieldErrors.code_article}</p>}
                   </div>
                   <div>

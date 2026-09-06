@@ -11,7 +11,7 @@ import { bonCommandeService, type ReceptionItem, type CorrectionItem } from '../
 import type { BonCommande } from '../types/bon-commande';
 import { ReceptionPDF, type ReceptionPDFData } from '../components/pdf/ReceptionPDF';
 import {
-  ArrowLeft, PackagePlus, Loader2, FileText, Building2, MapPin, Calendar, Package, RefreshCw, CheckCircle, Printer,
+  ArrowLeft, PackagePlus, Loader2, FileText, Building2, MapPin, Calendar, Package, RefreshCw, CheckCircle, Printer, AlertTriangle, X,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { formatCurrency } from '../lib/format';
@@ -27,6 +27,8 @@ export function ReceptionForm() {
   const [saving, setSaving] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [lastReception, setLastReception] = useState<{ bon: BonCommande; reception: ReceptionPDFData; receptionComplete: boolean } | null>(null);
+  const [alertes, setAlertes] = useState<Array<{ type: string; produit: string; ancien: string; nouveau: string; difference: string }>>([]);
+  const [showAlertModal, setShowAlertModal] = useState(false);
   const [receptionData, setReceptionData] = useState<Record<number, {
     quantite_recue: string;
     quantite_recue_correction: string;
@@ -177,10 +179,16 @@ export function ReceptionForm() {
       if (res.success) {
         const receptionComplete = (res.data as unknown as { reception_complete?: boolean })?.reception_complete;
         const referenceReception = (res.data as unknown as { reference_reception?: string })?.reference_reception;
+        const alertesRecues = (res.data as unknown as { alertes?: Array<{ type: string; produit: string; ancien: string; nouveau: string; difference: string }> })?.alertes || [];
         const msg = corrections.length > 0
           ? (receptionComplete ? 'Réception corrigée avec succès (complète)' : 'Réception corrigée avec succès')
           : (receptionComplete ? 'Réception complète effectuée avec succès' : 'Réception partielle effectuée avec succès');
         toast(msg, 'success');
+
+        if (alertesRecues.length > 0) {
+          setAlertes(alertesRecues);
+          setShowAlertModal(true);
+        }
 
         const updatedBon = { ...bon, statut: res.data?.statut || bon.statut, quantite_recue: undefined } as BonCommande;
         const recLignes = receptions.map((r) => {
@@ -519,6 +527,66 @@ export function ReceptionForm() {
         </div>
       )}
         </>
+      )}
+
+      {showAlertModal && alertes.length > 0 && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden">
+            <div className="bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                  <AlertTriangle className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-white">Alerte — Différences détectées</h3>
+                  <p className="text-sm text-white/80">{alertes.length} différence(s) lors de la réception</p>
+                </div>
+              </div>
+              <button onClick={() => setShowAlertModal(false)} className="text-white/80 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="text-sm text-gray-600 mb-4">
+                Des différences de prix ou de quantité ont été détectées. Un email a été envoyé à tous les utilisateurs.
+              </p>
+              <div className="rounded-xl border border-gray-200 overflow-hidden">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
+                      <th className="px-4 py-2.5 font-semibold">Produit</th>
+                      <th className="px-4 py-2.5 font-semibold">Type</th>
+                      <th className="px-4 py-2.5 font-semibold">Ancien</th>
+                      <th className="px-4 py-2.5 font-semibold">Nouveau</th>
+                      <th className="px-4 py-2.5 font-semibold">Différence</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {alertes.map((a, i) => (
+                      <tr key={i} className="border-t border-gray-100">
+                        <td className="px-4 py-2.5 font-medium text-gray-900">{a.produit}</td>
+                        <td className="px-4 py-2.5">
+                          <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${a.type === 'prix' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'}`}>
+                            {a.type === 'prix' ? 'Prix' : 'Quantité'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2.5 text-gray-600">{a.ancien}</td>
+                        <td className="px-4 py-2.5 font-medium text-gray-900">{a.nouveau}</td>
+                        <td className="px-4 py-2.5 font-medium text-red-600">{a.difference}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-end">
+              <Button onClick={() => setShowAlertModal(false)}
+                className="h-10 px-6 bg-royal-700 hover:bg-royal-800 text-white rounded-xl">
+                Compris
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

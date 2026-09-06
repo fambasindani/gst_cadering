@@ -56,9 +56,7 @@ export function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
 
   const toggleExpand = (title: string) => {
     setExpandedItems((prev) =>
-      prev.includes(title)
-        ? prev.filter((item) => item !== title)
-        : [...prev, title],
+      prev.includes(title) ? [] : [title],
     );
   };
 
@@ -76,6 +74,13 @@ export function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
   };
 
   const handleLinkClick = () => {
+    if (isMobile) {
+      onClose();
+    }
+  };
+
+  const handleSimpleItemClick = () => {
+    setExpandedItems([]);
     if (isMobile) {
       onClose();
     }
@@ -244,7 +249,7 @@ export function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
               ) : (
                 <Link
                   to={item.path}
-                  onClick={handleLinkClick}
+                  onClick={handleSimpleItemClick}
                   className={cn(
                     'flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm font-medium transition-colors',
                     isActive(item.path)

@@ -29,7 +29,7 @@ export function Login() {
   const { login, isLoading } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState('pierre@gmail.com');
-  const [password, setPassword] = useState('12345678');
+  const [password, setPassword] = useState('password');
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [generalError, setGeneralError] = useState('');
 
