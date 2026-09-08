@@ -243,15 +243,27 @@ class BonCommandeController extends Controller
                         ]);
                     }
 
-                    EnvoyerAlertePrixBonCommande::dispatch(
-                        $alertesPrix,
-                        $validated['numero_commande'],
-                        $partenaire->nom ?? 'N/A',
-                        $validated['date_commande']
-                    );
+                    $alertesPrixPayload = $alertesPrix;
+                    $numeroCommande = $validated['numero_commande'];
+                    $partenaireNom = $partenaire->nom ?? 'N/A';
+                    $dateCommande = $validated['date_commande'];
                 }
 
                 DB::commit();
+
+                // Envoi email APRÈS commit pour ne pas rollbacker la transaction si l'envoi échoue
+                if (!empty($alertesPrixPayload ?? null)) {
+                    try {
+                        EnvoyerAlertePrixBonCommande::dispatch(
+                            $alertesPrixPayload,
+                            $numeroCommande,
+                            $partenaireNom,
+                            $dateCommande
+                        );
+                    } catch (\Exception $e) {
+                        \Log::warning("Échec envoi email alerte prix: " . $e->getMessage());
+                    }
+                }
 
                 // Créer/mettre à jour une notification pour tous les utilisateurs actifs ayant la permission
                 $count = BonCommande::where('statut_validation', 'EN ATTENTE')->count();
@@ -844,13 +856,9 @@ class BonCommandeController extends Controller
                         ]);
                     }
 
-                    // Dispatch job email (queue database — offline-safe)
-                    EnvoyerAlerteReception::dispatch(
-                        $alertes,
-                        $bonCommande->numero_commande,
-                        $bonCommande->partenaire->nom ?? 'N/A',
-                        now()->format('d/m/Y')
-                    );
+                    $alertesPayload = $alertes;
+                    $numeroCommandeReception = $bonCommande->numero_commande;
+                    $partenaireNomReception = $bonCommande->partenaire->nom ?? 'N/A';
                 }
 
                 // Mettre à jour le statut du bon : la réception passe en attente de validation
@@ -859,6 +867,20 @@ class BonCommandeController extends Controller
                 $bonCommande->save();
 
                 DB::commit();
+
+                // Envoi email APRÈS commit pour ne pas rollbacker la transaction si l'envoi échoue
+                if (!empty($alertesPayload ?? null)) {
+                    try {
+                        EnvoyerAlerteReception::dispatch(
+                            $alertesPayload,
+                            $numeroCommandeReception,
+                            $partenaireNomReception,
+                            now()->format('d/m/Y')
+                        );
+                    } catch (\Exception $e) {
+                        \Log::warning("Échec envoi email alerte réception: " . $e->getMessage());
+                    }
+                }
 
                 $data = $bonCommande->load(['partenaire', 'magasinDestination', 'lignes'])->toArray();
                 $data['reference_reception'] = $referenceReception;

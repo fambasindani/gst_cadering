@@ -37,7 +37,8 @@ use App\Http\Controllers\Api\Config\{
     CuissonController,
     AtelierController,
     SuiviChloreController,
-    ControleLivraisonController
+    ControleLivraisonController,
+    ParametreController
 };
 
 /*
@@ -59,6 +60,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::prefix('auth')->group(function () {
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
+    Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
 });
 
 /*
@@ -131,6 +133,15 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
         Route::put('taux-conversion/{id}', [TauxConversionController::class, 'update'])->middleware('permission:config:taux_conversion:update');
         Route::delete('taux-conversion/{id}', [TauxConversionController::class, 'destroy'])->middleware('permission:config:taux_conversion:delete');
         Route::patch('taux-conversion/{id}/toggle', [TauxConversionController::class, 'toggleActif'])->middleware('permission:config:taux_conversion:update');
+
+        // ---------- Paramètres ----------
+        Route::get('parametres', [ParametreController::class, 'index'])->middleware('permission:config:parametres:view');
+        Route::post('parametres', [ParametreController::class, 'store'])->middleware('permission:config:parametres:create');
+        Route::post('parametres/multiple', [ParametreController::class, 'updateMultiple'])->middleware('permission:config:parametres:update');
+        Route::get('parametres/{cle}', [ParametreController::class, 'showByCle'])->middleware('permission:config:parametres:view');
+        Route::put('parametres/{cle}', [ParametreController::class, 'updateByCle'])->middleware('permission:config:parametres:update');
+        Route::delete('parametres/{id}', [ParametreController::class, 'destroy'])->middleware('permission:config:parametres:delete');
+        Route::patch('parametres/{id}/toggle', [ParametreController::class, 'toggleActif'])->middleware('permission:config:parametres:update');
 
         // ---------- Utilisateurs ----------
         Route::get('utilisateurs', [UtilisateurController::class, 'index'])->middleware('permission:config:utilisateurs:view');

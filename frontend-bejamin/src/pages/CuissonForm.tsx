@@ -15,6 +15,7 @@ import type { Lot } from '../types/lot';
 interface Ligne {
   key: string;
   id_lot: string;
+  id_partenaire: string;
   mode_cuisson: string;
   code_couleur: string;
   mise_en_decongelation: string;
@@ -31,7 +32,7 @@ interface Ligne {
 
 const emptyLigne = (): Ligne => ({
   key: crypto.randomUUID(),
-  id_lot: '', mode_cuisson: '', code_couleur: '', mise_en_decongelation: '',
+  id_lot: '', id_partenaire: '', mode_cuisson: '', code_couleur: '', mise_en_decongelation: '',
   quantite_avant_cuisson: '', quantite_apres_cuisson: '', dlc_dluo: '',
   numero_lot_cree: '', heure_fin_cuisson: '', temperature_coeur_cuisson: '',
   heure_debut_refroidissement: '', heure_fin_refroidissement: '', temperature_coeur_refroidissement: '',
@@ -52,7 +53,6 @@ export function CuissonForm() {
   const [partenaires, setPartenaires] = useState<{ id: number; nom: string; code_iata?: string }[]>([]);
 
   const [dateOperation, setDateOperation] = useState(new Date().toISOString().split('T')[0]);
-  const [idPartenaire, setIdPartenaire] = useState('');
   const [lignes, setLignes] = useState<Ligne[]>([emptyLigne()]);
 
   const [editForm, setEditForm] = useState({
@@ -122,9 +122,9 @@ export function CuissonForm() {
     try {
       await cuissonService.createBulk({
         date_operation: dateOperation,
-        id_partenaire: idPartenaire ? Number(idPartenaire) : null,
         lignes: validLignes.map(l => ({
           id_lot: l.id_lot ? Number(l.id_lot) : null,
+          id_partenaire: l.id_partenaire ? Number(l.id_partenaire) : null,
           mode_cuisson: l.mode_cuisson || null,
           code_couleur: l.code_couleur || null,
           mise_en_decongelation: l.mise_en_decongelation || null,
@@ -261,7 +261,7 @@ export function CuissonForm() {
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">Qté après cuisson</label><Input value={editForm.quantite_apres_cuisson} onChange={(e) => updateEditField('quantite_apres_cuisson', e.target.value)} /></div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div><label className="block text-sm font-medium text-gray-700 mb-1">DLC / DLUO</label><Input value={editForm.dlc_dluo} onChange={(e) => updateEditField('dlc_dluo', e.target.value)} /></div>
+                  <div><label className="block text-sm font-medium text-gray-700 mb-1">DLC / DLUO</label><Input type="date" value={editForm.dlc_dluo} onChange={(e) => updateEditField('dlc_dluo', e.target.value)} /></div>
                   <div><label className="block text-sm font-medium text-gray-700 mb-1">N° lot créé</label><Input value={editForm.numero_lot_cree} onChange={(e) => updateEditField('numero_lot_cree', e.target.value)} /></div>
                 </div>
               </CardContent>
@@ -322,10 +322,6 @@ export function CuissonForm() {
                 <Input type="date" value={dateOperation} onChange={(e) => { setDateOperation(e.target.value); setErrors(prev => { const n = { ...prev }; delete n.date_operation; return n; }); }} className={errors.date_operation ? 'border-red-400' : ''} />
                 {errors.date_operation && <p className="text-red-500 text-xs mt-1">{errors.date_operation}</p>}
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Client / Compagnie (optionnel)</label>
-                <SearchableSelect options={clientOptions} value={idPartenaire} onValueChange={setIdPartenaire} placeholder="Sélectionner un client..." />
-              </div>
             </div>
           </CardContent>
         </Card>
@@ -353,12 +349,16 @@ export function CuissonForm() {
                     <label className="block text-xs font-medium text-gray-500 mb-1">Lot (produit) *</label>
                     <SearchableSelect options={lotOptions} value={ligne.id_lot} onValueChange={(v) => updateLigne(ligne.key, 'id_lot', v)} placeholder="Lot..." />
                   </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Client / Compagnie</label>
+                    <SearchableSelect options={clientOptions} value={ligne.id_partenaire} onValueChange={(v) => updateLigne(ligne.key, 'id_partenaire', v)} placeholder="Client..." />
+                  </div>
                   <div><label className="block text-xs font-medium text-gray-500 mb-1">Mode cuisson</label><Input value={ligne.mode_cuisson} onChange={(e) => updateLigne(ligne.key, 'mode_cuisson', e.target.value)} placeholder="Poêlé..." /></div>
                   <div><label className="block text-xs font-medium text-gray-500 mb-1">Code couleur</label><Input value={ligne.code_couleur} onChange={(e) => updateLigne(ligne.key, 'code_couleur', e.target.value)} /></div>
                   <div><label className="block text-xs font-medium text-gray-500 mb-1">Décongélation</label><Input value={ligne.mise_en_decongelation} onChange={(e) => updateLigne(ligne.key, 'mise_en_decongelation', e.target.value)} /></div>
                   <div><label className="block text-xs font-medium text-gray-500 mb-1">Qté avant</label><Input value={ligne.quantite_avant_cuisson} onChange={(e) => updateLigne(ligne.key, 'quantite_avant_cuisson', e.target.value)} placeholder="300 pcs" /></div>
                   <div><label className="block text-xs font-medium text-gray-500 mb-1">Qté après</label><Input value={ligne.quantite_apres_cuisson} onChange={(e) => updateLigne(ligne.key, 'quantite_apres_cuisson', e.target.value)} placeholder="300 pcs" /></div>
-                  <div><label className="block text-xs font-medium text-gray-500 mb-1">DLC/DLUO</label><Input value={ligne.dlc_dluo} onChange={(e) => updateLigne(ligne.key, 'dlc_dluo', e.target.value)} placeholder="9/26" /></div>
+                  <div><label className="block text-xs font-medium text-gray-500 mb-1">DLC/DLUO</label><Input type="date" value={ligne.dlc_dluo} onChange={(e) => updateLigne(ligne.key, 'dlc_dluo', e.target.value)} /></div>
                   <div><label className="block text-xs font-medium text-gray-500 mb-1">N° lot créé</label><Input value={ligne.numero_lot_cree} onChange={(e) => updateLigne(ligne.key, 'numero_lot_cree', e.target.value)} /></div>
                   <div><label className="block text-xs font-medium text-gray-500 mb-1">Fin cuisson</label><Input type="time" value={ligne.heure_fin_cuisson} onChange={(e) => updateLigne(ligne.key, 'heure_fin_cuisson', e.target.value)} /></div>
                   <div><label className="block text-xs font-medium text-gray-500 mb-1">T°C cœur cuisson</label><Input type="number" step="0.1" value={ligne.temperature_coeur_cuisson} onChange={(e) => updateLigne(ligne.key, 'temperature_coeur_cuisson', e.target.value)} /></div>

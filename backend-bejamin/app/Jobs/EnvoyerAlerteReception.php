@@ -34,21 +34,23 @@ class EnvoyerAlerteReception implements ShouldQueue
     public function handle(): void
     {
         $users = Utilisateur::where('actif', true)->get();
-
         if ($users->isEmpty()) return;
 
-        $emails = $users->pluck('email')->filter()->values()->toArray();
-
-        if (empty($emails)) return;
-
-        Mail::to($emails)->send(
-            new AlerteReceptionMail(
-                $this->alertes,
-                $this->numeroCommande,
-                $this->fournisseur,
-                $this->dateReception
-            )
-        );
+        foreach ($users as $user) {
+            if (empty($user->email)) continue;
+            try {
+                Mail::to($user->email)->send(
+                    new AlerteReceptionMail(
+                        $this->alertes,
+                        $this->numeroCommande,
+                        $this->fournisseur,
+                        $this->dateReception
+                    )
+                );
+            } catch (\Exception $e) {
+                \Log::warning("Échec envoi email alerte réception à {$user->email}: " . $e->getMessage());
+            }
+        }
     }
 
     public function failed(\Throwable $exception): void

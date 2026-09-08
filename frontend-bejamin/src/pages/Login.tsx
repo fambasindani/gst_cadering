@@ -5,16 +5,10 @@ import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import {
-  Eye,
-  EyeOff,
-  Lock,
-  User,
-  ArrowRight,
-  Shield,
-  Package,
-  Plane,
+  Eye, EyeOff, Lock, User, ArrowRight, Shield, Package, Plane, Mail, CheckCircle, ArrowLeft,
 } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+import { api } from '../services/api';
 import { cn } from '../lib/utils';
 
 const loginSchema = z.object({
@@ -32,6 +26,12 @@ export function Login() {
   const [password, setPassword] = useState('password');
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [generalError, setGeneralError] = useState('');
+
+  // Forgot password
+  const [view, setView] = useState<'login' | 'forgot' | 'success'>('login');
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotError, setForgotError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,10 +55,7 @@ export function Login() {
       await login(email, password);
       navigate('/', { replace: true });
     } catch (err: unknown) {
-      const error = err as {
-        message?: string;
-        errors?: Record<string, string[]>;
-      };
+      const error = err as { message?: string; errors?: Record<string, string[]> };
 
       if (error.errors) {
         const errors: FieldErrors = {};
@@ -73,10 +70,26 @@ export function Login() {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotLoading(true);
+    setForgotError('');
+    try {
+      await api.post('/auth/forgot-password', { email: forgotEmail });
+      setView('success');
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      setForgotError(error.message || "Erreur lors de l'envoi");
+    } finally {
+      setForgotLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gray-100">
       <div className="w-full h-screen flex flex-col lg:flex-row">
 
+        {/* Left panel */}
         <div className="w-full lg:w-1/2 h-full bg-gradient-to-b from-royal-700 to-[#081b33] p-8 md:p-16 flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-3">
@@ -84,7 +97,7 @@ export function Login() {
                 <span className="text-xl font-bold text-white">FC</span>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-white">Fondeg   </h1>
+                <h1 className="text-xl font-bold text-white">Fondeg</h1>
                 <p className="text-royal-300 text-xs">Catering Congo S.A.</p>
               </div>
             </div>
@@ -92,14 +105,11 @@ export function Login() {
 
           <div className="space-y-8">
             <div>
-              <h2 className="text-4xl font-bold text-white leading-tight">
-                Gestion de stock
-              </h2>
+              <h2 className="text-4xl font-bold text-white leading-tight">Gestion de stock</h2>
               <p className="text-royal-200/80 mt-3 text-base max-w-md">
                 Outil central de gestion des stocks, commandes et traçabilité
               </p>
             </div>
-
             <div className="space-y-5">
               <div className="flex items-start gap-4">
                 <div className="w-10 h-10 rounded-sm bg-royal-500/20 flex items-center justify-center flex-shrink-0">
@@ -110,9 +120,8 @@ export function Login() {
                   <p className="text-royal-300 text-sm">Suivi en temps réel des produits et lots</p>
                 </div>
               </div>
-
               <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-sm  bg-royal-500/20 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-sm bg-royal-500/20 flex items-center justify-center flex-shrink-0">
                   <Plane className="w-5 h-5 text-royal-300" />
                 </div>
                 <div>
@@ -120,9 +129,8 @@ export function Login() {
                   <p className="text-royal-300 text-sm">Gestion des compagnies aériennes et commandes</p>
                 </div>
               </div>
-
               <div className="flex items-start gap-4">
-                <div className="w-10 h-10 rounded-sm  bg-royal-500/20 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-sm bg-royal-500/20 flex items-center justify-center flex-shrink-0">
                   <Shield className="w-5 h-5 text-royal-300" />
                 </div>
                 <div>
@@ -140,6 +148,7 @@ export function Login() {
           </div>
         </div>
 
+        {/* Right panel */}
         <div className="w-full lg:w-1/2 h-full bg-[#dae2ec] p-8 md:p-16 flex flex-col justify-center items-center">
           <div className="flex items-center justify-center lg:hidden mb-8">
             <div className="w-14 h-14 rounded-xl bg-royal-700 flex items-center justify-center">
@@ -148,126 +157,195 @@ export function Login() {
           </div>
 
           <div className="w-full max-w-md bg-white rounded-xl shadow-2xl p-8 md:p-10">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-900">Connexion</h2>
-              <p className="text-gray-500 text-sm mt-1">
-                Accédez à votre espace de gestion
-              </p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="mt-8 space-y-5">
-              <div>
-                <Label className="text-sm font-medium text-gray-700">
-                  Adresse email
-                </Label>
-                <div className="relative mt-1.5">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: '' }));
-                    }}
-                    placeholder="Votre e-mail"
-                    className={cn(
-                      "pl-10 h-12 bg-white focus:ring-royal-500 text-base",
-                      fieldErrors.email
-                        ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                        : "border-gray-200 focus:border-royal-500"
-                    )}
-                    required
-                  />
+            {/* ── Login form ── */}
+            {view === 'login' && (
+              <>
+                <div className="text-center">
+                  <h2 className="text-2xl font-bold text-gray-900">Connexion</h2>
+                  <p className="text-gray-500 text-sm mt-1">Accédez à votre espace de gestion</p>
                 </div>
-                {fieldErrors.email && (
-                  <p className="mt-1.5 text-sm text-red-500">{fieldErrors.email}</p>
-                )}
-              </div>
 
-              <div>
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium text-gray-700">
-                    Mot de passe
-                  </Label>
-                  <button
-                    type="button"
-                    className="text-sm text-royal-600 hover:text-royal-700 hover:underline transition-colors"
+                <form onSubmit={handleSubmit} className="mt-8 space-y-5">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Adresse email</Label>
+                    <div className="relative mt-1.5">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        type="email"
+                        value={email}
+                        onChange={(e) => {
+                          setEmail(e.target.value);
+                          if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: '' }));
+                        }}
+                        placeholder="Votre e-mail"
+                        className={cn(
+                          "pl-10 h-12 bg-white focus:ring-royal-500 text-base",
+                          fieldErrors.email ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-gray-200 focus:border-royal-500"
+                        )}
+                        required
+                      />
+                    </div>
+                    {fieldErrors.email && <p className="mt-1.5 text-sm text-red-500">{fieldErrors.email}</p>}
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between">
+                      <Label className="text-sm font-medium text-gray-700">Mot de passe</Label>
+                      <button
+                        type="button"
+                        onClick={() => { setForgotEmail(email); setForgotError(''); setView('forgot'); }}
+                        className="text-sm text-royal-600 hover:text-royal-700 hover:underline transition-colors"
+                      >
+                        Mot de passe oublié ?
+                      </button>
+                    </div>
+                    <div className="relative mt-1.5">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          if (fieldErrors.mot_de_passe) setFieldErrors((prev) => ({ ...prev, mot_de_passe: '' }));
+                        }}
+                        placeholder="votre mot de passe"
+                        className={cn(
+                          "pl-10 pr-10 h-12 bg-white focus:ring-royal-500 text-base",
+                          fieldErrors.mot_de_passe ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "border-gray-200 focus:border-royal-500"
+                        )}
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      >
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                    {fieldErrors.mot_de_passe && <p className="mt-1.5 text-sm text-red-500">{fieldErrors.mot_de_passe}</p>}
+                  </div>
+
+                  {generalError && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{generalError}</div>
+                  )}
+
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full h-12 bg-royal-700 hover:bg-royal-800 text-white font-medium rounded-full transition-all duration-200 group text-base"
                   >
-                    Mot de passe oublié ?
-                  </button>
-                </div>
-                <div className="relative mt-1.5">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      if (fieldErrors.mot_de_passe) setFieldErrors((prev) => ({ ...prev, mot_de_passe: '' }));
-                    }}
-                    placeholder="votre mot de passe"
-                    className={cn(
-                      "pl-10 pr-10 h-12 bg-white focus:ring-royal-500 text-base",
-                      fieldErrors.mot_de_passe
-                        ? "border-red-500 focus:border-red-500 focus:ring-red-500"
-                        : "border-gray-200 focus:border-royal-500"
-                    )}
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="w-5 h-5" />
+                    {isLoading ? (
+                      <>
+                        <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+                        Connexion en cours...
+                      </>
                     ) : (
-                      <Eye className="w-5 h-5" />
+                      <>
+                        Se connecter
+                        <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+                      </>
                     )}
+                  </Button>
+
+                  <div className="flex items-center justify-center gap-2 pt-4">
+                    <Shield className="w-4 h-4 text-gray-400" />
+                    <p className="text-xs text-gray-400 text-center">Accès réservé au personnel autorisé</p>
+                  </div>
+                </form>
+              </>
+            )}
+
+            {/* ── Forgot password form ── */}
+            {view === 'forgot' && (
+              <>
+                <div className="text-center">
+                  <div className="w-14 h-14 rounded-full bg-royal-100 flex items-center justify-center mx-auto mb-3">
+                    <Mail className="w-7 h-7 text-royal-700" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900">Mot de passe oublié</h2>
+                  <p className="text-gray-500 text-sm mt-1">
+                    Entrez votre email. Un nouveau mot de passe vous sera envoyé.
+                  </p>
+                </div>
+
+                <form onSubmit={handleForgotPassword} className="mt-8 space-y-5">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Adresse email</Label>
+                    <div className="relative mt-1.5">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Input
+                        type="email"
+                        value={forgotEmail}
+                        onChange={(e) => setForgotEmail(e.target.value)}
+                        placeholder="Votre e-mail"
+                        className="pl-10 h-12 bg-white focus:ring-royal-500 text-base border-gray-200 focus:border-royal-500"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {forgotError && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">{forgotError}</div>
+                  )}
+
+                  <Button
+                    type="submit"
+                    disabled={forgotLoading || !forgotEmail}
+                    className="w-full h-12 bg-royal-700 hover:bg-royal-800 text-white font-medium rounded-full transition-all duration-200 text-base"
+                  >
+                    {forgotLoading ? (
+                      <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    ) : (
+                      <>
+                        <Mail className="w-4 h-4 mr-2" />
+                        Envoyer le nouveau mot de passe
+                      </>
+                    )}
+                  </Button>
+
+                  <button
+                    type="button"
+                    onClick={() => setView('login')}
+                    className="w-full flex items-center justify-center gap-2 text-sm text-royal-600 hover:text-royal-700 hover:underline transition-colors"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    Retour à la connexion
                   </button>
+                </form>
+              </>
+            )}
+
+            {/* ── Success ── */}
+            {view === 'success' && (
+              <>
+                <div className="text-center">
+                  <div className="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-3">
+                    <CheckCircle className="w-7 h-7 text-emerald-600" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-gray-900">Email envoyé</h2>
+                  <p className="text-gray-500 text-sm mt-2">
+                    Un nouveau mot de passe a été envoyé à<br />
+                    <strong>{forgotEmail}</strong>
+                  </p>
+                  <p className="text-gray-400 text-xs mt-2">Vérifiez votre boîte de réception.</p>
                 </div>
-                {fieldErrors.mot_de_passe && (
-                  <p className="mt-1.5 text-sm text-red-500">{fieldErrors.mot_de_passe}</p>
-                )}
-              </div>
 
-              {generalError && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                  {generalError}
+                <div className="mt-8">
+                  <Button
+                    onClick={() => setView('login')}
+                    className="w-full h-12 bg-royal-700 hover:bg-royal-800 text-white font-medium rounded-full transition-all duration-200 text-base"
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Retour à la connexion
+                  </Button>
                 </div>
-              )}
-
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="w-full h-12 bg-royal-700 hover:bg-royal-800 text-white font-medium rounded-full transition-all duration-200 group text-base"
-              >
-                {isLoading ? (
-                  <>
-                    <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
-                    Connexion en cours...
-                  </>
-                ) : (
-                  <>
-                    Se connecter
-                    <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
-                  </>
-                )}
-              </Button>
-
-              <div className="flex items-center justify-center gap-2 pt-4">
-                <Shield className="w-4 h-4 text-gray-400" />
-                <p className="text-xs text-gray-400 text-center">
-                  Accès réservé au personnel autorisé
-                </p>
-              </div>
-            </form>
+              </>
+            )}
           </div>
 
           <div className="lg:hidden text-center mt-6">
-            <p className="text-xs text-gray-400">
-              République Démocratique du Congo · Kinshasa
-            </p>
+            <p className="text-xs text-gray-400">République Démocratique du Congo · Kinshasa</p>
           </div>
         </div>
       </div>

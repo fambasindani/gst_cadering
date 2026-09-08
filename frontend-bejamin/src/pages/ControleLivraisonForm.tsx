@@ -15,6 +15,7 @@ import type { Lot } from '../types/lot';
 interface Ligne {
   key: string;
   id_lot: string;
+  id_partenaire: string;
   code_prestation_classe: string;
   code_couleur: string;
   final_holding_temperature: string;
@@ -24,7 +25,7 @@ interface Ligne {
 
 const emptyLigne = (): Ligne => ({
   key: crypto.randomUUID(),
-  id_lot: '', code_prestation_classe: '', code_couleur: '',
+  id_lot: '', id_partenaire: '', code_prestation_classe: '', code_couleur: '',
   final_holding_temperature: '', reception_client_temperature: '', commentaires: '',
 });
 
@@ -43,7 +44,6 @@ export function ControleLivraisonForm() {
   const [partenaires, setPartenaires] = useState<{ id: number; nom: string; code_iata?: string }[]>([]);
 
   const [dateOperation, setDateOperation] = useState(new Date().toISOString().split('T')[0]);
-  const [idPartenaire, setIdPartenaire] = useState('');
   const [cieNumeroVol, setCieNumeroVol] = useState('');
   const [camionPropre, setCamionPropre] = useState('');
   const [heureDebut, setHeureDebut] = useState('');
@@ -119,7 +119,6 @@ export function ControleLivraisonForm() {
     try {
       await controleLivraisonService.createBulk({
         date_operation: dateOperation,
-        id_partenaire: idPartenaire ? Number(idPartenaire) : null,
         cie_numero_vol: cieNumeroVol || null,
         camion_propre: camionPropre === 'oui' ? true : camionPropre === 'non' ? false : null,
         heure_debut: heureDebut || null,
@@ -129,6 +128,7 @@ export function ControleLivraisonForm() {
         remarque_generale: remarqueGenerale || null,
         lignes: validLignes.map(l => ({
           id_lot: l.id_lot ? Number(l.id_lot) : null,
+          id_partenaire: l.id_partenaire ? Number(l.id_partenaire) : null,
           code_prestation_classe: l.code_prestation_classe || null,
           code_couleur: l.code_couleur || null,
           final_holding_temperature: l.final_holding_temperature ? Number(l.final_holding_temperature) : null,
@@ -309,10 +309,6 @@ export function ControleLivraisonForm() {
                 {errors.date_operation && <p className="text-red-500 text-xs mt-1">{errors.date_operation}</p>}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Client / Compagnie</label>
-                <SearchableSelect options={clientOptions} value={idPartenaire} onValueChange={setIdPartenaire} placeholder="Sélectionner un client..." />
-              </div>
-              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">CIE / N° Vol</label>
                 <Input value={cieNumeroVol} onChange={(e) => setCieNumeroVol(e.target.value)} />
               </div>
@@ -345,16 +341,20 @@ export function ControleLivraisonForm() {
                     </button>
                   )}
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-7 gap-3">
                   <div className="col-span-2">
                     <label className="block text-xs font-medium text-gray-500 mb-1">Lot (produit) *</label>
                     <SearchableSelect options={lotOptions} value={ligne.id_lot} onValueChange={(v) => updateLigne(ligne.key, 'id_lot', v)} placeholder="Lot..." />
+                  </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Client / Compagnie</label>
+                    <SearchableSelect options={clientOptions} value={ligne.id_partenaire} onValueChange={(v) => updateLigne(ligne.key, 'id_partenaire', v)} placeholder="Client..." />
                   </div>
                   <div><label className="block text-xs font-medium text-gray-500 mb-1">Code prestation</label><Input value={ligne.code_prestation_classe} onChange={(e) => updateLigne(ligne.key, 'code_prestation_classe', e.target.value)} /></div>
                   <div><label className="block text-xs font-medium text-gray-500 mb-1">Code couleur</label><Input value={ligne.code_couleur} onChange={(e) => updateLigne(ligne.key, 'code_couleur', e.target.value)} /></div>
                   <div><label className="block text-xs font-medium text-gray-500 mb-1">T° final holding</label><Input type="number" step="0.1" value={ligne.final_holding_temperature} onChange={(e) => updateLigne(ligne.key, 'final_holding_temperature', e.target.value)} placeholder="+3°C" /></div>
                   <div><label className="block text-xs font-medium text-gray-500 mb-1">T° réception client</label><Input type="number" step="0.1" value={ligne.reception_client_temperature} onChange={(e) => updateLigne(ligne.key, 'reception_client_temperature', e.target.value)} placeholder="+8°C" /></div>
-                  <div className="col-span-2"><label className="block text-xs font-medium text-gray-500 mb-1">Commentaires</label><Input value={ligne.commentaires} onChange={(e) => updateLigne(ligne.key, 'commentaires', e.target.value)} /></div>
+                  <div className="col-span-3"><label className="block text-xs font-medium text-gray-500 mb-1">Commentaires</label><Input value={ligne.commentaires} onChange={(e) => updateLigne(ligne.key, 'commentaires', e.target.value)} /></div>
                 </div>
               </div>
             ))}

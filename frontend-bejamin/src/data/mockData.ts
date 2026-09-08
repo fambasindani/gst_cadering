@@ -92,6 +92,7 @@ subItems: [
       { title: 'Catégorie', path: '/configuration/categorie', permission: 'config:categories:view' },
       { title: 'Devise', path: '/configuration/devise', permission: 'config:devises:view' },
       { title: 'Taux de change', path: '/configuration/taux-change', permission: 'config:taux_conversion:view' },
+      { title: 'Paramètres', path: '/configuration/parametres', permission: 'config:parametres:view' },
       { title: 'Purge stock', path: '/configuration/purge-stock', permission: 'config:purge:stock' },
     ]
   },

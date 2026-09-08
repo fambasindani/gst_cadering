@@ -15,7 +15,9 @@ import { ConfirmModal } from '../components/ui/confirm-modal';
 import { inventaireService } from '../services/inventaire';
 import { periodeInventaireService } from '../services/periode-inventaire';
 import type { PeriodeInventaire, Inventaire } from '../types/validation';
-import { Search, RefreshCw, FileText, TrendingUp, TrendingDown, Minus, Loader2, PackageCheck } from 'lucide-react';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import { PVInventairePDF } from '../components/pdf/PVInventairePDF';
+import { Search, RefreshCw, FileText, TrendingUp, TrendingDown, Minus, Loader2, PackageCheck, ClipboardList } from 'lucide-react';
 import { cn } from '../lib/utils';
 
 export function AjustementProduit() {
@@ -35,6 +37,7 @@ export function AjustementProduit() {
   const [stockMisAJour, setStockMisAJour] = useState(false);
   const [searchInput, setSearchInput] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [allData, setAllData] = useState<Inventaire[]>([]);
 
   const fetchPeriodes = useCallback(async () => {
     try {
@@ -76,6 +79,21 @@ export function AjustementProduit() {
 
   useEffect(() => { fetchData(); }, [fetchData]);
 
+  const fetchAllData = useCallback(async () => {
+    if (!selectedPeriodeId) {
+      setAllData([]);
+      return;
+    }
+    try {
+      const res = await inventaireService.list({ periode_id: selectedPeriodeId, per_page: '5000' });
+      if (res.success) setAllData(res.data.data);
+    } catch {
+      //
+    }
+  }, [selectedPeriodeId]);
+
+  useEffect(() => { fetchAllData(); }, [fetchAllData]);
+
   const handleGenerateAjustements = async () => {
     if (!selectedPeriodeId) return;
     setGenerating(true);
@@ -99,6 +117,7 @@ export function AjustementProduit() {
     setSearchInput('');
     setSearchTerm('');
     setStockMisAJour(false);
+    setAllData([]);
     if (!value) return;
     inventaireService.resume(Number(value))
       .then((res) => { if (res.success) setStockMisAJour(Boolean(res.data?.stock_mis_a_jour)); })
@@ -162,6 +181,33 @@ export function AjustementProduit() {
           <p className="text-sm text-gray-500 mt-1">{selectedPeriodeId ? `${total} produit${total > 1 ? 's' : ''}` : 'Sélectionnez une période'}</p>
         </div>
         <div className="flex items-center gap-2">
+          {selectedPeriodeId && allData.length > 0 && (
+            <PDFDownloadLink
+              document={
+                <PVInventairePDF
+                  periode={periodes.find((p) => String(p.id) === selectedPeriodeId)!}
+                  data={allData}
+                />
+              }
+              fileName={`PV-ajustement_${(periodes.find((p) => String(p.id) === selectedPeriodeId)?.libelle || '').replace(/\s+/g, '-')}.pdf`}
+            >
+              {({ loading: pdfLoading }) => (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={pdfLoading}
+                  className="border-royal-200 text-royal-700 hover:bg-royal-50"
+                >
+                  {pdfLoading ? (
+                    <Loader2 className="w-4 h-4 mr-1.5 animate-spin" />
+                  ) : (
+                    <ClipboardList className="w-4 h-4 mr-1.5" />
+                  )}
+                  PV
+                </Button>
+              )}
+            </PDFDownloadLink>
+          )}
           {selectedPeriodeId && (
             <Button
               variant="outline"

@@ -15,6 +15,7 @@ import type { Lot } from '../types/lot';
 interface Ligne {
   key: string;
   id_lot: string;
+  id_partenaire: string;
   concentration_ppm: string;
   temps_trempage_minutes: string;
   commentaire_action_corrective: string;
@@ -22,7 +23,7 @@ interface Ligne {
 
 const emptyLigne = (): Ligne => ({
   key: crypto.randomUUID(),
-  id_lot: '', concentration_ppm: '', temps_trempage_minutes: '', commentaire_action_corrective: '',
+  id_lot: '', id_partenaire: '', concentration_ppm: '', temps_trempage_minutes: '', commentaire_action_corrective: '',
 });
 
 export function SuiviChloreForm() {
@@ -40,7 +41,6 @@ export function SuiviChloreForm() {
   const [partenaires, setPartenaires] = useState<{ id: number; nom: string; code_iata?: string }[]>([]);
 
   const [dateOperation, setDateOperation] = useState(new Date().toISOString().split('T')[0]);
-  const [idPartenaire, setIdPartenaire] = useState('');
   const [lignes, setLignes] = useState<Ligne[]>([emptyLigne()]);
 
   const [editForm, setEditForm] = useState({
@@ -100,9 +100,9 @@ export function SuiviChloreForm() {
     try {
       await suiviChloreService.createBulk({
         date_operation: dateOperation,
-        id_partenaire: idPartenaire ? Number(idPartenaire) : null,
         lignes: validLignes.map(l => ({
           id_lot: l.id_lot ? Number(l.id_lot) : null,
+          id_partenaire: l.id_partenaire ? Number(l.id_partenaire) : null,
           concentration_ppm: l.concentration_ppm ? Number(l.concentration_ppm) : null,
           temps_trempage_minutes: l.temps_trempage_minutes ? Number(l.temps_trempage_minutes) : null,
           commentaire_action_corrective: l.commentaire_action_corrective || null,
@@ -251,15 +251,11 @@ export function SuiviChloreForm() {
         <Card className="border-0 shadow-sm">
           <CardHeader><CardTitle className="flex items-center gap-2"><Droplets className="w-5 h-5 text-royal-700" /> Informations communes</CardTitle></CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Date d'opération *</label>
                 <Input type="date" value={dateOperation} onChange={(e) => { setDateOperation(e.target.value); setErrors(prev => { const n = { ...prev }; delete n.date_operation; return n; }); }} className={errors.date_operation ? 'border-red-400' : ''} />
                 {errors.date_operation && <p className="text-red-500 text-xs mt-1">{errors.date_operation}</p>}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Client / Compagnie (optionnel)</label>
-                <SearchableSelect options={clientOptions} value={idPartenaire} onValueChange={setIdPartenaire} placeholder="Sélectionner un client..." />
               </div>
             </div>
           </CardContent>
@@ -279,14 +275,18 @@ export function SuiviChloreForm() {
                     </button>
                   )}
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                   <div className="col-span-2">
                     <label className="block text-xs font-medium text-gray-500 mb-1">Lot (produit) *</label>
                     <SearchableSelect options={lotOptions} value={ligne.id_lot} onValueChange={(v) => updateLigne(ligne.key, 'id_lot', v)} placeholder="Lot..." />
                   </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Client / Compagnie</label>
+                    <SearchableSelect options={clientOptions} value={ligne.id_partenaire} onValueChange={(v) => updateLigne(ligne.key, 'id_partenaire', v)} placeholder="Client..." />
+                  </div>
                   <div><label className="block text-xs font-medium text-gray-500 mb-1">Concentration (ppm)</label><Input type="number" step="0.1" value={ligne.concentration_ppm} onChange={(e) => updateLigne(ligne.key, 'concentration_ppm', e.target.value)} placeholder="50-100" /></div>
                   <div><label className="block text-xs font-medium text-gray-500 mb-1">Temps trempage (min)</label><Input type="number" value={ligne.temps_trempage_minutes} onChange={(e) => updateLigne(ligne.key, 'temps_trempage_minutes', e.target.value)} placeholder="5" /></div>
-                  <div className="col-span-2">
+                  <div className="col-span-3">
                     <label className="block text-xs font-medium text-gray-500 mb-1">Commentaire / Action corrective</label>
                     <Input value={ligne.commentaire_action_corrective} onChange={(e) => updateLigne(ligne.key, 'commentaire_action_corrective', e.target.value)} placeholder="En cas de non-conformité..." />
                   </div>

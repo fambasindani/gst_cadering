@@ -50,6 +50,7 @@ import { ConfigurationDepartement } from './pages/ConfigurationDepartement';
 import { ConfigurationDevise } from './pages/ConfigurationDevise';
 import { ConfigurationTauxConversion } from './pages/ConfigurationTauxConversion';
 import { ConfigurationCategorie } from './pages/ConfigurationCategorie';
+import { ConfigurationParametre } from './pages/ConfigurationParametre';
 import { PurgeStock } from './pages/PurgeStock';
 import { ConfigurationUtilisateurs } from './pages/ConfigurationUtilisateurs';
 import { ConfigurationUtilisateurForm } from './pages/ConfigurationUtilisateurForm';
@@ -134,6 +135,7 @@ function App() {
           <Route path="configuration/devise" element={<ConfigurationDevise />} />
           <Route path="configuration/taux-change" element={<ConfigurationTauxConversion />} />
           <Route path="configuration/categorie" element={<ConfigurationCategorie />} />
+          <Route path="configuration/parametres" element={<ConfigurationParametre />} />
           <Route path="configuration/purge-stock" element={<PurgeStock />} />
           <Route path="partenaire" element={<Partenaires />} />
           <Route path="partenaire/creer" element={<PartenaireForm />} />

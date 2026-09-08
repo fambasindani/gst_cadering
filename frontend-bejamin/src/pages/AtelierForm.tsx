@@ -15,6 +15,7 @@ import type { Lot } from '../types/lot';
 interface Ligne {
   key: string;
   id_lot: string;
+  id_partenaire: string;
   code_prestation: string;
   quantite: string;
   produits_utilises: string;
@@ -29,7 +30,7 @@ interface Ligne {
 
 const emptyLigne = (): Ligne => ({
   key: crypto.randomUUID(),
-  id_lot: '', code_prestation: '', quantite: '', produits_utilises: '',
+  id_lot: '', id_partenaire: '', code_prestation: '', quantite: '', produits_utilises: '',
   code_couleur_produit_dlc: '', cycle_classe: '', heure_debut: '',
   temperature_surface_debut: '', heure_fin: '', temperature_surface_fin: '', action_corrective: '',
 });
@@ -50,7 +51,6 @@ export function AtelierForm() {
 
   const [typeAtelier, setTypeAtelier] = useState('');
   const [dateOperation, setDateOperation] = useState(new Date().toISOString().split('T')[0]);
-  const [idPartenaire, setIdPartenaire] = useState('');
   const [temperatureAtelier, setTemperatureAtelier] = useState('');
   const [lignes, setLignes] = useState<Ligne[]>([emptyLigne()]);
 
@@ -123,6 +123,7 @@ export function AtelierForm() {
         temperature_atelier: temperatureAtelier ? Number(temperatureAtelier) : null,
         lignes: validLignes.map(l => ({
           id_lot: l.id_lot ? Number(l.id_lot) : null,
+          id_partenaire: l.id_partenaire ? Number(l.id_partenaire) : null,
           code_prestation: l.code_prestation || null,
           quantite: l.quantite || null,
           produits_utilises: l.produits_utilises || null,
@@ -315,7 +316,7 @@ export function AtelierForm() {
         <Card className="border-0 shadow-sm">
           <CardHeader><CardTitle className="flex items-center gap-2"><Factory className="w-5 h-5 text-amber-600" /> Informations communes</CardTitle></CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Type d'atelier *</label>
                 <select value={typeAtelier} onChange={(e) => { setTypeAtelier(e.target.value); setErrors(prev => { const n = { ...prev }; delete n.type_atelier; return n; }); }} className={`flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ${errors.type_atelier ? 'border-red-400' : 'border-input'}`}>
@@ -329,10 +330,6 @@ export function AtelierForm() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Date d'opération *</label>
                 <Input type="date" value={dateOperation} onChange={(e) => { setDateOperation(e.target.value); setErrors(prev => { const n = { ...prev }; delete n.date_operation; return n; }); }} className={errors.date_operation ? 'border-red-400' : ''} />
                 {errors.date_operation && <p className="text-red-500 text-xs mt-1">{errors.date_operation}</p>}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Client / Compagnie</label>
-                <SearchableSelect options={clientOptions} value={idPartenaire} onValueChange={setIdPartenaire} placeholder="Sélectionner un client..." />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">T° atelier (°C)</label>
@@ -358,15 +355,19 @@ export function AtelierForm() {
                     </button>
                   )}
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
                   <div className="col-span-2">
                     <label className="block text-xs font-medium text-gray-500 mb-1">Lot (produit) *</label>
                     <SearchableSelect options={lotOptions} value={ligne.id_lot} onValueChange={(v) => updateLigne(ligne.key, 'id_lot', v)} placeholder="Lot..." />
                   </div>
+                  <div className="col-span-2">
+                    <label className="block text-xs font-medium text-gray-500 mb-1">Client / Compagnie</label>
+                    <SearchableSelect options={clientOptions} value={ligne.id_partenaire} onValueChange={(v) => updateLigne(ligne.key, 'id_partenaire', v)} placeholder="Client..." />
+                  </div>
                   <div><label className="block text-xs font-medium text-gray-500 mb-1">Code prestation</label><Input value={ligne.code_prestation} onChange={(e) => updateLigne(ligne.key, 'code_prestation', e.target.value)} /></div>
                   <div><label className="block text-xs font-medium text-gray-500 mb-1">Quantité</label><Input value={ligne.quantite} onChange={(e) => updateLigne(ligne.key, 'quantite', e.target.value)} /></div>
-                  <div className="col-span-2"><label className="block text-xs font-medium text-gray-500 mb-1">Produits utilisés</label><Input value={ligne.produits_utilises} onChange={(e) => updateLigne(ligne.key, 'produits_utilises', e.target.value)} /></div>
                   <div><label className="block text-xs font-medium text-gray-500 mb-1">Couleur / DLC</label><Input value={ligne.code_couleur_produit_dlc} onChange={(e) => updateLigne(ligne.key, 'code_couleur_produit_dlc', e.target.value)} /></div>
+                  <div className="col-span-2"><label className="block text-xs font-medium text-gray-500 mb-1">Produits utilisés</label><Input value={ligne.produits_utilises} onChange={(e) => updateLigne(ligne.key, 'produits_utilises', e.target.value)} /></div>
                   <div><label className="block text-xs font-medium text-gray-500 mb-1">Cycle / Classe</label><Input value={ligne.cycle_classe} onChange={(e) => updateLigne(ligne.key, 'cycle_classe', e.target.value)} /></div>
                   <div><label className="block text-xs font-medium text-gray-500 mb-1">Début</label><Input type="time" value={ligne.heure_debut} onChange={(e) => updateLigne(ligne.key, 'heure_debut', e.target.value)} /></div>
                   <div><label className="block text-xs font-medium text-gray-500 mb-1">T° début</label><Input type="number" step="0.1" value={ligne.temperature_surface_debut} onChange={(e) => updateLigne(ligne.key, 'temperature_surface_debut', e.target.value)} /></div>

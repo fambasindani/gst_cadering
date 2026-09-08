@@ -7,6 +7,9 @@ use App\Models\Utilisateur;
 use App\Models\Audit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+use App\Mail\NouveauMotDePasseMail;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -307,6 +310,80 @@ class AuthController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur lors de la récupération des données',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Forgot password - generate new password and send by email
+     */
+    public function forgotPassword(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'email' => 'required|email',
+            ]);
+
+            $utilisateur = Utilisateur::where('email', $validated['email'])->first();
+
+            // Always return success to prevent email enumeration
+            if (!$utilisateur) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Si cet email existe, un nouveau mot de passe a été envoyé.'
+                ]);
+            }
+
+            // Generate random password
+            $nouveauMotDePasse = Str::random(12);
+
+            // Update password
+            $utilisateur->update([
+                'mot_de_passe_hash' => Hash::make($nouveauMotDePasse),
+            ]);
+
+            // Send email
+            Mail::to($utilisateur->email)->send(
+                new NouveauMotDePasseMail(
+                    $utilisateur->full_name,
+                    $utilisateur->email,
+                    $nouveauMotDePasse
+                )
+            );
+
+            // Audit log
+            Audit::create([
+                'id_utilisateur' => $utilisateur->id,
+                'action' => 'PASSWORD_RESET',
+                'table_cible' => 'utilisateurs',
+                'id_enregistrement' => $utilisateur->id,
+                'anciennes_valeurs' => null,
+                'nouvelles_valeurs' => json_encode([
+                    'email' => $utilisateur->email,
+                    'method' => 'forgot_password',
+                ]),
+                'date_action' => now(),
+                'adresse_ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'route' => 'api/auth/forgot-password'
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Un nouveau mot de passe a été envoyé à votre adresse email.'
+            ]);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur de validation',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la réinitialisation',
                 'error' => $e->getMessage()
             ], 500);
         }

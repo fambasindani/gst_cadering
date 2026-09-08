@@ -259,6 +259,14 @@ class PermissionSeeder extends Seeder
             ['nom' => 'Modifier un contrôle livraison', 'code' => 'config:controle_livraison:update'],
             ['nom' => 'Supprimer un contrôle livraison', 'code' => 'config:controle_livraison:delete'],
 
+            // ============================================================
+            // CONFIG - Paramètres
+            // ============================================================
+            ['nom' => 'Voir les paramètres', 'code' => 'config:parametres:view'],
+            ['nom' => 'Créer un paramètre', 'code' => 'config:parametres:create'],
+            ['nom' => 'Modifier un paramètre', 'code' => 'config:parametres:update'],
+            ['nom' => 'Supprimer un paramètre', 'code' => 'config:parametres:delete'],
+
         ];
 
         foreach ($permissions as $permission) {

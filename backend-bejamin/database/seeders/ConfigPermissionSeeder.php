@@ -66,6 +66,12 @@ class ConfigPermissionSeeder extends Seeder
 
             // Purge stock
             ['nom' => 'Purger le stock (entrées/sorties)', 'code' => 'config:purge:stock'],
+
+            // Paramètres
+            ['nom' => 'Voir les paramètres', 'code' => 'config:parametres:view'],
+            ['nom' => 'Créer un paramètre', 'code' => 'config:parametres:create'],
+            ['nom' => 'Modifier un paramètre', 'code' => 'config:parametres:update'],
+            ['nom' => 'Supprimer un paramètre', 'code' => 'config:parametres:delete'],
         ];
 
         foreach ($permissions as $permission) {

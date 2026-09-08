@@ -36,17 +36,21 @@ class EnvoyerAlertePrixBonCommande implements ShouldQueue
         $users = Utilisateur::where('actif', true)->get();
         if ($users->isEmpty()) return;
 
-        $emails = $users->pluck('email')->filter()->values()->toArray();
-        if (empty($emails)) return;
-
-        Mail::to($emails)->send(
-            new AlertePrixBonCommandeMail(
-                $this->alertes,
-                $this->numeroCommande,
-                $this->fournisseur,
-                $this->dateCommande
-            )
-        );
+        foreach ($users as $user) {
+            if (empty($user->email)) continue;
+            try {
+                Mail::to($user->email)->send(
+                    new AlertePrixBonCommandeMail(
+                        $this->alertes,
+                        $this->numeroCommande,
+                        $this->fournisseur,
+                        $this->dateCommande
+                    )
+                );
+            } catch (\Exception $e) {
+                \Log::warning("Échec envoi email alerte prix à {$user->email}: " . $e->getMessage());
+            }
+        }
     }
 
     public function failed(\Throwable $exception): void

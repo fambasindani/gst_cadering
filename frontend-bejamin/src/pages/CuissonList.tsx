@@ -11,7 +11,7 @@ import { useIsAdmin } from '../hooks/useIsAdmin';
 import { useAuthStore } from '../store/authStore';
 import { cuissonService } from '../services/cuisson';
 import type { CuissonTracabilite } from '../types/cuisson';
-import { Search, RefreshCw, Eye, Edit3, Trash2, Flame, Filter, Plus, FileDown } from 'lucide-react';
+import { Search, RefreshCw, Eye, Edit3, Trash2, Flame, Filter, Plus, FileDown, Printer } from 'lucide-react';
 import { pdf } from '@react-pdf/renderer';
 import { CuissonPdfDocument } from '../components/pdf/CuissonPdfDocument';
 import { cn } from '../lib/utils';
@@ -121,6 +121,25 @@ export function CuissonList() {
       toast('Erreur lors de la génération du PDF', 'error');
     } finally {
       setPdfLoading(false);
+    }
+  };
+
+  const handlePrintSingle = async (item: CuissonTracabilite) => {
+    try {
+      const res = await cuissonService.get(item.id);
+      if (!res.success || !res.data) {
+        toast('Erreur lors du chargement', 'error');
+        return;
+      }
+      const blob = await pdf(<CuissonPdfDocument data={[res.data]} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `cuisson-${res.data.lot?.produit?.nom || item.id}-${res.data.date_operation || ''}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast('Erreur lors de la génération du PDF', 'error');
     }
   };
 
@@ -300,6 +319,14 @@ export function CuissonList() {
                               onClick={() => navigate(`/stock/cuisson/${item.id}`)}
                             >
                               <Eye className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 p-0 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg"
+                              onClick={() => handlePrintSingle(item)}
+                            >
+                              <Printer className="w-4 h-4" />
                             </Button>
                             {(isAdmin || item.id_utilisateur === user?.id) && (
                               <>
