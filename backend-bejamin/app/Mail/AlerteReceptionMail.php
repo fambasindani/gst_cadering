@@ -28,14 +28,21 @@ class AlerteReceptionMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "⚠ Alerte réception - Bon {$this->numeroCommande}",
+            subject: "Alerte réception - Bon {$this->numeroCommande}",
         );
+    }
+
+    public function withSymfonyMessage($message): \Symfony\Component\Mime\RawMessage
+    {
+        $message->getHeaders()->addTextHeader('Reply-To', 'pierrpapy@gmail.com');
+        return $message;
     }
 
     public function content(): Content
     {
         return new Content(
             htmlString: $this->buildHtml(),
+            text: 'emails.alerte_reception',
         );
     }
 

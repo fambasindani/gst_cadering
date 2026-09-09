@@ -28,14 +28,21 @@ class AlertePrixBonCommandeMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: "⚠ Alerte prix — Bon de commande {$this->numeroCommande}",
+            subject: "Alerte prix — Bon de commande {$this->numeroCommande}",
         );
+    }
+
+    public function withSymfonyMessage($message): \Symfony\Component\Mime\RawMessage
+    {
+        $message->getHeaders()->addTextHeader('Reply-To', 'pierrpapy@gmail.com');
+        return $message;
     }
 
     public function content(): Content
     {
         return new Content(
             htmlString: $this->buildHtml(),
+            text: 'emails.alerte_prix',
         );
     }
 

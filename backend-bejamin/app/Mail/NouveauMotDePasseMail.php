@@ -30,15 +30,23 @@ class NouveauMotDePasseMail extends Mailable
         );
     }
 
+    public function withSymfonyMessage($message): \Symfony\Component\Mime\RawMessage
+    {
+        $message->getHeaders()->addTextHeader('Reply-To', 'pierrpapy@gmail.com');
+        return $message;
+    }
+
     public function content(): Content
     {
         return new Content(
             htmlString: $this->buildHtml(),
+            text: 'emails.nouveau_mot_de_passe',
         );
     }
 
     private function buildHtml(): string
     {
+        $dateNow = now()->format('d/m/Y H:i');
         return "
         <div style='font-family:Arial,sans-serif;max-width:600px;margin:0 auto;'>
             <div style='background:#1e3a5f;color:white;padding:20px 24px;border-radius:8px 8px 0 0;'>
@@ -55,7 +63,7 @@ class NouveauMotDePasseMail extends Mailable
                 <p style='margin:0 0 16px;color:#e74c3c;font-weight:bold;'>⚠️ Connectez-vous et changez ce mot de passe immédiatement.</p>
                 <table style='width:100%;border-collapse:collapse;'>
                     <tr><td style='padding:6px 0;color:#666;'>Email :</td><td style='padding:6px 0;'>{$this->email}</td></tr>
-                    <tr><td style='padding:6px 0;color:#666;'>Date :</td><td style='padding:6px 0;'>{now()->format('d/m/Y H:i')}</td></tr>
+                    <tr><td style='padding:6px 0;color:#666;'>Date :</td><td style='padding:6px 0;'>{$dateNow}</td></tr>
                 </table>
             </div>
             <div style='background:#f8fafc;padding:14px 24px;border:1px solid #e5e7eb;border-radius:0 0 8px 8px;text-align:center;'>

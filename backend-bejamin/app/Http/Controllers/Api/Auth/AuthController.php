@@ -7,9 +7,7 @@ use App\Models\Utilisateur;
 use App\Models\Audit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
-use App\Mail\NouveauMotDePasseMail;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -343,13 +341,11 @@ class AuthController extends Controller
                 'mot_de_passe_hash' => Hash::make($nouveauMotDePasse),
             ]);
 
-            // Send email
-            Mail::to($utilisateur->email)->send(
-                new NouveauMotDePasseMail(
-                    $utilisateur->full_name,
-                    $utilisateur->email,
-                    $nouveauMotDePasse
-                )
+            // Dispatch job email en arrière-plan
+            \App\Jobs\EnvoyerNouveauMotDePasse::dispatch(
+                $utilisateur->full_name,
+                $utilisateur->email,
+                $nouveauMotDePasse
             );
 
             // Audit log

@@ -251,18 +251,14 @@ class BonCommandeController extends Controller
 
                 DB::commit();
 
-                // Envoi email APRÈS commit pour ne pas rollbacker la transaction si l'envoi échoue
+                // Dispatch job email APRÈS commit
                 if (!empty($alertesPrixPayload ?? null)) {
-                    try {
-                        EnvoyerAlertePrixBonCommande::dispatch(
-                            $alertesPrixPayload,
-                            $numeroCommande,
-                            $partenaireNom,
-                            $dateCommande
-                        );
-                    } catch (\Exception $e) {
-                        \Log::warning("Échec envoi email alerte prix: " . $e->getMessage());
-                    }
+                    \App\Jobs\EnvoyerAlertePrixBonCommande::dispatch(
+                        $alertesPrixPayload,
+                        $numeroCommande,
+                        $partenaireNom,
+                        $dateCommande
+                    );
                 }
 
                 // Créer/mettre à jour une notification pour tous les utilisateurs actifs ayant la permission
@@ -776,6 +772,9 @@ class BonCommandeController extends Controller
                         $referenceReception
                     );
 
+                    // Capturer l'ancienne quantité AVANT mise à jour
+                    $qteAvant = (int) $ligne->quantite_recue;
+
                     // Mettre à jour la ligne de commande
                     $ligne->quantite_recue += $reception['quantite_recue'];
                     $ligne->save();
@@ -790,6 +789,9 @@ class BonCommandeController extends Controller
                     $prixRecu = (float) ($reception['prix_achat_ht_unitaire'] ?? $ligne->prix_unitaire_ht);
                     $qteRecue = (int) $reception['quantite_recue'];
                     $qteCommandee = (int) $ligne->quantite_commandee;
+                    // quantite_recue sur la ligne = déjà mis à jour par la loop 2
+                    $qteTotaleApres = (int) $ligne->quantite_recue;
+                    $qteDejaRecue = $qteTotaleApres - $qteRecue;
 
                     // Comparer le prix de réception avec le dernier prix dans prix_commande
                     $dernierPrixCmd = PrixCommande::dernierPrix($ligne->id_produit);
@@ -808,15 +810,15 @@ class BonCommandeController extends Controller
                         ];
                     }
 
-                    // Comparer quantité reçue vs quantité commandée
-                    if ($qteRecue !== $qteCommandee) {
-                        $ecartQte = $qteRecue - $qteCommandee;
+                    // Comparer quantité totale reçue (cumul) vs quantité commandée
+                    if ($qteTotaleApres !== $qteCommandee) {
+                        $ecartQte = $qteTotaleApres - $qteCommandee;
                         $signeQte = $ecartQte > 0 ? '+' : '';
                         $alertes[] = [
                             'type' => 'quantite',
                             'produit' => $ligne->produit->nom ?? 'Produit #' . $ligne->id_produit,
-                            'ancien' => $qteCommandee . ' unités',
-                            'nouveau' => $qteRecue . ' unités',
+                            'ancien' => $qteDejaRecue . ' unités',
+                            'nouveau' => $qteTotaleApres . ' unités',
                             'difference' => $signeQte . $ecartQte . ' unité(s)',
                         ];
                     }
@@ -868,18 +870,14 @@ class BonCommandeController extends Controller
 
                 DB::commit();
 
-                // Envoi email APRÈS commit pour ne pas rollbacker la transaction si l'envoi échoue
+                // Dispatch job email APRÈS commit
                 if (!empty($alertesPayload ?? null)) {
-                    try {
-                        EnvoyerAlerteReception::dispatch(
-                            $alertesPayload,
-                            $numeroCommandeReception,
-                            $partenaireNomReception,
-                            now()->format('d/m/Y')
-                        );
-                    } catch (\Exception $e) {
-                        \Log::warning("Échec envoi email alerte réception: " . $e->getMessage());
-                    }
+                    \App\Jobs\EnvoyerAlerteReception::dispatch(
+                        $alertesPayload,
+                        $numeroCommandeReception,
+                        $partenaireNomReception,
+                        now()->format('d/m/Y')
+                    );
                 }
 
                 $data = $bonCommande->load(['partenaire', 'magasinDestination', 'lignes'])->toArray();
