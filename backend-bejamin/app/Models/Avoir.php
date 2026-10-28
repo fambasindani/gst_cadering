@@ -24,7 +24,7 @@ class Avoir extends Model
 
     protected $casts = [
         'date_avoir' => 'date',
-        'montant_ht' => 'decimal:2',
+        'montant_ht' => 'decimal:3',
     ];
 
     public function client()

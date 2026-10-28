@@ -435,7 +435,7 @@ export function ReceptionForm() {
                     ) : null}
                     <div className="space-y-1">
                       <Label className="text-xs text-gray-500">Prix unit. HT</Label>
-                      <Input type="number" step="0.01" min="0" value={rd.prix_achat_ht_unitaire}
+                      <Input type="number" step="0.001" min="0" value={rd.prix_achat_ht_unitaire}
                         onChange={(e) => updateLigne(l.id, 'prix_achat_ht_unitaire', e.target.value)}
                         className={errorClass(fieldErrors[`${l.id}.prix_achat_ht_unitaire`])} />
                       {fieldErrors[`${l.id}.prix_achat_ht_unitaire`] && (

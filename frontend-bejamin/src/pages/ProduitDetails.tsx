@@ -530,7 +530,7 @@ export function ProduitDetails() {
                 Prix d'achat HT *
               </Label>
               <Input
-                type="number" step="0.01" min="0"
+                type="number" step="0.001" min="0"
                 value={prixForm.prix_achat_ht}
                 onChange={(e) => setPrixForm((p) => ({ ...p, prix_achat_ht: e.target.value }))}
                 className={cn('bg-royal-700 text-white placeholder:text-white/40 border-royal-600 focus:border-royal-500 focus:ring-royal-500', prixErrors.prix_achat_ht && 'border-red-400')}

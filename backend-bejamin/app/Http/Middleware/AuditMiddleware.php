@@ -49,7 +49,7 @@ class AuditMiddleware
         }
 
         // Exclure les routes d'authentification (déjà gérées par AuthController)
-        $excludedRoutes = ['api/auth/login', 'api/auth/register', 'api/auth/logout'];
+        $excludedRoutes = ['api/auth/login', 'api/auth/register', 'api/auth/logout', 'api/audits/purger'];
         if (in_array($request->path(), $excludedRoutes)) {
             return false;
         }

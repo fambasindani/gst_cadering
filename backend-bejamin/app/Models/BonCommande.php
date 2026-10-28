@@ -31,7 +31,7 @@ class BonCommande extends Model
         'date_commande' => 'date',
         'date_livraison_prevue' => 'date',
         'date_validation' => 'datetime',
-        'montant_total_ht' => 'decimal:2',
+        'montant_total_ht' => 'decimal:3',
     ];
 
     // Relations

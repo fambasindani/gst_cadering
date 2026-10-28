@@ -348,7 +348,7 @@ export function BonCommandeForm() {
                           className={cn('text-right h-10 border-gray-200 shadow-sm', fieldErrors[`lignes.${i}.quantite_commandee`] && 'border-red-400')} />
                       </TableCell>
                       <TableCell className="w-28">
-                        <Input type="number" step="0.01" min="0" value={l.prix_unitaire_ht}
+                        <Input type="number" step="0.001" min="0" value={l.prix_unitaire_ht}
                           onChange={(e) => updateLigne(l.key, 'prix_unitaire_ht', e.target.value)}
                           className={cn('text-right h-10 border-gray-200 shadow-sm', fieldErrors[`lignes.${i}.prix_unitaire_ht`] && 'border-red-400')} />
                       </TableCell>

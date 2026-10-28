@@ -333,7 +333,7 @@ export function ProduitForm() {
                     <LabelIcon icon={DollarSign} required error={fieldErrors.prix_achat_ht}>Prix d'achat HT</LabelIcon>
                     <div className="relative">
                       <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                      <Input type="number" step="0.01" min="0" value={values.prix_achat_ht}
+                      <Input type="number" step="0.001" min="0" value={values.prix_achat_ht}
                         onChange={(e) => set('prix_achat_ht', e.target.value)}
                         placeholder="0,00" className={cn('h-11 border-gray-200 shadow-sm pl-9', errorClass(fieldErrors.prix_achat_ht))} />
                     </div>

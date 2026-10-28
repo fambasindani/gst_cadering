@@ -11,7 +11,9 @@ import { RefreshCw, Download, Calendar, Calculator, Users, Percent } from 'lucid
 import { cn } from '../../lib/utils';
 
 function formatNumber(v: number): string {
-  return (v ?? 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  let s = (v ?? 0).toFixed(3);
+  if (s.endsWith('0')) s = s.slice(0, -1);
+  return s.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
 
 function formatDateFr(iso: string): string {
@@ -184,12 +186,12 @@ export function VariationStock() {
                 </tr>
                 <tr className="border-b border-gray-100">
                   <td className="px-4 py-2 text-gray-800">Chiffre d'affaires réalisé* FOOD</td>
-                  <td className="px-4 py-2"><Input type="number" value={values.caFood ?? ''} onChange={set('caFood')} className={moneyStyle} placeholder="0.00" /></td>
+                  <td className="px-4 py-2"><Input type="number" step="0.001" value={values.caFood ?? ''} onChange={set('caFood')} className={moneyStyle} placeholder="0.00" /></td>
                   <td className="px-4 py-2 text-xs text-gray-500">CA hors redevance aéroportuaire</td>
                 </tr>
                 <tr className="border-b border-gray-100 bg-gray-50/50">
                   <td className="px-4 py-2 text-gray-800">Chiffre d'affaires Hand + divers</td>
-                  <td className="px-4 py-2"><Input type="number" value={values.caHand ?? ''} onChange={set('caHand')} className={moneyStyle} placeholder="0.00" /></td>
+                  <td className="px-4 py-2"><Input type="number" step="0.001" value={values.caHand ?? ''} onChange={set('caHand')} className={moneyStyle} placeholder="0.00" /></td>
                   <td className="px-4 py-2 text-xs text-gray-500">CA hors redevance aéroportuaire</td>
                 </tr>
                 <tr className="bg-gray-200/70">
@@ -203,22 +205,22 @@ export function VariationStock() {
                 </tr>
                 <tr className="border-b border-gray-100">
                   <td className="px-4 py-2 text-gray-800">Stock initial</td>
-                  <td className="px-4 py-2"><Input type="number" value={values.stockInitial ?? ''} onChange={set('stockInitial')} className={moneyStyle} placeholder="0.00" /></td>
+                  <td className="px-4 py-2"><Input type="number" step="0.001" value={values.stockInitial ?? ''} onChange={set('stockInitial')} className={moneyStyle} placeholder="0.00" /></td>
                   <td className="px-4 py-2" />
                 </tr>
                 <tr className="border-b border-gray-100 bg-gray-50/50">
                   <td className="px-4 py-2 text-gray-800">Achats Matières FOOD du mois*</td>
-                  <td className="px-4 py-2"><Input type="number" value={values.achatsFood ?? ''} onChange={set('achatsFood')} className={moneyStyle} placeholder="0.00" /></td>
+                  <td className="px-4 py-2"><Input type="number" step="0.001" value={values.achatsFood ?? ''} onChange={set('achatsFood')} className={moneyStyle} placeholder="0.00" /></td>
                   <td className="px-4 py-2" />
                 </tr>
                 <tr className="border-b border-gray-100">
                   <td className="px-4 py-2 text-gray-800">Stock initial</td>
-                  <td className="px-4 py-2"><Input type="number" value={values.stockInitial2 ?? ''} onChange={set('stockInitial2')} className={moneyStyle} placeholder="0.00" /></td>
+                  <td className="px-4 py-2"><Input type="number" step="0.001" value={values.stockInitial2 ?? ''} onChange={set('stockInitial2')} className={moneyStyle} placeholder="0.00" /></td>
                   <td className="px-4 py-2" />
                 </tr>
                 <tr className="border-b border-gray-100 bg-gray-50/50">
                   <td className="px-4 py-2 text-gray-800">Achats Matières et Lessiviels du mois*</td>
-                  <td className="px-4 py-2"><Input type="number" value={values.achatsLessiviels ?? ''} onChange={set('achatsLessiviels')} className={moneyStyle} placeholder="0.00" /></td>
+                  <td className="px-4 py-2"><Input type="number" step="0.001" value={values.achatsLessiviels ?? ''} onChange={set('achatsLessiviels')} className={moneyStyle} placeholder="0.00" /></td>
                   <td className="px-4 py-2" />
                 </tr>
                 <tr className="bg-gray-200/70">
@@ -228,7 +230,7 @@ export function VariationStock() {
                 </tr>
                 <tr className="border-b border-gray-100 bg-gray-50/50">
                   <td className="px-4 py-2 text-gray-800">Valeur consommation matières FOOD du mois*</td>
-                  <td className="px-4 py-2"><Input type="number" value={values.consoFood ?? ''} onChange={set('consoFood')} className={moneyStyle} placeholder="0.00" /></td>
+                  <td className="px-4 py-2"><Input type="number" step="0.001" value={values.consoFood ?? ''} onChange={set('consoFood')} className={moneyStyle} placeholder="0.00" /></td>
                   <td className="px-4 py-2" />
                 </tr>
                 <tr className="bg-gray-200/70">
@@ -242,22 +244,22 @@ export function VariationStock() {
                 </tr>
                 <tr className="bg-gray-200/70 border-b border-gray-300">
                   <td className="px-4 py-2.5 font-bold text-gray-900">CONSOMMATION NON-AERIENNE</td>
-                  <td className="px-4 py-2.5 font-bold font-mono text-right text-gray-900"><Input type="number" value={values.consoNonAerienne ?? ''} onChange={set('consoNonAerienne')} className={cn(moneyStyle, 'bg-transparent border-gray-300')} placeholder="0.00" /></td>
+                  <td className="px-4 py-2.5 font-bold font-mono text-right text-gray-900"><Input type="number" step="0.001" value={values.consoNonAerienne ?? ''} onChange={set('consoNonAerienne')} className={cn(moneyStyle, 'bg-transparent border-gray-300')} placeholder="0.00" /></td>
                   <td className="px-4 py-2.5" />
                 </tr>
                 <tr className="bg-gray-200/70 border-b border-gray-300">
                   <td className="px-4 py-2.5 font-bold text-gray-900">CONSOMMATION AERIENNE</td>
-                  <td className="px-4 py-2.5 font-bold font-mono text-right text-gray-900"><Input type="number" value={values.consoAerienne ?? ''} onChange={set('consoAerienne')} className={cn(moneyStyle, 'bg-transparent border-gray-300')} placeholder="0.00" /></td>
+                  <td className="px-4 py-2.5 font-bold font-mono text-right text-gray-900"><Input type="number" step="0.001" value={values.consoAerienne ?? ''} onChange={set('consoAerienne')} className={cn(moneyStyle, 'bg-transparent border-gray-300')} placeholder="0.00" /></td>
                   <td className="px-4 py-2.5" />
                 </tr>
                 <tr className="border-b border-gray-100">
                   <td className="px-4 py-2 text-gray-800">RATIO ESTIME</td>
-                  <td className="px-4 py-2"><Input type="number" value={values.ratio ?? ''} onChange={set('ratio')} className={moneyStyle} placeholder="0.00" /></td>
+                  <td className="px-4 py-2"><Input type="number" step="0.001" value={values.ratio ?? ''} onChange={set('ratio')} className={moneyStyle} placeholder="0.00" /></td>
                   <td className="px-4 py-2" />
                 </tr>
                 <tr className="border-b border-gray-100 bg-gray-50/50">
                   <td className="px-4 py-2 text-gray-800">CA FOOD ESTIME</td>
-                  <td className="px-4 py-2"><Input type="number" value={values.caFoodEstime ?? ''} onChange={set('caFoodEstime')} className={moneyStyle} placeholder="0.00" /></td>
+                  <td className="px-4 py-2"><Input type="number" step="0.001" value={values.caFoodEstime ?? ''} onChange={set('caFoodEstime')} className={moneyStyle} placeholder="0.00" /></td>
                   <td className="px-4 py-2" />
                 </tr>
                 <tr>
@@ -312,7 +314,7 @@ export function VariationStock() {
                 <Calculator className="w-4 h-4 text-gray-400" />
                 Chiffre d'affaires ($)
               </label>
-              <Input type="number" value={ratioCA} onChange={(e) => setRatioCA(e.target.value)} placeholder="0.00" className={moneyStyle} />
+              <Input type="number" step="0.001" value={ratioCA} onChange={(e) => setRatioCA(e.target.value)} placeholder="0.00" className={moneyStyle} />
             </div>
           </div>
 

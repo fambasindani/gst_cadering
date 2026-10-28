@@ -13,7 +13,9 @@ function formatDate(dateStr: string | null | undefined): string {
 
 function formatMontant(value: number, currency?: string): string {
   const num = Number(value) || 0;
-  const formatted = num.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  let formatted = num.toFixed(3);
+  if (formatted.endsWith('0')) formatted = formatted.slice(0, -1);
+  formatted = formatted.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
   return currency ? `${formatted} ${currency}` : formatted;
 }
 

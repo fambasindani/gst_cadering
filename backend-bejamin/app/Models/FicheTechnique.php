@@ -29,9 +29,9 @@ class FicheTechnique extends Model
     protected $casts = [
         'rendement' => 'integer',
         'poids_portion' => 'float',
-        'cout_total' => 'decimal:2',
-        'cout_unitaire' => 'decimal:2',
-        'prix_kg' => 'decimal:2',
+        'cout_total' => 'decimal:3',
+        'cout_unitaire' => 'decimal:3',
+        'prix_kg' => 'decimal:3',
         'actif' => 'boolean',
     ];
 

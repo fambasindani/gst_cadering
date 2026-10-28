@@ -343,7 +343,7 @@ export function ConfigurationTauxConversion() {
           <div>
             <Label className="text-sm font-medium text-white/80">Taux (1 USD = ?) *</Label>
             <Input
-              type="number" step="0.01" min="0.01"
+              type="number" step="0.001" min="0.01"
               value={form.taux}
               onChange={(e) => { setForm((f) => ({ ...f, taux: e.target.value })); setFieldErrors((f) => ({ ...f, taux: '' })); }}
               placeholder="2300"

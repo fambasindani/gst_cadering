@@ -82,9 +82,9 @@ CREATE TABLE IF NOT EXISTS `audits` (
   KEY `idx_audits_table_enregistrement` (`table_cible`,`id_enregistrement`),
   KEY `idx_audits_date_action_action` (`date_action`,`action`),
   CONSTRAINT `fk_audits_utilisateur` FOREIGN KEY (`id_utilisateur`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=1589 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Table d''audit pour le traçage des actions';
+) ENGINE=InnoDB AUTO_INCREMENT=1614 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Table d''audit pour le traçage des actions';
 
--- Listage des données de la table bd_gst_bejamin.audits : ~1 468 rows (environ)
+-- Listage des données de la table bd_gst_bejamin.audits : ~1 463 rows (environ)
 INSERT INTO `audits` (`id`, `id_utilisateur`, `action`, `table_cible`, `id_enregistrement`, `anciennes_valeurs`, `nouvelles_valeurs`, `date_action`, `adresse_ip`, `user_agent`, `route`, `created_at`, `updated_at`) VALUES
 	(1, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"PostmanRuntime\\\\/7.51.1\\"}"', '2026-07-19 15:11:03', '127.0.0.1', 'PostmanRuntime/7.51.1', 'api/auth/login', '2026-07-19 13:11:03', '2026-07-19 13:11:03'),
 	(2, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"PostmanRuntime\\\\/7.51.1\\"}"', '2026-07-19 21:24:12', '127.0.0.1', 'PostmanRuntime/7.51.1', 'api/auth/login', '2026-07-19 19:24:12', '2026-07-19 19:24:12'),
@@ -1664,7 +1664,32 @@ INSERT INTO `audits` (`id`, `id_utilisateur`, `action`, `table_cible`, `id_enreg
 	(1585, 1, 'UPDATE', 'bons', 79, NULL, '"{\\"receptions\\":[{\\"id_ligne_commande\\":94,\\"quantite_recue\\":9,\\"numero_lot\\":\\"LOT-2609-4090\\",\\"date_peremption\\":\\"2027-01-16\\",\\"prix_achat_ht_unitaire\\":0.8,\\"date_reception\\":\\"2026-09-09\\",\\"reference_document\\":\\"CONGOFUTUR\\\\/037\\\\/09\\\\/2026\\\\/7\\"}],\\"corrections\\":[]}"', '2026-09-09 11:44:37', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:155.0) Gecko/20100101 Firefox/155.0', NULL, '2026-09-09 09:44:37', '2026-09-09 09:44:37'),
 	(1586, 1, 'UPDATE', 'bons', 78, NULL, NULL, '2026-09-09 11:44:54', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:155.0) Gecko/20100101 Firefox/155.0', NULL, '2026-09-09 09:44:54', '2026-09-09 09:44:54'),
 	(1587, 1, 'UPDATE', 'bons', 79, NULL, NULL, '2026-09-09 11:45:17', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:155.0) Gecko/20100101 Firefox/155.0', NULL, '2026-09-09 09:45:17', '2026-09-09 09:45:17'),
-	(1588, 1, 'UPDATE', 'bons', 79, NULL, '"{\\"receptions\\":[{\\"id_ligne_commande\\":94,\\"quantite_recue\\":2,\\"numero_lot\\":\\"LOT-2609-2158\\",\\"date_peremption\\":\\"2027-02-19\\",\\"prix_achat_ht_unitaire\\":0.8,\\"date_reception\\":\\"2026-09-09\\",\\"reference_document\\":\\"CONGOFUTUR\\\\/037\\\\/09\\\\/2026\\\\/7\\"}],\\"corrections\\":[]}"', '2026-09-09 11:45:38', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:155.0) Gecko/20100101 Firefox/155.0', NULL, '2026-09-09 09:45:38', '2026-09-09 09:45:38');
+	(1588, 1, 'UPDATE', 'bons', 79, NULL, '"{\\"receptions\\":[{\\"id_ligne_commande\\":94,\\"quantite_recue\\":2,\\"numero_lot\\":\\"LOT-2609-2158\\",\\"date_peremption\\":\\"2027-02-19\\",\\"prix_achat_ht_unitaire\\":0.8,\\"date_reception\\":\\"2026-09-09\\",\\"reference_document\\":\\"CONGOFUTUR\\\\/037\\\\/09\\\\/2026\\\\/7\\"}],\\"corrections\\":[]}"', '2026-09-09 11:45:38', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:155.0) Gecko/20100101 Firefox/155.0', NULL, '2026-09-09 09:45:38', '2026-09-09 09:45:38'),
+	(1589, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-09-09 18:58:11', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:155.0) Gecko/20100101 Firefox/155.0', 'api/auth/logout', '2026-09-09 16:58:11', '2026-09-09 16:58:11'),
+	(1590, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:155.0) Gecko\\\\/20100101 Firefox\\\\/155.0\\"}"', '2026-09-10 12:29:11', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:155.0) Gecko/20100101 Firefox/155.0', 'api/auth/login', '2026-09-10 10:29:11', '2026-09-10 10:29:11'),
+	(1591, 1, 'UPDATE', 'bons', 79, NULL, NULL, '2026-09-10 13:26:46', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:155.0) Gecko/20100101 Firefox/155.0', NULL, '2026-09-10 11:26:46', '2026-09-10 11:26:46'),
+	(1592, 1, 'UPDATE', 'controles', 2, NULL, '"{\\"date_operation\\":\\"2026-09-01T00:00:00.000000Z\\",\\"id_lot\\":88,\\"id_partenaire\\":null,\\"cie_numero_vol\\":null,\\"camion_propre\\":null,\\"heure_debut\\":null,\\"heure_fin\\":null,\\"code_prestation_classe\\":\\"21458\\",\\"code_couleur\\":\\"blanc\\",\\"final_holding_temperature\\":3,\\"reception_client_temperature\\":5,\\"commentaires\\":\\"ras\\",\\"nom_signature_superviseur\\":null,\\"nom_signature_responsable_client\\":null,\\"remarque_generale\\":null}"', '2026-09-10 13:28:14', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:155.0) Gecko/20100101 Firefox/155.0', NULL, '2026-09-10 11:28:14', '2026-09-10 11:28:14'),
+	(1593, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-09-10 17:26:51', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:155.0) Gecko/20100101 Firefox/155.0', 'api/auth/logout', '2026-09-10 15:26:51', '2026-09-10 15:26:51'),
+	(1594, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko\\\\/20100101 Firefox\\\\/159.0\\"}"', '2026-10-27 18:34:03', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko/20100101 Firefox/159.0', 'api/auth/login', '2026-10-27 17:34:03', '2026-10-27 17:34:03'),
+	(1595, 1, 'UPDATE', 'notifications', 195, NULL, NULL, '2026-10-27 18:35:40', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko/20100101 Firefox/159.0', NULL, '2026-10-27 17:35:40', '2026-10-27 17:35:40'),
+	(1596, 1, 'UPDATE', 'notifications', 190, NULL, NULL, '2026-10-27 18:35:44', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko/20100101 Firefox/159.0', NULL, '2026-10-27 17:35:44', '2026-10-27 17:35:44'),
+	(1597, 1, 'UPDATE', 'notifications', 185, NULL, NULL, '2026-10-27 18:35:46', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko/20100101 Firefox/159.0', NULL, '2026-10-27 17:35:46', '2026-10-27 17:35:46'),
+	(1598, 1, 'UPDATE', 'notifications', 180, NULL, NULL, '2026-10-27 18:35:47', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko/20100101 Firefox/159.0', NULL, '2026-10-27 17:35:47', '2026-10-27 17:35:47'),
+	(1599, 1, 'UPDATE', 'notifications', 135, NULL, NULL, '2026-10-27 18:36:08', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko/20100101 Firefox/159.0', NULL, '2026-10-27 17:36:08', '2026-10-27 17:36:08'),
+	(1600, 1, 'UPDATE', 'notifications', 129, NULL, NULL, '2026-10-27 18:36:11', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko/20100101 Firefox/159.0', NULL, '2026-10-27 17:36:11', '2026-10-27 17:36:11'),
+	(1601, 1, 'UPDATE', 'notifications', 140, NULL, NULL, '2026-10-27 18:36:13', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko/20100101 Firefox/159.0', NULL, '2026-10-27 17:36:13', '2026-10-27 17:36:13'),
+	(1602, 1, 'UPDATE', 'notifications', 0, NULL, NULL, '2026-10-27 18:36:16', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko/20100101 Firefox/159.0', NULL, '2026-10-27 17:36:16', '2026-10-27 17:36:16'),
+	(1603, 1, 'UPDATE', 'bons', 79, NULL, '"{\\"receptions\\":[{\\"id_ligne_commande\\":94,\\"quantite_recue\\":1,\\"numero_lot\\":\\"LOT-2610-0241\\",\\"date_peremption\\":\\"2027-03-20\\",\\"prix_achat_ht_unitaire\\":0.9,\\"date_reception\\":\\"2026-10-27\\",\\"reference_document\\":\\"CONGOFUTUR\\\\/037\\\\/09\\\\/2026\\\\/7\\"}],\\"corrections\\":[]}"', '2026-10-27 18:37:48', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko/20100101 Firefox/159.0', NULL, '2026-10-27 17:37:48', '2026-10-27 17:37:48'),
+	(1604, 1, 'UPDATE', 'notifications', 200, NULL, NULL, '2026-10-27 18:42:32', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko/20100101 Firefox/159.0', NULL, '2026-10-27 17:42:32', '2026-10-27 17:42:32'),
+	(1605, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-10-27 18:42:46', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko/20100101 Firefox/159.0', 'api/auth/logout', '2026-10-27 17:42:46', '2026-10-27 17:42:46'),
+	(1606, 4, 'PASSWORD_RESET', 'utilisateurs', 4, NULL, '"{\\"email\\":\\"pierrpapy@gmail.com\\",\\"method\\":\\"forgot_password\\"}"', '2026-10-27 18:42:59', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko/20100101 Firefox/159.0', 'api/auth/forgot-password', '2026-10-27 17:42:59', '2026-10-27 17:42:59'),
+	(1607, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko\\\\/20100101 Firefox\\\\/159.0\\"}"', '2026-10-27 18:43:05', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko/20100101 Firefox/159.0', 'api/auth/login', '2026-10-27 17:43:05', '2026-10-27 17:43:05'),
+	(1608, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\\\\/537.36 (KHTML, like Gecko) Chrome\\\\/155.0.0.0 Safari\\\\/537.36\\"}"', '2026-10-27 18:45:54', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/155.0.0.0 Safari/537.36', 'api/auth/login', '2026-10-27 17:45:54', '2026-10-27 17:45:54'),
+	(1609, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-10-27 18:47:49', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko/20100101 Firefox/159.0', 'api/auth/logout', '2026-10-27 17:47:49', '2026-10-27 17:47:49'),
+	(1610, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko\\\\/20100101 Firefox\\\\/159.0\\"}"', '2026-10-27 18:48:05', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko/20100101 Firefox/159.0', 'api/auth/login', '2026-10-27 17:48:05', '2026-10-27 17:48:05'),
+	(1611, 1, 'LOGOUT', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"logout\\"}"', '2026-10-27 18:55:04', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko/20100101 Firefox/159.0', 'api/auth/logout', '2026-10-27 17:55:04', '2026-10-27 17:55:04'),
+	(1612, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko\\\\/20100101 Firefox\\\\/159.0\\"}"', '2026-10-27 18:55:14', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko/20100101 Firefox/159.0', 'api/auth/login', '2026-10-27 17:55:14', '2026-10-27 17:55:14'),
+	(1613, 1, 'LOGIN_SUCCESS', 'auth', 1, NULL, '"{\\"email\\":\\"pierre@gmail.com\\",\\"status\\":\\"success\\",\\"ip\\":\\"127.0.0.1\\",\\"user_agent\\":\\"Mozilla\\\\/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit\\\\/537.36 (KHTML, like Gecko) Chrome\\\\/156.0.0.0 Safari\\\\/537.36\\"}"', '2026-10-28 07:56:48', '127.0.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/156.0.0.0 Safari/537.36', 'api/auth/login', '2026-10-28 06:56:48', '2026-10-28 06:56:48');
 
 -- Listage de la structure de table bd_gst_bejamin. avoir
 CREATE TABLE IF NOT EXISTS `avoir` (
@@ -1749,7 +1774,7 @@ CREATE TABLE IF NOT EXISTS `bon_commande` (
   CONSTRAINT `bon_commande_valide_par_foreign` FOREIGN KEY (`valide_par`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB AUTO_INCREMENT=80 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table bd_gst_bejamin.bon_commande : ~69 rows (environ)
+-- Listage des données de la table bd_gst_bejamin.bon_commande : ~70 rows (environ)
 INSERT INTO `bon_commande` (`id`, `numero_commande`, `id_partenaire`, `id_magasin_destination`, `date_commande`, `date_livraison_prevue`, `statut`, `montant_total_ht`, `id_devise`, `id_utilisateur`, `commentaire`, `valide_par`, `date_validation`, `statut_validation`, `deleted_at`, `created_at`, `updated_at`) VALUES
 	(1, 'BC-2026-001', 1, 1, '2026-07-19', '2026-07-25', 'REÇU', 0.53, 2, 1, 'Commande complète pour vol AF-001 - Kinshasa', 1, '2026-07-18 17:04:03', 'VALIDÉ', '2026-08-02 08:11:23', '2026-07-18 14:57:41', '2026-08-02 08:11:23'),
 	(2, 'BC-2026-002', 1, 2, '2026-07-19', '2026-07-26', 'BROUILLON', 0.47, 2, 1, 'Commande pour vol ET-002 - Lubumbashi', 1, '2026-07-21 13:20:54', 'VALIDÉ', '2026-08-02 08:11:23', '2026-07-18 15:01:33', '2026-08-02 08:11:23'),
@@ -1821,7 +1846,7 @@ INSERT INTO `bon_commande` (`id`, `numero_commande`, `id_partenaire`, `id_magasi
 	(76, 'CONGOFUTUR/037/09/2026/4', 5, 1, '2026-09-08', NULL, 'BROUILLON', 12.00, 2, 1, NULL, NULL, NULL, 'EN ATTENTE', '2026-09-08 08:17:16', '2026-09-08 08:12:32', '2026-09-08 08:17:16'),
 	(77, 'CONGOFUTUR/037/09/2026/5', 5, 1, '2026-09-08', '2026-11-21', 'REÇU', 100.50, 2, 1, NULL, 1, '2026-09-09 10:49:31', 'VALIDÉ', NULL, '2026-09-08 08:19:45', '2026-09-09 08:49:31'),
 	(78, 'CONGOFUTUR/037/09/2026/6', 5, 1, '2026-09-09', NULL, 'REÇU', 100.00, 2, 1, NULL, 1, '2026-09-09 11:44:53', 'VALIDÉ', NULL, '2026-09-09 09:28:20', '2026-09-09 09:44:53'),
-	(79, 'CONGOFUTUR/037/09/2026/7', 5, 1, '2026-09-09', '2026-11-13', 'EN ATTENTE', 10.40, 2, 1, NULL, 1, '2026-09-09 11:45:17', 'VALIDÉ', NULL, '2026-09-09 09:44:13', '2026-09-09 09:45:38');
+	(79, 'CONGOFUTUR/037/09/2026/7', 5, 1, '2026-09-09', '2026-11-13', 'EN ATTENTE', 10.40, 2, 1, NULL, 1, '2026-09-10 13:26:45', 'VALIDÉ', NULL, '2026-09-09 09:44:13', '2026-10-27 17:37:43');
 
 -- Listage de la structure de table bd_gst_bejamin. categories
 CREATE TABLE IF NOT EXISTS `categories` (
@@ -2244,9 +2269,9 @@ CREATE TABLE IF NOT EXISTS `historique_prix` (
   CONSTRAINT `historique_prix_id_devise_foreign` FOREIGN KEY (`id_devise`) REFERENCES `devises` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `historique_prix_id_produit_foreign` FOREIGN KEY (`id_produit`) REFERENCES `produits` (`id`) ON DELETE CASCADE,
   CONSTRAINT `historique_prix_id_utilisateur_foreign` FOREIGN KEY (`id_utilisateur`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=109 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=110 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table bd_gst_bejamin.historique_prix : ~68 rows (environ)
+-- Listage des données de la table bd_gst_bejamin.historique_prix : ~81 rows (environ)
 INSERT INTO `historique_prix` (`id`, `id_produit`, `prix_achat_ht`, `prix_vente_ht`, `id_devise`, `date_application`, `commentaire`, `id_utilisateur`, `deleted_at`, `created_at`, `updated_at`) VALUES
 	(1, 1, 1.00, 0.00, 2, '2026-07-18', 'Prix d\'introduction', 1, '2026-08-02 08:11:23', '2026-07-18 13:22:13', '2026-08-02 08:11:23'),
 	(2, 1, 1.00, 0.01, 2, '2026-07-18', 'Augmentation de prix', 1, '2026-08-02 08:11:23', '2026-07-18 13:26:18', '2026-08-02 08:11:23'),
@@ -2327,7 +2352,8 @@ INSERT INTO `historique_prix` (`id`, `id_produit`, `prix_achat_ht`, `prix_vente_
 	(105, 30, 10.00, NULL, 2, '2026-09-09', 'Réception du bon #CONGOFUTUR/037/09/2026/6', 1, NULL, '2026-09-09 09:31:43', '2026-09-09 09:31:43'),
 	(106, 30, 9.00, NULL, 2, '2026-09-09', 'Réception du bon #CONGOFUTUR/037/09/2026/6', 1, NULL, '2026-09-09 09:39:18', '2026-09-09 09:39:18'),
 	(107, 11, 0.80, NULL, 2, '2026-09-09', 'Réception du bon #CONGOFUTUR/037/09/2026/7', 1, NULL, '2026-09-09 09:44:37', '2026-09-09 09:44:37'),
-	(108, 11, 0.80, NULL, 2, '2026-09-09', 'Réception du bon #CONGOFUTUR/037/09/2026/7', 1, NULL, '2026-09-09 09:45:38', '2026-09-09 09:45:38');
+	(108, 11, 0.80, NULL, 2, '2026-09-09', 'Réception du bon #CONGOFUTUR/037/09/2026/7', 1, NULL, '2026-09-09 09:45:38', '2026-09-09 09:45:38'),
+	(109, 11, 0.90, NULL, 2, '2026-10-27', 'Réception du bon #CONGOFUTUR/037/09/2026/7', 1, NULL, '2026-10-27 17:37:43', '2026-10-27 17:37:43');
 
 -- Listage de la structure de table bd_gst_bejamin. inventaire
 CREATE TABLE IF NOT EXISTS `inventaire` (
@@ -2388,9 +2414,12 @@ CREATE TABLE IF NOT EXISTS `jobs` (
   `created_at` int unsigned NOT NULL,
   PRIMARY KEY (`id`),
   KEY `jobs_queue_index` (`queue`)
-) ENGINE=InnoDB AUTO_INCREMENT=28 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=30 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table bd_gst_bejamin.jobs : ~0 rows (environ)
+-- Listage des données de la table bd_gst_bejamin.jobs : ~2 rows (environ)
+INSERT INTO `jobs` (`id`, `queue`, `payload`, `attempts`, `reserved_at`, `available_at`, `created_at`) VALUES
+	(28, 'default', '{"uuid":"0cb38056-4d39-4b6e-9ed9-381001f46237","displayName":"App\\\\Jobs\\\\EnvoyerAlerteReception","job":"Illuminate\\\\Queue\\\\CallQueuedHandler@call","maxTries":3,"maxExceptions":null,"failOnTimeout":false,"backoff":"60","timeout":null,"retryUntil":null,"data":{"commandName":"App\\\\Jobs\\\\EnvoyerAlerteReception","command":"O:31:\\"App\\\\Jobs\\\\EnvoyerAlerteReception\\":4:{s:7:\\"alertes\\";a:2:{i:0;a:5:{s:4:\\"type\\";s:4:\\"prix\\";s:7:\\"produit\\";s:7:\\"Carotte\\";s:6:\\"ancien\\";s:6:\\"0.80 $\\";s:7:\\"nouveau\\";s:6:\\"0.90 $\\";s:10:\\"difference\\";s:16:\\"+0.10 $ (+12.5%)\\";}i:1;a:5:{s:4:\\"type\\";s:8:\\"quantite\\";s:7:\\"produit\\";s:7:\\"Carotte\\";s:6:\\"ancien\\";s:10:\\"11 unités\\";s:7:\\"nouveau\\";s:10:\\"12 unités\\";s:10:\\"difference\\";s:12:\\"-1 unité(s)\\";}}s:14:\\"numeroCommande\\";s:24:\\"CONGOFUTUR\\/037\\/09\\/2026\\/7\\";s:11:\\"fournisseur\\";s:11:\\"Congo Futur\\";s:13:\\"dateReception\\";s:10:\\"27\\/10\\/2026\\";}"}}', 0, NULL, 1793126268, 1793126268),
+	(29, 'default', '{"uuid":"2f352cb6-134f-4274-989d-06326db0e86d","displayName":"App\\\\Jobs\\\\EnvoyerNouveauMotDePasse","job":"Illuminate\\\\Queue\\\\CallQueuedHandler@call","maxTries":3,"maxExceptions":null,"failOnTimeout":false,"backoff":"60","timeout":null,"retryUntil":null,"data":{"commandName":"App\\\\Jobs\\\\EnvoyerNouveauMotDePasse","command":"O:33:\\"App\\\\Jobs\\\\EnvoyerNouveauMotDePasse\\":3:{s:3:\\"nom\\";s:12:\\"Bobo KALOMBO\\";s:5:\\"email\\";s:19:\\"pierrpapy@gmail.com\\";s:17:\\"nouveauMotDePasse\\";s:12:\\"ko2R82WgjV5d\\";}"}}', 0, NULL, 1793126579, 1793126579);
 
 -- Listage de la structure de table bd_gst_bejamin. ligne_commande
 CREATE TABLE IF NOT EXISTS `ligne_commande` (
@@ -2507,7 +2536,7 @@ INSERT INTO `ligne_commande` (`id`, `id_bon_commande`, `id_produit`, `quantite_c
 	(91, 77, 17, 15, 0.70, 2, 15, NULL, '2026-09-08 08:19:45', '2026-09-09 08:35:30'),
 	(92, 77, 30, 10, 9.00, 2, 10, NULL, '2026-09-08 08:19:45', '2026-09-08 08:25:29'),
 	(93, 78, 30, 10, 10.00, 2, 10, NULL, '2026-09-09 09:28:20', '2026-09-09 09:39:18'),
-	(94, 79, 11, 13, 0.80, 2, 11, NULL, '2026-09-09 09:44:13', '2026-09-09 09:45:38');
+	(94, 79, 11, 13, 0.80, 2, 12, NULL, '2026-09-09 09:44:13', '2026-10-27 17:37:43');
 
 -- Listage de la structure de table bd_gst_bejamin. ligne_fiche_technique
 CREATE TABLE IF NOT EXISTS `ligne_fiche_technique` (
@@ -2682,9 +2711,9 @@ CREATE TABLE IF NOT EXISTS `lots` (
   CONSTRAINT `lots_id_produit_foreign` FOREIGN KEY (`id_produit`) REFERENCES `produits` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `lots_id_ville_foreign` FOREIGN KEY (`id_magasin`) REFERENCES `magasins` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `lots_valide_par_foreign` FOREIGN KEY (`valide_par`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=120 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=121 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table bd_gst_bejamin.lots : ~97 rows (environ)
+-- Listage des données de la table bd_gst_bejamin.lots : ~107 rows (environ)
 INSERT INTO `lots` (`id`, `id_produit`, `id_magasin`, `numero_lot`, `code_qr`, `quantite_recue`, `quantite_disponible`, `date_fabrication`, `date_peremption`, `date_reception`, `id_partenaire`, `prix_achat_ht_unitaire`, `id_devise`, `valide_par`, `date_validation`, `statut_validation`, `est_perime`, `commentaire`, `deleted_at`, `created_at`, `updated_at`) VALUES
 	(1, 1, 1, 'LOT-2026-001', 'QR-LOT-2026-001-6a5ba0488fa14', 100, 115, '2026-07-18', '2026-08-20', '2026-07-18 15:48:24', 1, 1.00, 2, 1, '2026-07-18 16:10:46', 'VALIDÉ', 0, 'Premier lot de poulet rôti', '2026-08-02 08:11:23', '2026-07-18 13:48:24', '2026-08-02 08:11:23'),
 	(2, 1, 1, 'LOT-2026-001', 'QR-LOT-2026-001-6a5ba21a636f2', 100, 90, '2026-07-18', '2026-08-20', '2026-07-18 15:56:10', 1, 1.00, 2, 1, '2026-07-24 23:23:16', 'VALIDÉ', 0, 'Premier lot de poulet rôti', '2026-08-02 08:11:23', '2026-07-18 13:56:10', '2026-08-02 08:11:23'),
@@ -2792,7 +2821,8 @@ INSERT INTO `lots` (`id`, `id_produit`, `id_magasin`, `numero_lot`, `code_qr`, `
 	(116, 30, 1, 'LOT-2609-8410', 'QR-LOT-2609-8410-6aa1439f5ba6b', 2, 2, NULL, '2026-12-25', '2026-09-09 00:00:00', 5, 10.00, 2, 1, '2026-09-09 11:38:41', 'VALIDÉ', 0, NULL, NULL, '2026-09-09 09:31:43', '2026-09-09 09:38:41'),
 	(117, 30, 1, 'LOT-2609-8004', 'QR-LOT-2609-8004-6aa1456620ade', 1, 1, NULL, '2027-03-20', '2026-09-09 00:00:00', 5, 9.00, 2, 1, '2026-09-09 11:44:53', 'VALIDÉ', 0, NULL, NULL, '2026-09-09 09:39:18', '2026-09-09 09:44:53'),
 	(118, 11, 1, 'LOT-2609-4090', 'QR-LOT-2609-4090-6aa146a56b7fe', 9, 9, NULL, '2027-01-16', '2026-09-09 00:00:00', 5, 0.80, 2, 1, '2026-09-09 11:45:17', 'VALIDÉ', 0, NULL, NULL, '2026-09-09 09:44:37', '2026-09-09 09:45:17'),
-	(119, 11, 1, 'LOT-2609-2158', 'QR-LOT-2609-2158-6aa146e2d3496', 2, 2, NULL, '2027-02-19', '2026-09-09 00:00:00', 5, 0.80, 2, NULL, NULL, 'BROUILLON', 0, NULL, NULL, '2026-09-09 09:45:38', '2026-09-09 09:45:38');
+	(119, 11, 1, 'LOT-2609-2158', 'QR-LOT-2609-2158-6aa146e2d3496', 2, 2, NULL, '2027-02-19', '2026-09-09 00:00:00', 5, 0.80, 2, 1, '2026-09-10 13:26:45', 'VALIDÉ', 0, NULL, NULL, '2026-09-09 09:45:38', '2026-09-10 11:26:45'),
+	(120, 11, 1, 'LOT-2610-0241', 'QR-LOT-2610-0241-6ae0ef77a7acd', 1, 1, NULL, '2027-03-20', '2026-10-27 00:00:00', 5, 0.90, 2, NULL, NULL, 'BROUILLON', 0, NULL, NULL, '2026-10-27 17:37:43', '2026-10-27 17:37:43');
 
 -- Listage de la structure de table bd_gst_bejamin. magasins
 CREATE TABLE IF NOT EXISTS `magasins` (
@@ -2940,9 +2970,9 @@ CREATE TABLE IF NOT EXISTS `mouvement_stock` (
   CONSTRAINT `mouvement_stock_id_type_mouvement_foreign` FOREIGN KEY (`id_type_mouvement`) REFERENCES `type_mouvement` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `mouvement_stock_id_utilisateur_foreign` FOREIGN KEY (`id_utilisateur`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL,
   CONSTRAINT `mouvement_stock_valide_par_foreign` FOREIGN KEY (`valide_par`) REFERENCES `utilisateurs` (`id`) ON DELETE SET NULL
-) ENGINE=InnoDB AUTO_INCREMENT=202 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=203 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table bd_gst_bejamin.mouvement_stock : ~179 rows (environ)
+-- Listage des données de la table bd_gst_bejamin.mouvement_stock : ~178 rows (environ)
 INSERT INTO `mouvement_stock` (`id`, `id_lot`, `id_type_mouvement`, `id_partenaire`, `id_magasin`, `id_departement`, `quantite`, `date_mouvement`, `id_utilisateur`, `reference_document`, `reference_reception`, `commentaire`, `id_periode_inventaire`, `valide_par`, `date_validation`, `statut_validation`, `deleted_at`, `created_at`, `updated_at`) VALUES
 	(2, 4, 1, NULL, NULL, NULL, 100, NULL, 1, 'LOT-2026-001', NULL, 'Réception de lot', NULL, 1, '2026-07-18 16:17:46', 'VALIDÉ', '2026-08-02 08:11:23', '2026-07-18 14:09:00', '2026-08-02 08:11:23'),
 	(3, 1, 1, NULL, NULL, NULL, 50, '2026-07-18 16:12:05', 1, 'BL-2026-001', NULL, 'Réception supplémentaire de 50 unités', NULL, 2, '2026-08-02 00:52:49', 'VALIDÉ', '2026-08-02 08:11:23', '2026-07-18 14:12:05', '2026-08-02 08:11:23'),
@@ -3130,7 +3160,8 @@ INSERT INTO `mouvement_stock` (`id`, `id_lot`, `id_type_mouvement`, `id_partenai
 	(198, 116, 1, NULL, NULL, NULL, 2, '2026-09-09 00:00:00', 1, 'CONGOFUTUR/037/09/2026/6', 'REC-2609-0023', 'Réception du bon de commande #CONGOFUTUR/037/09/2026/6', NULL, 1, '2026-09-09 11:38:41', 'VALIDÉ', NULL, '2026-09-09 09:31:43', '2026-09-09 09:38:41'),
 	(199, 117, 1, NULL, NULL, NULL, 1, '2026-09-09 00:00:00', 1, 'CONGOFUTUR/037/09/2026/6', 'REC-2609-0024', 'Réception du bon de commande #CONGOFUTUR/037/09/2026/6', NULL, 1, '2026-09-09 11:44:53', 'VALIDÉ', NULL, '2026-09-09 09:39:18', '2026-09-09 09:44:53'),
 	(200, 118, 1, NULL, NULL, NULL, 9, '2026-09-09 00:00:00', 1, 'CONGOFUTUR/037/09/2026/7', 'REC-2609-0025', 'Réception du bon de commande #CONGOFUTUR/037/09/2026/7', NULL, 1, '2026-09-09 11:45:17', 'VALIDÉ', NULL, '2026-09-09 09:44:37', '2026-09-09 09:45:17'),
-	(201, 119, 1, NULL, NULL, NULL, 2, '2026-09-09 00:00:00', 1, 'CONGOFUTUR/037/09/2026/7', 'REC-2609-0026', 'Réception du bon de commande #CONGOFUTUR/037/09/2026/7', NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-09-09 09:45:38', '2026-09-09 09:45:38');
+	(201, 119, 1, NULL, NULL, NULL, 2, '2026-09-09 00:00:00', 1, 'CONGOFUTUR/037/09/2026/7', 'REC-2609-0026', 'Réception du bon de commande #CONGOFUTUR/037/09/2026/7', NULL, 1, '2026-09-10 13:26:45', 'VALIDÉ', NULL, '2026-09-09 09:45:38', '2026-09-10 11:26:45'),
+	(202, 120, 1, NULL, NULL, NULL, 1, '2026-10-27 00:00:00', 1, 'CONGOFUTUR/037/09/2026/7', 'REC-2610-0001', 'Réception du bon de commande #CONGOFUTUR/037/09/2026/7', NULL, NULL, NULL, 'EN ATTENTE', NULL, '2026-10-27 17:37:43', '2026-10-27 17:37:43');
 
 -- Listage de la structure de table bd_gst_bejamin. notifications
 CREATE TABLE IF NOT EXISTS `notifications` (
@@ -3147,9 +3178,9 @@ CREATE TABLE IF NOT EXISTS `notifications` (
   PRIMARY KEY (`id`),
   KEY `notifications_id_utilisateur_read_at_index` (`id_utilisateur`,`read_at`),
   CONSTRAINT `notifications_id_utilisateur_foreign` FOREIGN KEY (`id_utilisateur`) REFERENCES `utilisateurs` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=200 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=205 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table bd_gst_bejamin.notifications : ~153 rows (environ)
+-- Listage des données de la table bd_gst_bejamin.notifications : ~200 rows (environ)
 INSERT INTO `notifications` (`id`, `type`, `message`, `id_utilisateur`, `reference_type`, `reference_id`, `read_at`, `created_at`, `updated_at`, `deleted_at`) VALUES
 	(1, 'bon_commande_en_attente', '1 bon(s) de commande en attente de validation', 1, 'App\\Models\\BonCommande', NULL, '2026-07-24 16:51:45', '2026-07-24 16:11:40', '2026-07-24 16:51:45', NULL),
 	(2, 'bon_commande_en_attente', '1 bon(s) de commande en attente de validation', 2, 'App\\Models\\BonCommande', NULL, '2026-08-02 08:25:49', '2026-07-24 16:11:40', '2026-08-02 08:25:49', NULL),
@@ -3211,141 +3242,146 @@ INSERT INTO `notifications` (`id`, `type`, `message`, `id_utilisateur`, `referen
 	(62, 'bon_commande_en_attente', '1 bon(s) de commande en attente de validation', 2, 'App\\Models\\BonCommande', NULL, NULL, '2026-09-01 09:56:56', '2026-09-07 07:09:50', NULL),
 	(63, 'retour_en_attente', '1 retour(s) stock en attente de validation', 1, 'App\\Models\\Retour', NULL, '2026-09-01 10:14:59', '2026-09-01 10:14:41', '2026-09-01 10:14:59', NULL),
 	(64, 'retour_en_attente', '1 retour(s) stock en attente de validation', 2, 'App\\Models\\Retour', NULL, '2026-09-01 10:14:59', '2026-09-01 10:14:41', '2026-09-01 10:14:59', NULL),
-	(65, 'bon_commande_en_attente', '1 bon(s) de commande en attente de validation', 1, 'App\\Models\\BonCommande', NULL, NULL, '2026-09-01 16:41:42', '2026-09-07 07:09:50', NULL),
-	(66, 'alerte_prix_commande', '1 prix différent(s) pour le bon #TEST-500/036/09/2026', 1, 'App\\Models\\BonCommande', 58, NULL, '2026-09-06 15:19:55', '2026-09-06 15:19:55', NULL),
+	(65, 'bon_commande_en_attente', '1 bon(s) de commande en attente de validation', 1, 'App\\Models\\BonCommande', NULL, '2026-10-27 17:36:16', '2026-09-01 16:41:42', '2026-10-27 17:36:16', NULL),
+	(66, 'alerte_prix_commande', '1 prix différent(s) pour le bon #TEST-500/036/09/2026', 1, 'App\\Models\\BonCommande', 58, '2026-10-27 17:36:16', '2026-09-06 15:19:55', '2026-10-27 17:36:16', NULL),
 	(67, 'alerte_prix_commande', '1 prix différent(s) pour le bon #TEST-500/036/09/2026', 2, 'App\\Models\\BonCommande', 58, NULL, '2026-09-06 15:19:55', '2026-09-06 15:19:55', NULL),
 	(68, 'alerte_prix_commande', '1 prix différent(s) pour le bon #TEST-500/036/09/2026', 3, 'App\\Models\\BonCommande', 58, NULL, '2026-09-06 15:19:55', '2026-09-06 15:19:55', NULL),
-	(69, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/1', 1, 'App\\Models\\BonCommande', 60, NULL, '2026-09-06 15:24:51', '2026-09-06 15:24:51', NULL),
+	(69, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/1', 1, 'App\\Models\\BonCommande', 60, '2026-10-27 17:36:16', '2026-09-06 15:24:51', '2026-10-27 17:36:16', NULL),
 	(70, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/1', 2, 'App\\Models\\BonCommande', 60, NULL, '2026-09-06 15:24:51', '2026-09-06 15:24:51', NULL),
 	(71, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/1', 3, 'App\\Models\\BonCommande', 60, NULL, '2026-09-06 15:24:51', '2026-09-06 15:24:51', NULL),
-	(72, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/2', 1, 'App\\Models\\BonCommande', 61, NULL, '2026-09-06 15:25:20', '2026-09-06 15:25:20', NULL),
+	(72, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/2', 1, 'App\\Models\\BonCommande', 61, '2026-10-27 17:36:16', '2026-09-06 15:25:20', '2026-10-27 17:36:16', NULL),
 	(73, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/2', 2, 'App\\Models\\BonCommande', 61, NULL, '2026-09-06 15:25:20', '2026-09-06 15:25:20', NULL),
 	(74, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/2', 3, 'App\\Models\\BonCommande', 61, NULL, '2026-09-06 15:25:20', '2026-09-06 15:25:20', NULL),
-	(75, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/3', 1, 'App\\Models\\BonCommande', 62, NULL, '2026-09-06 15:32:13', '2026-09-06 15:32:13', NULL),
+	(75, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/3', 1, 'App\\Models\\BonCommande', 62, '2026-10-27 17:36:16', '2026-09-06 15:32:13', '2026-10-27 17:36:16', NULL),
 	(76, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/3', 2, 'App\\Models\\BonCommande', 62, NULL, '2026-09-06 15:32:13', '2026-09-06 15:32:13', NULL),
 	(77, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/3', 3, 'App\\Models\\BonCommande', 62, NULL, '2026-09-06 15:32:13', '2026-09-06 15:32:13', NULL),
-	(78, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/036/09/2026/1', 1, 'App\\Models\\BonCommande', 63, NULL, '2026-09-06 15:34:28', '2026-09-06 15:34:28', NULL),
+	(78, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/036/09/2026/1', 1, 'App\\Models\\BonCommande', 63, '2026-10-27 17:36:16', '2026-09-06 15:34:28', '2026-10-27 17:36:16', NULL),
 	(79, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/036/09/2026/1', 2, 'App\\Models\\BonCommande', 63, NULL, '2026-09-06 15:34:28', '2026-09-06 15:34:28', NULL),
 	(80, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/036/09/2026/1', 3, 'App\\Models\\BonCommande', 63, NULL, '2026-09-06 15:34:28', '2026-09-06 15:34:28', NULL),
-	(81, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/4', 1, 'App\\Models\\BonCommande', 64, NULL, '2026-09-06 15:37:16', '2026-09-06 15:37:16', NULL),
+	(81, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/4', 1, 'App\\Models\\BonCommande', 64, '2026-10-27 17:36:16', '2026-09-06 15:37:16', '2026-10-27 17:36:16', NULL),
 	(82, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/4', 2, 'App\\Models\\BonCommande', 64, NULL, '2026-09-06 15:37:16', '2026-09-06 15:37:16', NULL),
 	(83, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/4', 3, 'App\\Models\\BonCommande', 64, NULL, '2026-09-06 15:37:16', '2026-09-06 15:37:16', NULL),
-	(84, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/5', 1, 'App\\Models\\BonCommande', 65, NULL, '2026-09-06 15:41:20', '2026-09-06 15:41:20', NULL),
+	(84, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/5', 1, 'App\\Models\\BonCommande', 65, '2026-10-27 17:36:16', '2026-09-06 15:41:20', '2026-10-27 17:36:16', NULL),
 	(85, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/5', 2, 'App\\Models\\BonCommande', 65, NULL, '2026-09-06 15:41:20', '2026-09-06 15:41:20', NULL),
 	(86, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/5', 3, 'App\\Models\\BonCommande', 65, NULL, '2026-09-06 15:41:20', '2026-09-06 15:41:20', NULL),
-	(87, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/036/09/2026/2', 1, 'App\\Models\\BonCommande', 66, NULL, '2026-09-06 15:43:24', '2026-09-06 15:43:24', NULL),
+	(87, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/036/09/2026/2', 1, 'App\\Models\\BonCommande', 66, '2026-10-27 17:36:16', '2026-09-06 15:43:24', '2026-10-27 17:36:16', NULL),
 	(88, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/036/09/2026/2', 2, 'App\\Models\\BonCommande', 66, NULL, '2026-09-06 15:43:24', '2026-09-06 15:43:24', NULL),
 	(89, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/036/09/2026/2', 3, 'App\\Models\\BonCommande', 66, NULL, '2026-09-06 15:43:24', '2026-09-06 15:43:24', NULL),
-	(90, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/036/09/2026/3', 1, 'App\\Models\\BonCommande', 67, NULL, '2026-09-06 15:46:43', '2026-09-06 15:46:43', NULL),
+	(90, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/036/09/2026/3', 1, 'App\\Models\\BonCommande', 67, '2026-10-27 17:36:16', '2026-09-06 15:46:43', '2026-10-27 17:36:16', NULL),
 	(91, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/036/09/2026/3', 2, 'App\\Models\\BonCommande', 67, NULL, '2026-09-06 15:46:43', '2026-09-06 15:46:43', NULL),
 	(92, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/036/09/2026/3', 3, 'App\\Models\\BonCommande', 67, NULL, '2026-09-06 15:46:43', '2026-09-06 15:46:43', NULL),
-	(93, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/036/09/2026/4', 1, 'App\\Models\\BonCommande', 68, NULL, '2026-09-06 15:48:18', '2026-09-06 15:48:18', NULL),
+	(93, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/036/09/2026/4', 1, 'App\\Models\\BonCommande', 68, '2026-10-27 17:36:16', '2026-09-06 15:48:18', '2026-10-27 17:36:16', NULL),
 	(94, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/036/09/2026/4', 2, 'App\\Models\\BonCommande', 68, NULL, '2026-09-06 15:48:18', '2026-09-06 15:48:18', NULL),
 	(95, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/036/09/2026/4', 3, 'App\\Models\\BonCommande', 68, NULL, '2026-09-06 15:48:18', '2026-09-06 15:48:18', NULL),
-	(96, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/6', 1, 'App\\Models\\BonCommande', 69, NULL, '2026-09-06 16:10:05', '2026-09-06 16:10:05', NULL),
+	(96, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/6', 1, 'App\\Models\\BonCommande', 69, '2026-10-27 17:36:16', '2026-09-06 16:10:05', '2026-10-27 17:36:16', NULL),
 	(97, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/6', 2, 'App\\Models\\BonCommande', 69, NULL, '2026-09-06 16:10:05', '2026-09-06 16:10:05', NULL),
 	(98, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/6', 3, 'App\\Models\\BonCommande', 69, NULL, '2026-09-06 16:10:05', '2026-09-06 16:10:05', NULL),
 	(99, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/6', 4, 'App\\Models\\BonCommande', 69, NULL, '2026-09-06 16:10:05', '2026-09-06 16:10:05', NULL),
 	(100, 'bon_commande_en_attente', '1 bon(s) de commande en attente de validation', 4, 'App\\Models\\BonCommande', NULL, NULL, '2026-09-06 16:10:05', '2026-09-07 07:09:50', NULL),
-	(101, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/6', 1, 'App\\Models\\BonCommande', 70, NULL, '2026-09-06 16:15:52', '2026-09-06 16:15:52', NULL),
+	(101, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/6', 1, 'App\\Models\\BonCommande', 70, '2026-10-27 17:36:16', '2026-09-06 16:15:52', '2026-10-27 17:36:16', NULL),
 	(102, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/6', 2, 'App\\Models\\BonCommande', 70, NULL, '2026-09-06 16:15:52', '2026-09-06 16:15:52', NULL),
 	(103, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/6', 3, 'App\\Models\\BonCommande', 70, NULL, '2026-09-06 16:15:52', '2026-09-06 16:15:52', NULL),
 	(104, 'alerte_prix_commande', '1 prix différent(s) pour le bon #FRAISVOLSARL/036/09/2026/6', 4, 'App\\Models\\BonCommande', 70, NULL, '2026-09-06 16:15:52', '2026-09-06 16:15:52', NULL),
-	(105, 'alerte_reception', '2 alerte(s) pour la réception du bon #FRAISVOLSARL/036/09/2026/6', 1, 'App\\Models\\BonCommande', 70, NULL, '2026-09-06 16:18:24', '2026-09-06 16:18:24', NULL),
+	(105, 'alerte_reception', '2 alerte(s) pour la réception du bon #FRAISVOLSARL/036/09/2026/6', 1, 'App\\Models\\BonCommande', 70, '2026-10-27 17:36:16', '2026-09-06 16:18:24', '2026-10-27 17:36:16', NULL),
 	(106, 'alerte_reception', '2 alerte(s) pour la réception du bon #FRAISVOLSARL/036/09/2026/6', 2, 'App\\Models\\BonCommande', 70, NULL, '2026-09-06 16:18:24', '2026-09-06 16:18:24', NULL),
 	(107, 'alerte_reception', '2 alerte(s) pour la réception du bon #FRAISVOLSARL/036/09/2026/6', 3, 'App\\Models\\BonCommande', 70, NULL, '2026-09-06 16:18:24', '2026-09-06 16:18:24', NULL),
 	(108, 'alerte_reception', '2 alerte(s) pour la réception du bon #FRAISVOLSARL/036/09/2026/6', 4, 'App\\Models\\BonCommande', 70, NULL, '2026-09-06 16:18:24', '2026-09-06 16:18:24', NULL),
-	(109, 'alerte_reception', '2 alerte(s) pour la réception du bon #FRAISVOLSARL/036/09/2026/6', 1, 'App\\Models\\BonCommande', 70, NULL, '2026-09-06 16:43:03', '2026-09-06 16:43:03', NULL),
+	(109, 'alerte_reception', '2 alerte(s) pour la réception du bon #FRAISVOLSARL/036/09/2026/6', 1, 'App\\Models\\BonCommande', 70, '2026-10-27 17:36:16', '2026-09-06 16:43:03', '2026-10-27 17:36:16', NULL),
 	(110, 'alerte_reception', '2 alerte(s) pour la réception du bon #FRAISVOLSARL/036/09/2026/6', 2, 'App\\Models\\BonCommande', 70, NULL, '2026-09-06 16:43:03', '2026-09-06 16:43:03', NULL),
 	(111, 'alerte_reception', '2 alerte(s) pour la réception du bon #FRAISVOLSARL/036/09/2026/6', 3, 'App\\Models\\BonCommande', 70, NULL, '2026-09-06 16:43:03', '2026-09-06 16:43:03', NULL),
 	(112, 'alerte_reception', '2 alerte(s) pour la réception du bon #FRAISVOLSARL/036/09/2026/6', 4, 'App\\Models\\BonCommande', 70, NULL, '2026-09-06 16:43:03', '2026-09-06 16:43:03', NULL),
-	(113, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CATERINGSERVICESSA/036/09/2026', 1, 'App\\Models\\BonCommande', 71, NULL, '2026-09-06 16:43:44', '2026-09-06 16:43:44', NULL),
+	(113, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CATERINGSERVICESSA/036/09/2026', 1, 'App\\Models\\BonCommande', 71, '2026-10-27 17:36:16', '2026-09-06 16:43:44', '2026-10-27 17:36:16', NULL),
 	(114, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CATERINGSERVICESSA/036/09/2026', 2, 'App\\Models\\BonCommande', 71, NULL, '2026-09-06 16:43:44', '2026-09-06 16:43:44', NULL),
 	(115, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CATERINGSERVICESSA/036/09/2026', 3, 'App\\Models\\BonCommande', 71, NULL, '2026-09-06 16:43:44', '2026-09-06 16:43:44', NULL),
 	(116, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CATERINGSERVICESSA/036/09/2026', 4, 'App\\Models\\BonCommande', 71, NULL, '2026-09-06 16:43:44', '2026-09-06 16:43:44', NULL),
-	(117, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/036/09/2026/4', 1, 'App\\Models\\BonCommande', 68, NULL, '2026-09-06 17:02:35', '2026-09-06 17:02:35', NULL),
+	(117, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/036/09/2026/4', 1, 'App\\Models\\BonCommande', 68, '2026-10-27 17:36:16', '2026-09-06 17:02:35', '2026-10-27 17:36:16', NULL),
 	(118, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/036/09/2026/4', 2, 'App\\Models\\BonCommande', 68, NULL, '2026-09-06 17:02:35', '2026-09-06 17:02:35', NULL),
 	(119, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/036/09/2026/4', 3, 'App\\Models\\BonCommande', 68, NULL, '2026-09-06 17:02:35', '2026-09-06 17:02:35', NULL),
 	(120, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/036/09/2026/4', 4, 'App\\Models\\BonCommande', 68, NULL, '2026-09-06 17:02:35', '2026-09-06 17:02:35', NULL),
-	(121, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026', 1, 'App\\Models\\BonCommande', 72, NULL, '2026-09-07 07:09:47', '2026-09-07 07:09:47', NULL),
+	(121, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026', 1, 'App\\Models\\BonCommande', 72, '2026-10-27 17:36:16', '2026-09-07 07:09:47', '2026-10-27 17:36:16', NULL),
 	(122, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026', 2, 'App\\Models\\BonCommande', 72, NULL, '2026-09-07 07:09:47', '2026-09-07 07:09:47', NULL),
 	(123, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026', 3, 'App\\Models\\BonCommande', 72, NULL, '2026-09-07 07:09:47', '2026-09-07 07:09:47', NULL),
 	(124, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026', 4, 'App\\Models\\BonCommande', 72, NULL, '2026-09-07 07:09:47', '2026-09-07 07:09:47', NULL),
-	(125, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/1', 1, 'App\\Models\\BonCommande', 73, NULL, '2026-09-07 07:20:55', '2026-09-07 07:20:55', NULL),
+	(125, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/1', 1, 'App\\Models\\BonCommande', 73, '2026-10-27 17:36:16', '2026-09-07 07:20:55', '2026-10-27 17:36:16', NULL),
 	(126, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/1', 2, 'App\\Models\\BonCommande', 73, NULL, '2026-09-07 07:20:55', '2026-09-07 07:20:55', NULL),
 	(127, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/1', 3, 'App\\Models\\BonCommande', 73, NULL, '2026-09-07 07:20:55', '2026-09-07 07:20:55', NULL),
 	(128, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/1', 4, 'App\\Models\\BonCommande', 73, NULL, '2026-09-07 07:20:55', '2026-09-07 07:20:55', NULL),
-	(129, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/2', 1, 'App\\Models\\BonCommande', 74, NULL, '2026-09-07 11:53:36', '2026-09-07 11:53:36', NULL),
+	(129, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/2', 1, 'App\\Models\\BonCommande', 74, '2026-10-27 17:36:11', '2026-09-07 11:53:36', '2026-10-27 17:36:11', NULL),
 	(130, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/2', 2, 'App\\Models\\BonCommande', 74, NULL, '2026-09-07 11:53:36', '2026-09-07 11:53:36', NULL),
 	(131, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/2', 3, 'App\\Models\\BonCommande', 74, NULL, '2026-09-07 11:53:36', '2026-09-07 11:53:36', NULL),
 	(132, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/2', 4, 'App\\Models\\BonCommande', 74, NULL, '2026-09-07 11:53:36', '2026-09-07 11:53:36', NULL),
 	(133, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/2', 6, 'App\\Models\\BonCommande', 74, NULL, '2026-09-07 11:53:36', '2026-09-07 11:53:36', NULL),
 	(134, 'bon_commande_en_attente', '1 bon(s) de commande en attente de validation', 6, 'App\\Models\\BonCommande', NULL, NULL, '2026-09-07 11:53:44', '2026-09-07 11:53:44', NULL),
-	(135, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/3', 1, 'App\\Models\\BonCommande', 75, NULL, '2026-09-08 08:09:24', '2026-09-08 08:09:24', NULL),
+	(135, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/3', 1, 'App\\Models\\BonCommande', 75, '2026-10-27 17:36:08', '2026-09-08 08:09:24', '2026-10-27 17:36:08', NULL),
 	(136, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/3', 2, 'App\\Models\\BonCommande', 75, NULL, '2026-09-08 08:09:24', '2026-09-08 08:09:24', NULL),
 	(137, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/3', 3, 'App\\Models\\BonCommande', 75, NULL, '2026-09-08 08:09:24', '2026-09-08 08:09:24', NULL),
 	(138, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/3', 4, 'App\\Models\\BonCommande', 75, NULL, '2026-09-08 08:09:24', '2026-09-08 08:09:24', NULL),
 	(139, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/3', 6, 'App\\Models\\BonCommande', 75, NULL, '2026-09-08 08:09:24', '2026-09-08 08:09:24', NULL),
-	(140, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/4', 1, 'App\\Models\\BonCommande', 76, NULL, '2026-09-08 08:12:32', '2026-09-08 08:12:32', NULL),
+	(140, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/4', 1, 'App\\Models\\BonCommande', 76, '2026-10-27 17:36:13', '2026-09-08 08:12:32', '2026-10-27 17:36:13', NULL),
 	(141, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/4', 2, 'App\\Models\\BonCommande', 76, NULL, '2026-09-08 08:12:32', '2026-09-08 08:12:32', NULL),
 	(142, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/4', 3, 'App\\Models\\BonCommande', 76, NULL, '2026-09-08 08:12:32', '2026-09-08 08:12:32', NULL),
 	(143, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/4', 4, 'App\\Models\\BonCommande', 76, NULL, '2026-09-08 08:12:32', '2026-09-08 08:12:32', NULL),
 	(144, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/4', 6, 'App\\Models\\BonCommande', 76, NULL, '2026-09-08 08:12:32', '2026-09-08 08:12:32', NULL),
-	(145, 'alerte_prix_commande', '2 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/5', 1, 'App\\Models\\BonCommande', 77, NULL, '2026-09-08 08:19:45', '2026-09-08 08:19:45', NULL),
+	(145, 'alerte_prix_commande', '2 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/5', 1, 'App\\Models\\BonCommande', 77, '2026-10-27 17:36:16', '2026-09-08 08:19:45', '2026-10-27 17:36:16', NULL),
 	(146, 'alerte_prix_commande', '2 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/5', 2, 'App\\Models\\BonCommande', 77, NULL, '2026-09-08 08:19:45', '2026-09-08 08:19:45', NULL),
 	(147, 'alerte_prix_commande', '2 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/5', 3, 'App\\Models\\BonCommande', 77, NULL, '2026-09-08 08:19:45', '2026-09-08 08:19:45', NULL),
 	(148, 'alerte_prix_commande', '2 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/5', 4, 'App\\Models\\BonCommande', 77, NULL, '2026-09-08 08:19:45', '2026-09-08 08:19:45', NULL),
 	(149, 'alerte_prix_commande', '2 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/5', 6, 'App\\Models\\BonCommande', 77, NULL, '2026-09-08 08:19:45', '2026-09-08 08:19:45', NULL),
-	(150, 'alerte_reception', '2 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/5', 1, 'App\\Models\\BonCommande', 77, NULL, '2026-09-08 08:25:29', '2026-09-08 08:25:29', NULL),
+	(150, 'alerte_reception', '2 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/5', 1, 'App\\Models\\BonCommande', 77, '2026-10-27 17:36:16', '2026-09-08 08:25:29', '2026-10-27 17:36:16', NULL),
 	(151, 'alerte_reception', '2 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/5', 2, 'App\\Models\\BonCommande', 77, NULL, '2026-09-08 08:25:29', '2026-09-08 08:25:29', NULL),
 	(152, 'alerte_reception', '2 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/5', 3, 'App\\Models\\BonCommande', 77, NULL, '2026-09-08 08:25:29', '2026-09-08 08:25:29', NULL),
 	(153, 'alerte_reception', '2 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/5', 4, 'App\\Models\\BonCommande', 77, NULL, '2026-09-08 08:25:29', '2026-09-08 08:25:29', NULL),
 	(154, 'alerte_reception', '2 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/5', 6, 'App\\Models\\BonCommande', 77, NULL, '2026-09-08 08:25:29', '2026-09-08 08:25:29', NULL),
-	(155, 'alerte_reception', '2 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/5', 1, 'App\\Models\\BonCommande', 77, NULL, '2026-09-09 08:35:30', '2026-09-09 08:35:30', NULL),
+	(155, 'alerte_reception', '2 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/5', 1, 'App\\Models\\BonCommande', 77, '2026-10-27 17:36:16', '2026-09-09 08:35:30', '2026-10-27 17:36:16', NULL),
 	(156, 'alerte_reception', '2 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/5', 2, 'App\\Models\\BonCommande', 77, NULL, '2026-09-09 08:35:30', '2026-09-09 08:35:30', NULL),
 	(157, 'alerte_reception', '2 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/5', 3, 'App\\Models\\BonCommande', 77, NULL, '2026-09-09 08:35:30', '2026-09-09 08:35:30', NULL),
 	(158, 'alerte_reception', '2 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/5', 4, 'App\\Models\\BonCommande', 77, NULL, '2026-09-09 08:35:30', '2026-09-09 08:35:30', NULL),
 	(159, 'alerte_reception', '2 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/5', 6, 'App\\Models\\BonCommande', 77, NULL, '2026-09-09 08:35:30', '2026-09-09 08:35:30', NULL),
-	(160, 'alerte_reception', '2 alerte(s) pour la réception du bon #BC-2609-0007', 1, 'App\\Models\\BonCommande', 46, NULL, '2026-09-09 08:57:45', '2026-09-09 08:57:45', NULL),
+	(160, 'alerte_reception', '2 alerte(s) pour la réception du bon #BC-2609-0007', 1, 'App\\Models\\BonCommande', 46, '2026-10-27 17:36:16', '2026-09-09 08:57:45', '2026-10-27 17:36:16', NULL),
 	(161, 'alerte_reception', '2 alerte(s) pour la réception du bon #BC-2609-0007', 2, 'App\\Models\\BonCommande', 46, NULL, '2026-09-09 08:57:45', '2026-09-09 08:57:45', NULL),
 	(162, 'alerte_reception', '2 alerte(s) pour la réception du bon #BC-2609-0007', 3, 'App\\Models\\BonCommande', 46, NULL, '2026-09-09 08:57:45', '2026-09-09 08:57:45', NULL),
 	(163, 'alerte_reception', '2 alerte(s) pour la réception du bon #BC-2609-0007', 4, 'App\\Models\\BonCommande', 46, NULL, '2026-09-09 08:57:45', '2026-09-09 08:57:45', NULL),
 	(164, 'alerte_reception', '2 alerte(s) pour la réception du bon #BC-2609-0007', 6, 'App\\Models\\BonCommande', 46, NULL, '2026-09-09 08:57:45', '2026-09-09 08:57:45', NULL),
-	(165, 'alerte_reception', '2 alerte(s) pour la réception du bon #BC-2609-0007', 1, 'App\\Models\\BonCommande', 46, NULL, '2026-09-09 09:10:33', '2026-09-09 09:10:33', NULL),
+	(165, 'alerte_reception', '2 alerte(s) pour la réception du bon #BC-2609-0007', 1, 'App\\Models\\BonCommande', 46, '2026-10-27 17:36:16', '2026-09-09 09:10:33', '2026-10-27 17:36:16', NULL),
 	(166, 'alerte_reception', '2 alerte(s) pour la réception du bon #BC-2609-0007', 2, 'App\\Models\\BonCommande', 46, NULL, '2026-09-09 09:10:33', '2026-09-09 09:10:33', NULL),
 	(167, 'alerte_reception', '2 alerte(s) pour la réception du bon #BC-2609-0007', 3, 'App\\Models\\BonCommande', 46, NULL, '2026-09-09 09:10:33', '2026-09-09 09:10:33', NULL),
 	(168, 'alerte_reception', '2 alerte(s) pour la réception du bon #BC-2609-0007', 4, 'App\\Models\\BonCommande', 46, NULL, '2026-09-09 09:10:33', '2026-09-09 09:10:33', NULL),
 	(169, 'alerte_reception', '2 alerte(s) pour la réception du bon #BC-2609-0007', 6, 'App\\Models\\BonCommande', 46, NULL, '2026-09-09 09:10:33', '2026-09-09 09:10:33', NULL),
-	(170, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/6', 1, 'App\\Models\\BonCommande', 78, NULL, '2026-09-09 09:28:20', '2026-09-09 09:28:20', NULL),
+	(170, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/6', 1, 'App\\Models\\BonCommande', 78, '2026-10-27 17:36:16', '2026-09-09 09:28:20', '2026-10-27 17:36:16', NULL),
 	(171, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/6', 2, 'App\\Models\\BonCommande', 78, NULL, '2026-09-09 09:28:20', '2026-09-09 09:28:20', NULL),
 	(172, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/6', 3, 'App\\Models\\BonCommande', 78, NULL, '2026-09-09 09:28:20', '2026-09-09 09:28:20', NULL),
 	(173, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/6', 4, 'App\\Models\\BonCommande', 78, NULL, '2026-09-09 09:28:20', '2026-09-09 09:28:20', NULL),
 	(174, 'alerte_prix_commande', '1 prix différent(s) pour le bon #CONGOFUTUR/037/09/2026/6', 6, 'App\\Models\\BonCommande', 78, NULL, '2026-09-09 09:28:20', '2026-09-09 09:28:20', NULL),
-	(175, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/6', 1, 'App\\Models\\BonCommande', 78, NULL, '2026-09-09 09:30:14', '2026-09-09 09:30:14', NULL),
+	(175, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/6', 1, 'App\\Models\\BonCommande', 78, '2026-10-27 17:36:16', '2026-09-09 09:30:14', '2026-10-27 17:36:16', NULL),
 	(176, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/6', 2, 'App\\Models\\BonCommande', 78, NULL, '2026-09-09 09:30:14', '2026-09-09 09:30:14', NULL),
 	(177, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/6', 3, 'App\\Models\\BonCommande', 78, NULL, '2026-09-09 09:30:14', '2026-09-09 09:30:14', NULL),
 	(178, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/6', 4, 'App\\Models\\BonCommande', 78, NULL, '2026-09-09 09:30:14', '2026-09-09 09:30:14', NULL),
 	(179, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/6', 6, 'App\\Models\\BonCommande', 78, NULL, '2026-09-09 09:30:14', '2026-09-09 09:30:14', NULL),
-	(180, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/6', 1, 'App\\Models\\BonCommande', 78, NULL, '2026-09-09 09:31:43', '2026-09-09 09:31:43', NULL),
+	(180, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/6', 1, 'App\\Models\\BonCommande', 78, '2026-10-27 17:35:47', '2026-09-09 09:31:43', '2026-10-27 17:35:47', NULL),
 	(181, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/6', 2, 'App\\Models\\BonCommande', 78, NULL, '2026-09-09 09:31:43', '2026-09-09 09:31:43', NULL),
 	(182, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/6', 3, 'App\\Models\\BonCommande', 78, NULL, '2026-09-09 09:31:43', '2026-09-09 09:31:43', NULL),
 	(183, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/6', 4, 'App\\Models\\BonCommande', 78, NULL, '2026-09-09 09:31:43', '2026-09-09 09:31:43', NULL),
 	(184, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/6', 6, 'App\\Models\\BonCommande', 78, NULL, '2026-09-09 09:31:43', '2026-09-09 09:31:43', NULL),
-	(185, 'alerte_reception', '2 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/6', 1, 'App\\Models\\BonCommande', 78, NULL, '2026-09-09 09:39:18', '2026-09-09 09:39:18', NULL),
+	(185, 'alerte_reception', '2 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/6', 1, 'App\\Models\\BonCommande', 78, '2026-10-27 17:35:45', '2026-09-09 09:39:18', '2026-10-27 17:35:45', NULL),
 	(186, 'alerte_reception', '2 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/6', 2, 'App\\Models\\BonCommande', 78, NULL, '2026-09-09 09:39:18', '2026-09-09 09:39:18', NULL),
 	(187, 'alerte_reception', '2 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/6', 3, 'App\\Models\\BonCommande', 78, NULL, '2026-09-09 09:39:18', '2026-09-09 09:39:18', NULL),
 	(188, 'alerte_reception', '2 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/6', 4, 'App\\Models\\BonCommande', 78, NULL, '2026-09-09 09:39:18', '2026-09-09 09:39:18', NULL),
 	(189, 'alerte_reception', '2 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/6', 6, 'App\\Models\\BonCommande', 78, NULL, '2026-09-09 09:39:18', '2026-09-09 09:39:18', NULL),
-	(190, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/7', 1, 'App\\Models\\BonCommande', 79, NULL, '2026-09-09 09:44:37', '2026-09-09 09:44:37', NULL),
+	(190, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/7', 1, 'App\\Models\\BonCommande', 79, '2026-10-27 17:35:43', '2026-09-09 09:44:37', '2026-10-27 17:35:43', NULL),
 	(191, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/7', 2, 'App\\Models\\BonCommande', 79, NULL, '2026-09-09 09:44:37', '2026-09-09 09:44:37', NULL),
 	(192, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/7', 3, 'App\\Models\\BonCommande', 79, NULL, '2026-09-09 09:44:37', '2026-09-09 09:44:37', NULL),
 	(193, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/7', 4, 'App\\Models\\BonCommande', 79, NULL, '2026-09-09 09:44:37', '2026-09-09 09:44:37', NULL),
 	(194, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/7', 6, 'App\\Models\\BonCommande', 79, NULL, '2026-09-09 09:44:37', '2026-09-09 09:44:37', NULL),
-	(195, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/7', 1, 'App\\Models\\BonCommande', 79, NULL, '2026-09-09 09:45:38', '2026-09-09 09:45:38', NULL),
+	(195, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/7', 1, 'App\\Models\\BonCommande', 79, '2026-10-27 17:35:40', '2026-09-09 09:45:38', '2026-10-27 17:35:40', NULL),
 	(196, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/7', 2, 'App\\Models\\BonCommande', 79, NULL, '2026-09-09 09:45:38', '2026-09-09 09:45:38', NULL),
 	(197, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/7', 3, 'App\\Models\\BonCommande', 79, NULL, '2026-09-09 09:45:38', '2026-09-09 09:45:38', NULL),
 	(198, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/7', 4, 'App\\Models\\BonCommande', 79, NULL, '2026-09-09 09:45:38', '2026-09-09 09:45:38', NULL),
-	(199, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/7', 6, 'App\\Models\\BonCommande', 79, NULL, '2026-09-09 09:45:38', '2026-09-09 09:45:38', NULL);
+	(199, 'alerte_reception', '1 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/7', 6, 'App\\Models\\BonCommande', 79, NULL, '2026-09-09 09:45:38', '2026-09-09 09:45:38', NULL),
+	(200, 'alerte_reception', '2 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/7', 1, 'App\\Models\\BonCommande', 79, '2026-10-27 17:42:32', '2026-10-27 17:37:43', '2026-10-27 17:42:32', NULL),
+	(201, 'alerte_reception', '2 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/7', 2, 'App\\Models\\BonCommande', 79, NULL, '2026-10-27 17:37:43', '2026-10-27 17:37:43', NULL),
+	(202, 'alerte_reception', '2 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/7', 3, 'App\\Models\\BonCommande', 79, NULL, '2026-10-27 17:37:43', '2026-10-27 17:37:43', NULL),
+	(203, 'alerte_reception', '2 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/7', 4, 'App\\Models\\BonCommande', 79, NULL, '2026-10-27 17:37:43', '2026-10-27 17:37:43', NULL),
+	(204, 'alerte_reception', '2 alerte(s) pour la réception du bon #CONGOFUTUR/037/09/2026/7', 6, 'App\\Models\\BonCommande', 79, NULL, '2026-10-27 17:37:43', '2026-10-27 17:37:43', NULL);
 
 -- Listage de la structure de table bd_gst_bejamin. parametres
 CREATE TABLE IF NOT EXISTS `parametres` (
@@ -3633,9 +3669,9 @@ CREATE TABLE IF NOT EXISTS `personal_access_tokens` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `personal_access_tokens_token_unique` (`token`),
   KEY `personal_access_tokens_tokenable_type_tokenable_id_index` (`tokenable_type`,`tokenable_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=334 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=341 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table bd_gst_bejamin.personal_access_tokens : ~57 rows (environ)
+-- Listage des données de la table bd_gst_bejamin.personal_access_tokens : ~59 rows (environ)
 INSERT INTO `personal_access_tokens` (`id`, `tokenable_type`, `tokenable_id`, `name`, `token`, `abilities`, `last_used_at`, `expires_at`, `created_at`, `updated_at`) VALUES
 	(221, 'App\\Models\\Utilisateur', 1, 'auth_token', '00e5546d1c1e096d7f8b8680b76d55037879699f945ffb20c6e57944e5524eac', '["*"]', '2026-08-10 07:25:21', NULL, '2026-08-09 16:22:22', '2026-08-10 07:25:21'),
 	(229, 'App\\Models\\Utilisateur', 1, 'auth_token', '03a44c553b386467dc806ee1f9f62dca1b9d58e3e88494ea8f7a02eb11452b9e', '["*"]', '2026-08-12 02:39:26', NULL, '2026-08-12 02:37:20', '2026-08-12 02:39:26'),
@@ -3691,9 +3727,11 @@ INSERT INTO `personal_access_tokens` (`id`, `tokenable_type`, `tokenable_id`, `n
 	(319, 'App\\Models\\Utilisateur', 1, 'auth_token', '480e55cdd6882fb31d3066afd2752a4d7dadb13126dc68afaeec31f35f5ce4c8', '["*"]', '2026-09-06 17:58:39', NULL, '2026-09-06 17:58:38', '2026-09-06 17:58:39'),
 	(320, 'App\\Models\\Utilisateur', 1, 'auth_token', 'fba165013ee94defb28b064c3bc159b431a3d840f3ac43157c1c403e56fcee1d', '["*"]', '2026-09-06 17:59:39', NULL, '2026-09-06 17:59:38', '2026-09-06 17:59:39'),
 	(330, 'App\\Models\\Utilisateur', 1, 'test', '6260b5c4779c65ca6347b53a4b3d6a0aeaf8c77a9ed22689bb8139513ebdd910', '["*"]', '2026-09-09 08:40:38', NULL, '2026-09-09 08:37:41', '2026-09-09 08:40:38'),
-	(331, 'App\\Models\\Utilisateur', 1, 'auth_token', 'f3e0a7d2ff7a6c3433edb20b364de60e56b991e9535a360b44c524ba73bc7c3a', '["*"]', '2026-09-09 09:46:30', NULL, '2026-09-09 08:40:25', '2026-09-09 09:46:30'),
 	(332, 'App\\Models\\Utilisateur', 4, 'test2', '297618d1e52eb30ad5362773d65ec3178c620dc214fa580e02a8047ea30c0c06', '["*"]', '2026-09-09 08:41:01', NULL, '2026-09-09 08:40:50', '2026-09-09 08:41:01'),
-	(333, 'App\\Models\\Utilisateur', 4, 'test3', '2858ad4b925584b931c1b2b1769094c94f66b2a932cea515dd9f7f7349e068e9', '["*"]', '2026-09-09 08:55:13', NULL, '2026-09-09 08:54:59', '2026-09-09 08:55:13');
+	(333, 'App\\Models\\Utilisateur', 4, 'test3', '2858ad4b925584b931c1b2b1769094c94f66b2a932cea515dd9f7f7349e068e9', '["*"]', '2026-09-09 08:55:13', NULL, '2026-09-09 08:54:59', '2026-09-09 08:55:13'),
+	(337, 'App\\Models\\Utilisateur', 1, 'auth_token', 'ac70243678cc42ac082da333a2eb4d159824659fb9ccf65140c7c8515ebdc180', '["*"]', '2026-10-27 18:38:59', NULL, '2026-10-27 17:45:54', '2026-10-27 18:38:59'),
+	(339, 'App\\Models\\Utilisateur', 1, 'auth_token', '1b1d01379a222ca320cb12eab0fa6f2f3176e6a4975943df9f838c786c107d52', '["*"]', '2026-10-28 06:55:20', NULL, '2026-10-27 17:55:14', '2026-10-28 06:55:20'),
+	(340, 'App\\Models\\Utilisateur', 1, 'auth_token', 'd1d5e7ba0f09c92ba2be49903160fa2e2f84ea4e2cbfc8fe67e165a459fd4dc3', '["*"]', '2026-10-28 07:23:20', NULL, '2026-10-28 06:56:48', '2026-10-28 07:23:20');
 
 -- Listage de la structure de table bd_gst_bejamin. prix_commande
 CREATE TABLE IF NOT EXISTS `prix_commande` (
@@ -3711,9 +3749,9 @@ CREATE TABLE IF NOT EXISTS `prix_commande` (
   KEY `prix_commande_id_produit_date_index` (`id_produit`,`date`),
   CONSTRAINT `prix_commande_id_devise_foreign` FOREIGN KEY (`id_devise`) REFERENCES `devises` (`id`),
   CONSTRAINT `prix_commande_id_produit_foreign` FOREIGN KEY (`id_produit`) REFERENCES `produits` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=68 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=69 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Listage des données de la table bd_gst_bejamin.prix_commande : ~46 rows (environ)
+-- Listage des données de la table bd_gst_bejamin.prix_commande : ~56 rows (environ)
 INSERT INTO `prix_commande` (`id`, `id_produit`, `prix_commande`, `id_devise`, `date`, `origine`, `commentaire`, `created_at`, `updated_at`) VALUES
 	(1, 7, 0.9000, 2, '2026-08-02', 'initial', 'Prix initial (backfill)', '2026-09-06 14:44:33', '2026-09-06 14:44:33'),
 	(2, 11, 0.8000, 2, '2026-08-02', 'initial', 'Prix initial (backfill)', '2026-09-06 14:44:33', '2026-09-06 14:44:33'),
@@ -3772,7 +3810,8 @@ INSERT INTO `prix_commande` (`id`, `id_produit`, `prix_commande`, `id_devise`, `
 	(64, 30, 9.0000, 2, '2026-09-09', 'reception', 'Réception du bon #CONGOFUTUR/037/09/2026/6', '2026-09-09 09:39:18', '2026-09-09 09:39:18'),
 	(65, 11, 0.8000, 2, '2026-09-09', 'bon_commande', 'Bon de commande #CONGOFUTUR/037/09/2026/7', '2026-09-09 09:44:13', '2026-09-09 09:44:13'),
 	(66, 11, 0.8000, 2, '2026-09-09', 'reception', 'Réception du bon #CONGOFUTUR/037/09/2026/7', '2026-09-09 09:44:37', '2026-09-09 09:44:37'),
-	(67, 11, 0.8000, 2, '2026-09-09', 'reception', 'Réception du bon #CONGOFUTUR/037/09/2026/7', '2026-09-09 09:45:38', '2026-09-09 09:45:38');
+	(67, 11, 0.8000, 2, '2026-09-09', 'reception', 'Réception du bon #CONGOFUTUR/037/09/2026/7', '2026-09-09 09:45:38', '2026-09-09 09:45:38'),
+	(68, 11, 0.9000, 2, '2026-10-27', 'reception', 'Réception du bon #CONGOFUTUR/037/09/2026/7', '2026-10-27 17:37:43', '2026-10-27 17:37:43');
 
 -- Listage de la structure de table bd_gst_bejamin. produits
 CREATE TABLE IF NOT EXISTS `produits` (
@@ -4516,10 +4555,10 @@ CREATE TABLE IF NOT EXISTS `utilisateurs` (
 
 -- Listage des données de la table bd_gst_bejamin.utilisateurs : ~6 rows (environ)
 INSERT INTO `utilisateurs` (`id`, `nom`, `prenom`, `email`, `mot_de_passe_hash`, `id_role`, `id_magasin`, `id_departement`, `actif`, `derniere_connexion`, `remember_token`, `deleted_at`, `created_at`, `updated_at`) VALUES
-	(1, 'Famba', 'Pierre', 'pierre@gmail.com', '$2y$12$fXU8Gl9BjGGTrY./jw3LDONkt.qF8EshAOSHo7tDnSc7auwtCIpPy', 1, 1, 7, 1, '2026-09-09 10:40:25', NULL, NULL, '2026-07-18 12:26:29', '2026-09-09 08:40:25'),
+	(1, 'Famba', 'Pierre', 'pierre@gmail.com', '$2y$12$fXU8Gl9BjGGTrY./jw3LDONkt.qF8EshAOSHo7tDnSc7auwtCIpPy', 1, 1, 7, 1, '2026-10-28 07:56:48', NULL, NULL, '2026-07-18 12:26:29', '2026-10-28 06:56:48'),
 	(2, 'NGOMA', 'David', 'ngoma@gmail.com', '$2y$12$33R.KiRWCGEaEgT9XbIcXOy9pxnoqK2xmz7rZVxl9Dedwb/OgzTru', 7, 1, 7, 1, '2026-08-19 06:29:58', NULL, NULL, '2026-07-21 11:12:52', '2026-08-21 09:04:16'),
 	(3, 'AMULI', 'Claude', 'amuli@gmail.com', '$2y$12$nQDS9Mu0XVBfgJGAwArvPeMULBFI1oW7CZitnwr8QGF2FRipgreWW', 3, 1, 7, 1, '2026-09-01 18:26:36', NULL, NULL, '2026-07-21 12:05:39', '2026-09-01 16:26:36'),
-	(4, 'KALOMBO', 'Bobo', 'pierrpapy@gmail.com', '$2y$12$ISVTf.1pMDxVh1uJxYnHN.ys3tWkUSmmFT144I16JLWHPmz5QRMg.', 3, 1, 7, 1, '2026-09-08 09:51:52', NULL, NULL, '2026-08-02 14:48:06', '2026-09-08 07:51:52'),
+	(4, 'KALOMBO', 'Bobo', 'pierrpapy@gmail.com', '$2y$12$jf2cB8i5MWJYJB6zq1Re5.6nqEAR3OhlaUwd7VRzR0HpHy6QukB.2', 3, 1, 7, 1, '2026-09-08 09:51:52', NULL, NULL, '2026-08-02 14:48:06', '2026-10-27 17:42:59'),
 	(5, 'HJUYT', 'GHTR', 'tambo@gmail.com', '$2y$12$.n.iZpGHLNHlltblx3tL4ObkM6R.JHuOU/sJG46JP0f.iwlPGjvXK', 3, 1, 9, 1, NULL, NULL, '2026-09-01 10:31:55', '2026-09-01 10:31:48', '2026-09-01 10:31:55'),
 	(6, 'Buediena Kabu', 'Berthier', 'berthierb@kratos.cd', '$2y$12$6lYAbxHTVaMn76znD.7RpuxMeX3tRFxNP1PSXO8trnic7vZJ3p2ae', 4, 1, 9, 1, NULL, NULL, NULL, '2026-09-07 11:52:14', '2026-09-07 11:52:14');
 

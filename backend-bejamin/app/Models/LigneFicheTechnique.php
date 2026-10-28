@@ -28,10 +28,10 @@ class LigneFicheTechnique extends Model
     protected $casts = [
         'quantite_ingredient' => 'decimal:2',
         'rendement' => 'decimal:2',
-        'prix_unitaire' => 'decimal:2',
+        'prix_unitaire' => 'decimal:3',
         'poids_net' => 'decimal:3',
         'poids_brut' => 'decimal:3',
-        'cout_total' => 'decimal:2',
+        'cout_total' => 'decimal:3',
         'rendement_apres_cuisson' => 'boolean',
     ];
 

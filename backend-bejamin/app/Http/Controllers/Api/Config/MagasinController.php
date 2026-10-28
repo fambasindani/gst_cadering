@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Config;
 
 use App\Models\Magasin;
+use Illuminate\Validation\Rule;
 
 class MagasinController extends BaseController
 {
@@ -13,7 +14,10 @@ class MagasinController extends BaseController
     {
         return [
             'nom' => "required|string|max:100",
-            'code' => "nullable|string|max:20|unique:magasins,code,{$id}",
+            'code' => [
+                'nullable', 'string', 'max:20',
+                Rule::unique('magasins', 'code')->ignore($id)->whereNull('deleted_at'),
+            ],
             'pays' => "nullable|string|max:100",
             'actif' => 'nullable|boolean'
         ];

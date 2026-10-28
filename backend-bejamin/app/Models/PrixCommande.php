@@ -18,7 +18,7 @@ class PrixCommande extends Model
     ];
 
     protected $casts = [
-        'prix_commande' => 'decimal:4',
+        'prix_commande' => 'decimal:3',
         'date' => 'date',
     ];
 

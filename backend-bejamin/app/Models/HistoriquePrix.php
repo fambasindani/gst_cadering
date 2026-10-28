@@ -21,7 +21,7 @@ class HistoriquePrix extends Model
     ];
 
     protected $casts = [
-        'prix_achat_ht' => 'decimal:2',
+        'prix_achat_ht' => 'decimal:3',
         'date_application' => 'date',
     ];
 

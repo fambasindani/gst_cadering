@@ -13,6 +13,7 @@ import {
 } from '../ui/dropdown-menu.tsx';
 import { useAuthStore } from '../../store/authStore';
 import { NotificationPanel } from './NotificationPanel';
+import logo from '../../assets/logo_servair.png';
 
 interface HeaderProps {
   onMenuToggle: () => void;
@@ -164,8 +165,8 @@ export function Header({ onMenuToggle }: HeaderProps) {
         <Button variant="ghost" size="icon" onClick={onMenuToggle} className="lg:hidden">
           <Menu className="h-5 w-5" />
         </Button>
-        <div className="hidden md:flex items-center gap-2">
-          <h1 className="text-xl font-bold text-royal-800">Fondeg</h1>
+        <div className="hidden md:flex items-center gap-3">
+          <img src={logo} alt="Servair" className="h-8 w-auto" />
           <span className="text-gray-400">|</span>
           <span className="text-sm text-gray-500">{pageTitle}</span>
         </div>

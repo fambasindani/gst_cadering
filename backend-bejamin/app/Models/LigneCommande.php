@@ -22,7 +22,7 @@ class LigneCommande extends Model
 
     protected $casts = [
         'quantite_commandee' => 'integer',
-        'prix_unitaire_ht' => 'decimal:2',
+        'prix_unitaire_ht' => 'decimal:3',
         'quantite_recue' => 'integer',
     ];
 

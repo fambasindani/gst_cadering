@@ -151,7 +151,7 @@ export function AvoirForm() {
 
             <div>
               <LabelIcon required error={fieldErrors.montant_ht}>Montant HT</LabelIcon>
-              <Input type="number" step="0.01" min="0.01" value={values.montant_ht}
+              <Input type="number" step="0.001" min="0.01" value={values.montant_ht}
                 onChange={(e) => set('montant_ht', e.target.value)}
                 className={cn('h-11 border-gray-200 shadow-sm', errorClass(fieldErrors.montant_ht))} />
               {fieldErrors.montant_ht && <p className="text-xs text-red-500 mt-1">{fieldErrors.montant_ht}</p>}

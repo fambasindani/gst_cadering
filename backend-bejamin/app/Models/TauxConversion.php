@@ -67,6 +67,6 @@ class TauxConversion extends Model
         if ($taux === null) {
             return null;
         }
-        return round($montantUsd * $taux, 2);
+        return round($montantUsd * $taux, 3);
     }
 }

@@ -1,8 +1,12 @@
-export function formatCurrency(value: number | string, currency?: string): string {
+export function formatNumber(value: number | string): string {
   const num = Number(value) || 0;
-  const formatted = num
-    .toFixed(2)
-    .replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  let formatted = num.toFixed(3);
+  if (formatted.endsWith('0')) formatted = formatted.slice(0, -1);
+  return formatted.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+}
+
+export function formatCurrency(value: number | string, currency?: string): string {
+  const formatted = formatNumber(value);
   return currency ? `${formatted} ${currency}` : formatted;
 }
 

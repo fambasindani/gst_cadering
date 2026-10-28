@@ -10,6 +10,7 @@ import {
 import { useAuthStore } from '../store/authStore';
 import { api } from '../services/api';
 import { cn } from '../lib/utils';
+import logo from '../assets/logo_servair.png';
 
 const loginSchema = z.object({
   email: z.string().min(1, "L'email est obligatoire").email("Email invalide"),
@@ -92,14 +93,8 @@ export function Login() {
         {/* Left panel */}
         <div className="w-full lg:w-1/2 h-full bg-gradient-to-b from-royal-700 to-[#081b33] p-8 md:p-16 flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-royal-500/30 flex items-center justify-center">
-                <span className="text-xl font-bold text-white">FC</span>
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-white">Fondeg</h1>
-                <p className="text-royal-300 text-xs">Catering Congo S.A.</p>
-              </div>
+            <div className="inline-flex items-center rounded-lg bg-white px-4 py-2.5 shadow-sm">
+              <img src={logo} alt="Servair" className="h-10 w-auto" />
             </div>
           </div>
 

@@ -145,13 +145,13 @@ class RapportController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'stock_initial' => round($stockInitialFood, 2),
-                    'achats_food' => round($achatsFood, 2),
-                    'stock_initial_lessiviels' => round($stockInitialLessiviels, 2),
-                    'achats_lessiviels' => round($achatsLessiviels, 2),
-                    'conso_food' => round($consoFood, 2),
-                    'conso_aerienne' => round($consoAerienne, 2),
-                    'conso_non_aerienne' => round($consoNonAerienne, 2),
+                    'stock_initial' => round($stockInitialFood, 3),
+                    'achats_food' => round($achatsFood, 3),
+                    'stock_initial_lessiviels' => round($stockInitialLessiviels, 3),
+                    'achats_lessiviels' => round($achatsLessiviels, 3),
+                    'conso_food' => round($consoFood, 3),
+                    'conso_aerienne' => round($consoAerienne, 3),
+                    'conso_non_aerienne' => round($consoNonAerienne, 3),
                 ],
                 'message' => 'Calcul de variation stock effectué'
             ]);
@@ -437,16 +437,16 @@ class RapportController extends Controller
                     'designation' => $produit->nom,
                     'code_article' => $produit->code_article,
                     'unite' => $produit->unite->symbole ?? '-',
-                    'prix_unitaire' => round($prixUnitaire, 2),
+                    'prix_unitaire' => round($prixUnitaire, 3),
                     'devise' => $devise,
                     'qte_initiale' => round($qteInitiale, 2),
-                    'valeur_initiale' => round($qteInitiale * $prixUnitaire, 2),
+                    'valeur_initiale' => round($qteInitiale * $prixUnitaire, 3),
                     'qte_entree' => round($entrees, 2),
-                    'valeur_entree' => round($entrees * $prixUnitaire, 2),
+                    'valeur_entree' => round($entrees * $prixUnitaire, 3),
                     'qte_sortie' => round($sorties, 2),
-                    'valeur_sortie' => round($sorties * $prixUnitaire, 2),
+                    'valeur_sortie' => round($sorties * $prixUnitaire, 3),
                     'qte_finale' => round($qteFinale, 2),
-                    'valeur_finale' => round($qteFinale * $prixUnitaire, 2),
+                    'valeur_finale' => round($qteFinale * $prixUnitaire, 3),
                 ];
 
                 $totalQteInitiale += $qteInitiale;
@@ -482,10 +482,10 @@ class RapportController extends Controller
                         'total_qte_entree' => round($totalQteEntrees, 2),
                         'total_qte_sortie' => round($totalQteSorties, 2),
                         'total_qte_finale' => round($totalQteFinale, 2),
-                        'total_valeur_initiale' => round($totalValeurInitiale, 2),
-                        'total_valeur_entree' => round($totalValeurEntrees, 2),
-                        'total_valeur_sortie' => round($totalValeurSorties, 2),
-                        'total_valeur_finale' => round($totalValeurFinale, 2),
+                        'total_valeur_initiale' => round($totalValeurInitiale, 3),
+                        'total_valeur_entree' => round($totalValeurEntrees, 3),
+                        'total_valeur_sortie' => round($totalValeurSorties, 3),
+                        'total_valeur_finale' => round($totalValeurFinale, 3),
                     ]
                 ],
                 'message' => 'Rapport stock récupéré avec succès'
@@ -629,14 +629,14 @@ class RapportController extends Controller
                     'designation' => $produit->nom,
                     'code_article' => $produit->code_article,
                     'unite' => $produit->unite->symbole ?? '-',
-                    'prix_unitaire' => round($prixUnitaire, 2),
+                    'prix_unitaire' => round($prixUnitaire, 3),
                     'devise' => $devise,
                     'qte_logique' => round($qteLogique, 2),
-                    'valeur_logique' => round($qteLogique * $prixUnitaire, 2),
+                    'valeur_logique' => round($qteLogique * $prixUnitaire, 3),
                     'qte_physique' => round($qtePhysique, 2),
-                    'valeur_physique' => round($qtePhysique * $prixUnitaire, 2),
+                    'valeur_physique' => round($qtePhysique * $prixUnitaire, 3),
                     'ecart' => round($ecart, 2),
-                    'valeur_ecart' => round($ecart * $prixUnitaire, 2),
+                    'valeur_ecart' => round($ecart * $prixUnitaire, 3),
                 ];
 
                 $totalQteLogique += $qteLogique;
@@ -662,11 +662,11 @@ class RapportController extends Controller
                     'statistiques' => [
                         'total_produits' => count($lignes),
                         'total_qte_logique' => round($totalQteLogique, 2),
-                        'total_valeur_logique' => round($totalValeurLogique, 2),
+                        'total_valeur_logique' => round($totalValeurLogique, 3),
                         'total_qte_physique' => round($totalQtePhysique, 2),
-                        'total_valeur_physique' => round($totalValeurPhysique, 2),
+                        'total_valeur_physique' => round($totalValeurPhysique, 3),
                         'total_ecart' => round($totalEcart, 2),
-                        'total_valeur_ecart' => round($totalValeurEcart, 2),
+                        'total_valeur_ecart' => round($totalValeurEcart, 3),
                     ],
                 ],
                 'message' => 'Rapport stock logique/physique récupéré avec succès'
@@ -1911,7 +1911,7 @@ class RapportController extends Controller
                         'nom' => $nouveau->nom,
                         'ancien_prix' => $ancienPrix,
                         'nouveau_prix' => $nouveauPrix,
-                        'variation' => round($variation, 2),
+                        'variation' => round($variation, 3),
                         'pourcentage' => $ancienPrix != 0 ? round(($variation / $ancienPrix) * 100, 1) : 0,
                         'type' => $variation > 0.0001 ? 'hausse' : ($variation < -0.0001 ? 'baisse' : 'stable'),
                         'date' => Carbon::parse($nouveau->date_application)->format('d/m/Y'),

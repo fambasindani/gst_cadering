@@ -256,7 +256,7 @@ class DashboardController extends Controller
                         'nom' => $nouveau->nom,
                         'ancien_prix' => $ancienPrix,
                         'nouveau_prix' => $nouveauPrix,
-                        'variation' => round($variation, 2),
+                        'variation' => round($variation, 3),
                         'pourcentage' => $ancienPrix != 0 ? round(($variation / $ancienPrix) * 100, 1) : 0,
                         'type' => $variation > 0.0001 ? 'hausse' : ($variation < -0.0001 ? 'baisse' : 'stable'),
                         'date' => Carbon::parse($nouveau->date_application)->format('d/m/Y'),

@@ -276,7 +276,7 @@ export function StockLotSerieForm() {
                 <div>
                   <Label icon={DollarSign}>Prix achat unitaire HT</Label>
                   <div className="relative">
-                    <Input type="number" step="0.01" min="0" value={form.prix_achat_ht_unitaire}
+                    <Input type="number" step="0.001" min="0" value={form.prix_achat_ht_unitaire}
                       onChange={e => { setFieldErrors(f => { const n = { ...f }; delete n.prix_achat_ht_unitaire; return n; }); setForm(f => ({ ...f, prix_achat_ht_unitaire: e.target.value })); }}
                       className={cn('h-11 border-gray-200 shadow-sm pl-8', errorClass('prix_achat_ht_unitaire'))} placeholder="0,00" />
                     <DollarSign className="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />

@@ -29,6 +29,12 @@ const wLabel = '42%';
 const wMontant = '22%';
 const wObs = '36%';
 
+function formatMontant(value: number): string {
+  let s = (Number(value) || 0).toFixed(3);
+  if (s.endsWith('0')) s = s.slice(0, -1);
+  return s.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+}
+
 interface VariationStockPDFProps {
   period: string;
   values: Record<string, string>;
@@ -76,7 +82,7 @@ export function VariationStockPDF({ period, values }: VariationStockPDFProps) {
         </View>
         <View style={styles.totalRow}>
           <Text style={[styles.totalCellLabel, { width: wLabel }]}>MONTANT CHIFFRE D'AFFAIRES REALISE</Text>
-          <Text style={[styles.totalCellRight, { width: wMontant }]}>{caTotal.toFixed(2)}</Text>
+          <Text style={[styles.totalCellRight, { width: wMontant }]}>{formatMontant(caTotal)}</Text>
           <Text style={[styles.totalCellLabel, { width: wObs }]} />
         </View>
 
@@ -108,7 +114,7 @@ export function VariationStockPDF({ period, values }: VariationStockPDFProps) {
         </View>
         <View style={styles.totalRow}>
           <Text style={[styles.totalCellLabel, { width: wLabel }]}>TOTAL ACHAT MOIS</Text>
-          <Text style={[styles.totalCellRight, { width: wMontant }]}>{totalAchat.toFixed(2)}</Text>
+          <Text style={[styles.totalCellRight, { width: wMontant }]}>{formatMontant(totalAchat)}</Text>
           <Text style={[styles.totalCellLabel, { width: wObs }]} />
         </View>
         <View style={styles.row}>
@@ -118,7 +124,7 @@ export function VariationStockPDF({ period, values }: VariationStockPDFProps) {
         </View>
         <View style={styles.totalRow}>
           <Text style={[styles.totalCellLabel, { width: wLabel }]}>TOTAL CONSOMMATION MOIS</Text>
-          <Text style={[styles.totalCellRight, { width: wMontant }]}>{totalConso.toFixed(2)}</Text>
+          <Text style={[styles.totalCellRight, { width: wMontant }]}>{formatMontant(totalConso)}</Text>
           <Text style={[styles.totalCellLabel, { width: wObs }]} />
         </View>
 

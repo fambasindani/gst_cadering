@@ -11,10 +11,12 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '../components/ui/select';
 import { useToast } from '../hooks/useToast';
+import { useIsAdmin } from '../hooks/useIsAdmin';
+import { ConfirmModal } from '../components/ui/confirm-modal';
 import { auditService } from '../services/audit';
 import type { Audit, AuditStats, AuditTable, AuditAction } from '../types/audit';
 import {
-  Search, RefreshCw, Shield, Activity, Database, Calendar, User, Eye, FileText, Download,
+  Search, RefreshCw, Shield, Activity, Database, Calendar, User, Eye, FileText, Download, Trash2,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -41,6 +43,7 @@ const actionLabels: Record<string, string> = {
 export function AuditList() {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isAdmin = useIsAdmin();
 
   const [data, setData] = useState<Audit[]>([]);
   const [loading, setLoading] = useState(true);
@@ -60,6 +63,8 @@ export function AuditList() {
   const [dateFin, setDateFin] = useState('');
 
   const [exportLoading, setExportLoading] = useState(false);
+  const [confirmPurge, setConfirmPurge] = useState(false);
+  const [purging, setPurging] = useState(false);
 
   const handlePageSizeChange = (size: number) => { setPageSize(size); setCurrentPage(1); };
 
@@ -136,6 +141,27 @@ export function AuditList() {
     }
   };
 
+  const handlePurge = async () => {
+    try {
+      setPurging(true);
+      const res = await auditService.purger();
+      if (res.success) {
+        toast(res.message || 'Journal d\'audit vidé', 'success');
+        setConfirmPurge(false);
+        setCurrentPage(1);
+        await fetchData();
+        auditService.statistiques().then((r) => { if (r.success) setStats(r.data); }).catch(() => {});
+        auditService.tables().then((r) => { if (r.success) setTables(r.data); }).catch(() => {});
+        auditService.actions().then((r) => { if (r.success) setAllActions(r.data); }).catch(() => {});
+      }
+    } catch (err) {
+      const msg = (err as { message?: string })?.message || 'Erreur lors de la suppression des audits';
+      toast(msg, 'error');
+    } finally {
+      setPurging(false);
+    }
+  };
+
   const formatDate = (d: string) => {
     const dt = new Date(d);
     return dt.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -158,6 +184,13 @@ export function AuditList() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {isAdmin && (
+            <Button variant="outline" onClick={() => setConfirmPurge(true)} disabled={purging || total === 0}
+              className="border-red-300 text-red-700 hover:bg-red-50 font-medium rounded-xl">
+              <Trash2 className="h-4 w-4 mr-2" />
+              Vider les audits
+            </Button>
+          )}
           <Button variant="outline" onClick={handleExport} disabled={exportLoading}
             className="border-gray-300 text-gray-700 hover:bg-gray-50 font-medium rounded-xl">
             <Download className={cn('h-4 w-4 mr-2', exportLoading && 'animate-bounce')} />
@@ -383,6 +416,16 @@ export function AuditList() {
         </CardContent>
       </Card>
 
+      <ConfirmModal
+        isOpen={confirmPurge}
+        onClose={() => setConfirmPurge(false)}
+        onConfirm={handlePurge}
+        title="Vider le journal d'audit"
+        message={`Cette action supprime définitivement les ${total} entrée(s) d'audit. Elle est irréversible.`}
+        confirmLabel="Vider"
+        variant="danger"
+        loading={purging}
+      />
 
     </div>
   );

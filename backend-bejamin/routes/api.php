@@ -444,6 +444,8 @@ Route::middleware(['auth:sanctum', 'audit'])->group(function () {
         Route::get('actions/liste', [AuditController::class, 'actions'])->middleware('permission:audit:view');
         Route::get('export', [AuditController::class, 'export'])->middleware('permission:audit:export');
 
+        Route::delete('purger', [AuditController::class, 'purger'])->middleware('permission:audit:delete');
+
         Route::get('{id}', [AuditController::class, 'show'])->middleware('permission:audit:view')->where('id', '[0-9]+');
     });
 });

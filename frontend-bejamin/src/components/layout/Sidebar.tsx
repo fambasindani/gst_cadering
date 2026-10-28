@@ -5,6 +5,7 @@ import { menuItems } from '../../data/mockData';
 import type { MenuItem as MenuItemType } from '../../types';
 import { cn } from '../../lib/utils';
 import { useAuthStore } from '../../store/authStore';
+import logo from '../../assets/logo_servair.png';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -173,8 +174,8 @@ export function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
           )}
         >
           <div className="flex items-center gap-2 min-w-0">
-            <div className="w-8 h-8 rounded-full bg-royal-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-              FS
+            <div className="rounded-md bg-white px-1.5 py-1 flex-shrink-0">
+              <img src={logo} alt="Servair" className="h-6 w-auto" />
             </div>
             <span
               className={cn(

@@ -289,8 +289,8 @@ class EntreeFicheTechniqueController extends Controller
                         'rendement' => 1,
                         'quantiteParPortion' => round($pct, 3),
                         'quantiteTotale' => round($quantiteTotale, 3),
-                        'prixUnitaire' => round($prixUnitaire, 2),
-                        'coutTotal' => round($coutItem, 2),
+                        'prixUnitaire' => round($prixUnitaire, 3),
+                        'coutTotal' => round($coutItem, 3),
                     ];
 
                     $this->agregerArticle($articles, $produit, $produit->unite, $quantiteTotale, $coutItem);
@@ -301,8 +301,8 @@ class EntreeFicheTechniqueController extends Controller
                         'code' => $produit->code_article,
                         'type' => 'produit',
                         'pourcentage' => $pourcentage,
-                        'coutParPassager' => round($prixUnitaire * $pct, 2),
-                        'coutTotal' => round($coutItem, 2),
+                        'coutParPassager' => round($prixUnitaire * $pct, 3),
+                        'coutTotal' => round($coutItem, 3),
                         'composants' => $composants,
                     ];
 
@@ -334,8 +334,8 @@ class EntreeFicheTechniqueController extends Controller
                         'rendement' => (float) $ligne->rendement,
                         'quantiteParPortion' => round($quantiteParPortion, 3),
                         'quantiteTotale' => round($quantiteTotale, 3),
-                        'prixUnitaire' => round($prixUnitaire, 2),
-                        'coutTotal' => round($coutLigne, 2),
+                        'prixUnitaire' => round($prixUnitaire, 3),
+                        'coutTotal' => round($coutLigne, 3),
                     ];
 
                     $this->agregerArticle($articles, $ligne->ingredient, $ligne->unite, $quantiteTotale, $coutLigne);
@@ -347,8 +347,8 @@ class EntreeFicheTechniqueController extends Controller
                     'code' => $recette->code,
                     'type' => 'recette',
                     'pourcentage' => $pourcentage,
-                    'coutParPassager' => round($coutParPassager, 2),
-                    'coutTotal' => round($coutItem, 2),
+                    'coutParPassager' => round($coutParPassager, 3),
+                    'coutTotal' => round($coutItem, 3),
                     'composants' => $composants,
                 ];
             }
@@ -371,7 +371,7 @@ class EntreeFicheTechniqueController extends Controller
             ->values()
             ->map(function ($article) {
                 $article['prixUnitaire'] = $article['quantiteTotale'] > 0
-                    ? round($article['coutTotal'] / $article['quantiteTotale'], 2)
+                    ? round($article['coutTotal'] / $article['quantiteTotale'], 3)
                     : 0;
                 return $article;
             })
@@ -382,8 +382,8 @@ class EntreeFicheTechniqueController extends Controller
             'menu' => $menu->load(['partenaire', 'magasin']),
             'parties' => $parties,
             'totalArticles' => $totalArticles,
-            'coutTotalFiche' => round($coutTotalFiche, 2),
-            'coutParPassagerTotal' => $passagers > 0 ? round($coutTotalFiche / $passagers, 2) : 0,
+            'coutTotalFiche' => round($coutTotalFiche, 3),
+            'coutParPassagerTotal' => $passagers > 0 ? round($coutTotalFiche / $passagers, 3) : 0,
         ];
     }
 

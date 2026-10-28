@@ -126,6 +126,42 @@ class AuditController extends Controller
     }
 
     /**
+     * Vider le journal d'audit (ADMIN uniquement)
+     */
+    public function purger()
+    {
+        try {
+            $user = \Illuminate\Support\Facades\Auth::user();
+
+            if (!$user || !$user->hasRole('ADMIN')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Seul un administrateur peut vider le journal d\'audit'
+                ], 403);
+            }
+
+            $total = Audit::count();
+            Audit::query()->delete();
+
+            if (\Illuminate\Support\Facades\DB::connection()->getDriverName() === 'mysql') {
+                \Illuminate\Support\Facades\DB::statement('ALTER TABLE audits AUTO_INCREMENT = 1');
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => ['supprime' => $total],
+                'message' => "{$total} entrée(s) d'audit supprimée(s)"
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la suppression des audits',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Détail d'un audit
      */
     public function show($id)

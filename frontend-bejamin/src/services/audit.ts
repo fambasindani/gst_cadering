@@ -40,4 +40,7 @@ export const auditService = {
 
   actions: () =>
     api.get<{ success: boolean; data: AuditAction[]; message: string }>('/audits/actions/liste'),
+
+  purger: () =>
+    api.delete<{ success: boolean; data: { supprime: number }; message: string }>('/audits/purger'),
 };

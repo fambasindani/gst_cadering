@@ -104,7 +104,7 @@ class BonCommandeController extends Controller
                     $ligne->prix_actuel = $prixActuel;
                     $montantActuel += $ligne->quantite_commandee * $prixActuel;
                 }
-                $bon->montant_actuel = round($montantActuel, 2);
+                $bon->montant_actuel = round($montantActuel, 3);
 
                 if ($validationReceptions) {
                     $bon->receptions_en_attente = MouvementStock::where('reference_document', $bon->numero_commande)
@@ -221,9 +221,9 @@ class BonCommandeController extends Controller
                         $alertesPrix[] = [
                             'type' => 'prix',
                             'produit' => $produit->nom ?? 'Produit #' . $ligne['id_produit'],
-                            'ancien' => number_format((float) $dernierPrix->prix_commande, 2) . ' $',
-                            'nouveau' => number_format($prixBc, 2) . ' $',
-                            'difference' => $signe . number_format($ecart, 2) . ' $ (' . $signe . $pct . '%)',
+                            'ancien' => number_format((float) $dernierPrix->prix_commande, 3) . ' $',
+                            'nouveau' => number_format($prixBc, 3) . ' $',
+                            'difference' => $signe . number_format($ecart, 3) . ' $ (' . $signe . $pct . '%)',
                         ];
                     }
                 }
@@ -352,8 +352,8 @@ class BonCommandeController extends Controller
                         'date' => $dateReception,
                         'numero_lot' => $mouv->lot->numero_lot,
                         'quantite' => $mouv->quantite,
-                        'prix_unitaire' => round((float) $prix, 2),
-                        'montant' => round($mouv->quantite * $prix, 2),
+                        'prix_unitaire' => round((float) $prix, 3),
+                        'montant' => round($mouv->quantite * $prix, 3),
                         'statut' => $mouv->statut_validation,
                     ];
                     $cle = $mouv->reference_reception
@@ -366,12 +366,12 @@ class BonCommandeController extends Controller
                         'code_article' => $ligne->produit->code_article ?? '',
                         'numero_lot' => $mouv->lot->numero_lot,
                         'quantite' => $mouv->quantite,
-                        'prix_unitaire' => round((float) $prix, 2),
-                        'montant' => round($mouv->quantite * $prix, 2),
+                        'prix_unitaire' => round((float) $prix, 3),
+                        'montant' => round($mouv->quantite * $prix, 3),
                         'statut' => $mouv->statut_validation,
                     ];
                 }
-                $ligne->montant_recu = round($montantRecu, 2);
+                $ligne->montant_recu = round($montantRecu, 3);
                 $ligne->receptions = $receptions;
             }
             $bonCommande->receptions_liste = collect($receptionsParReference)
@@ -382,7 +382,7 @@ class BonCommandeController extends Controller
                         'reference_reception' => $ref,
                         'date' => $items[0]['date'] ?? null,
                         'quantite' => $quantite,
-                        'montant' => round($montant, 2),
+                        'montant' => round($montant, 3),
                         'lignes' => $items,
                     ];
                 })
@@ -804,9 +804,9 @@ class BonCommandeController extends Controller
                         $alertes[] = [
                             'type' => 'prix',
                             'produit' => $ligne->produit->nom ?? 'Produit #' . $ligne->id_produit,
-                            'ancien' => number_format((float) $dernierPrixCmd->prix_commande, 2) . ' $',
-                            'nouveau' => number_format($prixRecu, 2) . ' $',
-                            'difference' => $signe . number_format($ecart, 2) . ' $ (' . $signe . $pct . '%)',
+                            'ancien' => number_format((float) $dernierPrixCmd->prix_commande, 3) . ' $',
+                            'nouveau' => number_format($prixRecu, 3) . ' $',
+                            'difference' => $signe . number_format($ecart, 3) . ' $ (' . $signe . $pct . '%)',
                         ];
                     }
 

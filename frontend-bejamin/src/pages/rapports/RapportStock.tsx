@@ -18,7 +18,9 @@ import { downloadCsv } from '../../lib/exportCsv';
 import { DataTablePagination } from '../../components/ui/DataTablePagination';
 
 function formatNumber(v: number): string {
-  return (v ?? 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  let s = (v ?? 0).toFixed(3);
+  if (s.endsWith('0')) s = s.slice(0, -1);
+  return s.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
 
 function formatMoney(v: number, devise?: string): string {

@@ -21,7 +21,9 @@ import { cn } from '../../lib/utils';
 import { DataTablePagination } from '../../components/ui/DataTablePagination';
 
 function formatNumber(v: number): string {
-  return (v ?? 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  let s = (v ?? 0).toFixed(3);
+  if (s.endsWith('0')) s = s.slice(0, -1);
+  return s.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 }
 
 function formatMoney(v: number, devise?: string): string {
@@ -108,7 +110,7 @@ export function RapportClient() {
       designation: l.designation,
       article: l.article,
       unite: l.unite,
-      prix_unitaire: String(devise === 'CDF' && tauxCdf != null ? (Number(l.prix_unitaire) * tauxCdf).toFixed(2) : l.prix_unitaire),
+      prix_unitaire: String(devise === 'CDF' && tauxCdf != null ? (Number(l.prix_unitaire) * tauxCdf).toFixed(3) : l.prix_unitaire),
       quantite: String(l.quantite),
       valeur: devise === 'CDF' && tauxCdf != null ? formatMoney(valeur * tauxCdf, 'CDF') : formatMoney(valeur, '$'),
       statut: l.statut === 'REJETÉ' ? 'Rejeté' : 'Validé',

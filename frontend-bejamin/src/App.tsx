@@ -48,6 +48,7 @@ import { PartenaireDetails } from './pages/PartenaireDetails';
 import { ConfigurationMagasin } from './pages/ConfigurationMagasin';
 import { ConfigurationDepartement } from './pages/ConfigurationDepartement';
 import { ConfigurationDevise } from './pages/ConfigurationDevise';
+import { ConfigurationUnite } from './pages/ConfigurationUnite';
 import { ConfigurationTauxConversion } from './pages/ConfigurationTauxConversion';
 import { ConfigurationCategorie } from './pages/ConfigurationCategorie';
 import { ConfigurationParametre } from './pages/ConfigurationParametre';
@@ -133,6 +134,7 @@ function App() {
           <Route path="configuration/magasin" element={<ConfigurationMagasin />} />
           <Route path="configuration/departement" element={<ConfigurationDepartement />} />
           <Route path="configuration/devise" element={<ConfigurationDevise />} />
+          <Route path="configuration/unite" element={<ConfigurationUnite />} />
           <Route path="configuration/taux-change" element={<ConfigurationTauxConversion />} />
           <Route path="configuration/categorie" element={<ConfigurationCategorie />} />
           <Route path="configuration/parametres" element={<ConfigurationParametre />} />
