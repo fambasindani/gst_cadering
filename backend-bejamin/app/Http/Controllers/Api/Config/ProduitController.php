@@ -401,14 +401,27 @@ public function getStock($id)
             $produit = Produit::findOrFail($id);
             $dernier = PrixCommande::dernierPrix($id);
 
-            return response()->json([
-                'success' => true,
-                'data' => $dernier ? [
+            if ($dernier) {
+                $data = [
                     'prix_commande' => (float) $dernier->prix_commande,
                     'id_devise' => $dernier->id_devise,
-                    'date' => $dernier->date->format('Y-m-d'),
+                    'date' => $dernier->date ? $dernier->date->format('Y-m-d') : null,
                     'origine' => $dernier->origine,
-                ] : null,
+                ];
+            } else {
+                // Repli : aucun prix de commande -> dernier prix de l'historique
+                $historique = $produit->getDernierPrixAchat();
+                $data = $historique ? [
+                    'prix_commande' => (float) $historique->prix_achat_ht,
+                    'id_devise' => $historique->id_devise,
+                    'date' => $historique->date_application ? $historique->date_application->format('Y-m-d') : null,
+                    'origine' => 'historique',
+                ] : null;
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $data,
             ]);
         } catch (\Exception $e) {
             return response()->json([
