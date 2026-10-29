@@ -317,7 +317,9 @@ public function getStock($id)
                 $devisePonderee = $lot->id_devise;
             }
         }
-        $prixPondere = $qteTotale > 0 ? round($valeurTotale / $qteTotale, 4) : null;
+        // Si aucun lot en stock n'a de prix, on renvoie null pour que le front
+        // retombe sur le dernier prix de l'historique (au lieu d'afficher 0)
+        $prixPondere = ($qteTotale > 0 && $valeurTotale > 0) ? round($valeurTotale / $qteTotale, 4) : null;
         
         // Stock par magasin (avec le seuil d'alerte spécifique du magasin, s'il existe)
         $magasins = Magasin::where('actif', true)->get();

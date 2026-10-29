@@ -91,6 +91,21 @@ class LotController extends Controller
 
             $data = $query->orderBy($sortBy, $sortOrder)->paginate($perPage);
 
+            // Si un lot n'a pas de prix, exposer le dernier prix d'achat du produit
+            // pour que la valorisation (sorties) ne tombe pas à 0
+            $data->getCollection()->transform(function ($lot) {
+                $prix = $lot->prix_achat_ht_unitaire;
+                if (($prix === null || (float) $prix <= 0) && $lot->produit) {
+                    $dernier = $lot->produit->getDernierPrixAchat();
+                    $lot->setAttribute('prix_fallback', $dernier->prix_achat_ht ?? null);
+                    $lot->setAttribute('devise_fallback_id', $dernier->id_devise ?? null);
+                } else {
+                    $lot->setAttribute('prix_fallback', null);
+                    $lot->setAttribute('devise_fallback_id', null);
+                }
+                return $lot;
+            });
+
             return response()->json([
                 'success' => true,
                 'data' => $data,
@@ -313,16 +328,33 @@ class LotController extends Controller
     {
         try {
             $lot = Lot::findOrFail($id);
+            $user = Auth::user();
 
-            // Vérifier si le lot a des mouvements
-            if ($lot->mouvements()->count() > 0) {
+            // Un lot validé ne peut être supprimé que par un administrateur
+            if ($lot->statut_validation === 'VALIDÉ' && (!$user || !$user->hasRole('ADMIN'))) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Ce lot a des mouvements associés. Supprimez-les d\'abord.'
+                    'message' => 'Ce lot est validé. Seul un administrateur peut le supprimer.'
                 ], 403);
             }
 
-            $lot->delete();
+            // Refuser si le lot a déjà été consommé (sorties / ajustements négatifs)
+            $dejaUtilise = $lot->mouvements()
+                ->whereIn('id_type_mouvement', [2, 4, 6])
+                ->exists();
+
+            if ($dejaUtilise) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ce lot a déjà été consommé (sorties/ajustements) : suppression impossible.'
+                ], 403);
+            }
+
+            // Supprimer le lot et ses mouvements d'entrée associés
+            \Illuminate\Support\Facades\DB::transaction(function () use ($lot) {
+                $lot->mouvements()->delete();
+                $lot->delete();
+            });
 
             return response()->json([
                 'success' => true,

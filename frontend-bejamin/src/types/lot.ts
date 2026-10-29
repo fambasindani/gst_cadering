@@ -14,6 +14,8 @@ export interface Lot {
   id_partenaire: number | null;
   partenaire?: { id: number; nom: string } | null;
   prix_achat_ht_unitaire: number | null;
+  prix_fallback?: number | null;
+  devise_fallback_id?: number | null;
   id_devise: number | null;
   devise?: { id: number; code: string; nom: string; symbole: string } | null;
   valide_par: number | null;

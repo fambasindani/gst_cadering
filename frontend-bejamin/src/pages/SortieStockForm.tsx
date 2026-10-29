@@ -10,10 +10,11 @@ import { ConfirmModal } from '../components/ui/confirm-modal';
 import { DataTablePagination } from '../components/ui/DataTablePagination';
 import { useToast } from '../hooks/useToast';
 import { useIsAdmin } from '../hooks/useIsAdmin';
+import { useAuthStore } from '../store/authStore';
 import { mouvementStockService } from '../services/mouvement-stock';
 import type { MouvementStock } from '../types/validation';
 import {
-  Search, RefreshCw, Plus, Package, ArrowUp, Pencil, Trash2,
+  Search, RefreshCw, Plus, Package, ArrowUp, Pencil, Trash2, CheckCircle, XCircle,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { formatCurrency } from '../lib/format';
@@ -22,6 +23,8 @@ export function SortieStockForm() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const isAdmin = useIsAdmin();
+  const authUser = useAuthStore(s => s.user);
+  const canValidate = isAdmin || (authUser?.permissions?.includes('config:mouvements:validate') ?? false);
 
   const [data, setData] = useState<MouvementStock[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,6 +35,9 @@ export function SortieStockForm() {
   const [total, setTotal] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [deleteTarget, setDeleteTarget] = useState<MouvementStock | null>(null);
+  const [validateTarget, setValidateTarget] = useState<MouvementStock | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<MouvementStock | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -65,6 +71,42 @@ export function SortieStockForm() {
     } catch (err: unknown) {
       const error = err as { message?: string };
       toast(error.message || 'Erreur lors de la suppression', 'error');
+    }
+  };
+
+  const handleValidate = async () => {
+    if (!validateTarget) return;
+    setActionLoading(true);
+    try {
+      const res = await mouvementStockService.validate(validateTarget.id);
+      if (res.success) {
+        toast('Sortie validée — stock déduit', 'success');
+        setValidateTarget(null);
+        fetchData();
+      }
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      toast(error.message || 'Erreur lors de la validation', 'error');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleReject = async () => {
+    if (!rejectTarget) return;
+    setActionLoading(true);
+    try {
+      const res = await mouvementStockService.reject(rejectTarget.id);
+      if (res.success) {
+        toast('Sortie rejetée', 'success');
+        setRejectTarget(null);
+        fetchData();
+      }
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      toast(error.message || 'Erreur lors du rejet', 'error');
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -196,6 +238,24 @@ export function SortieStockForm() {
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center justify-center gap-1">
+                            {m.statut_validation === 'EN ATTENTE' && canValidate && (
+                              <>
+                                <button
+                                  onClick={() => setValidateTarget(m)}
+                                  className="p-1.5 rounded text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors"
+                                  title="Valider"
+                                >
+                                  <CheckCircle className="w-4 h-4" />
+                                </button>
+                                <button
+                                  onClick={() => setRejectTarget(m)}
+                                  className="p-1.5 rounded text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors"
+                                  title="Rejeter"
+                                >
+                                  <XCircle className="w-4 h-4" />
+                                </button>
+                              </>
+                            )}
                             {(isAdmin || m.statut_validation === 'EN ATTENTE') && (
                               <>
                                 <button
@@ -243,6 +303,27 @@ export function SortieStockForm() {
         message={`Supprimer la sortie du lot "${deleteTarget?.lot?.numero_lot || '-'}" ?`}
         variant="danger"
         confirmLabel="Supprimer"
+      />
+      <ConfirmModal
+        isOpen={Boolean(validateTarget)}
+        onClose={() => setValidateTarget(null)}
+        onConfirm={handleValidate}
+        title="Valider la sortie"
+        message={`Valider la sortie de ${validateTarget?.quantite ?? ''} unité(s) du lot "${validateTarget?.lot?.numero_lot || '-'}" ? Le stock sera déduit.`}
+        variant="warning"
+        confirmLabel="Valider"
+        loading={actionLoading}
+      />
+
+      <ConfirmModal
+        isOpen={Boolean(rejectTarget)}
+        onClose={() => setRejectTarget(null)}
+        onConfirm={handleReject}
+        title="Rejeter la sortie"
+        message={`Rejeter la sortie du lot "${rejectTarget?.lot?.numero_lot || '-'}" ? Le stock ne sera pas modifié.`}
+        variant="danger"
+        confirmLabel="Rejeter"
+        loading={actionLoading}
       />
     </div>
   );

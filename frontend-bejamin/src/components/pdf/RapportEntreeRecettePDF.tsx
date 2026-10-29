@@ -1,4 +1,5 @@
-import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer';
+import { Image, Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer';
+import { PDF_LOGO_SRC, PDF_LOGO_STYLE } from './pdfLogo';
 import type { EntreeRecette } from '../../types/fiche-technique';
 import { formatCurrency } from '../../lib/format';
 
@@ -49,6 +50,7 @@ export function RapportEntreeRecettePDF({ recettes, devise = 'USD', tauxCdf = nu
     <Document>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
+          <Image src={PDF_LOGO_SRC} style={PDF_LOGO_STYLE} />
           <Text style={styles.companyName}>FONDEG CATERING CONGO SA</Text>
           <Text style={styles.companyInfo}>Aéroport de Ndjili, Commune de Nsele, Kinshasa, RDC</Text>
         </View>

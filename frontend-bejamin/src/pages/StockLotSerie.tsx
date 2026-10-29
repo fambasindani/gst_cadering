@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -11,10 +11,11 @@ import { Badge } from '../components/ui/badge';
 import { SlidePanel } from '../components/ui/SlidePanel';
 import { ConfirmModal } from '../components/ui/confirm-modal';
 import { useToast } from '../hooks/useToast';
+import { useAuthStore } from '../store/authStore';
 import { lotService } from '../services/lot';
 import type { Lot } from '../types/lot';
 import {
-  Search, RefreshCw, Package, CheckCircle, XCircle, Eye, Barcode, Calendar,
+  Search, RefreshCw, Package, CheckCircle, XCircle, Eye, Barcode, Calendar, Plus, Trash2,
 } from 'lucide-react';
 import { cn } from '../lib/utils';
 
@@ -38,7 +39,11 @@ function isPerime(datePeremption: string): boolean {
 
 export function StockLotSerie() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const authUser = useAuthStore(s => s.user);
+  const isAdminRole = authUser?.role?.nom === 'ADMIN' || authUser?.role?.nom === 'Super Admin';
+  const canDelete = isAdminRole || (authUser?.permissions?.includes('config:lots:delete') ?? false);
 
   const [peremptionProche, setPeremptionProche] = useState(searchParams.get('peremption_proche') === '1');
   const [perimes, setPerimes] = useState(searchParams.get('perimes') === '1');
@@ -58,13 +63,15 @@ export function StockLotSerie() {
   const [validateTarget, setValidateTarget] = useState<Lot | null>(null);
   const [rejectTarget, setRejectTarget] = useState<Lot | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Lot | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const handlePageSizeChange = (size: number) => { setPageSize(size); setCurrentPage(1); };
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const params: Record<string, string> = { per_page: String(pageSize), page: String(currentPage), sort_by: 'id', sort_order: 'desc', statut: 'VALIDÉ' };
+      const params: Record<string, string> = { per_page: String(pageSize), page: String(currentPage), sort_by: 'id', sort_order: 'desc' };
       if (searchTerm) params.search = searchTerm;
       if (dateDebut) params.date_debut = dateDebut;
       if (dateFin) params.date_fin = dateFin;
@@ -117,6 +124,22 @@ export function StockLotSerie() {
     }
   };
 
+  const handleDeleteLot = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await lotService.delete(deleteTarget.id);
+      toast('Lot supprimé avec succès', 'success');
+      setDeleteTarget(null);
+      fetchData();
+    } catch (err: unknown) {
+      const error = err as { message?: string };
+      toast(error.message || 'Erreur lors de la suppression', 'error');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -128,6 +151,10 @@ export function StockLotSerie() {
           <Button variant="outline" onClick={() => { setSearchInput(''); setSearchTerm(''); setDateDebut(''); setDateFin(''); setPeremptionProche(false); setPerimes(false); setSearchParams({}); setCurrentPage(1); }} className="border-gray-300 text-gray-700 hover:bg-gray-50" title="Actualiser">
             <RefreshCw className={cn('h-4 w-4 mr-2', loading && 'animate-spin')} />
             Actualiser
+          </Button>
+          <Button onClick={() => navigate('/stock/lot-serie/creer')} className="bg-royal-700 hover:bg-royal-800 text-white shadow-sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Nouveau lot
           </Button>
         </div>
       </div>
@@ -308,6 +335,12 @@ export function StockLotSerie() {
                                   </Button>
                                 </>
                               )}
+                              {canDelete && (l.statut_validation !== 'VALIDÉ' || isAdminRole) && (
+                                <Button variant="ghost" size="sm" onClick={() => setDeleteTarget(l)}
+                                  className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg" title="Supprimer">
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              )}
                             </div>
                           </TableCell>
                         </TableRow>
@@ -346,6 +379,18 @@ export function StockLotSerie() {
         confirmLabel="Rejeter"
         loading={actionLoading}
       />
+
+      <ConfirmModal
+        isOpen={!!deleteTarget}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={handleDeleteLot}
+        title="Supprimer le lot"
+        message={`Supprimer définitivement le lot "${deleteTarget?.numero_lot}" (${deleteTarget?.produit?.nom || 'produit'}) ? Le lot et son mouvement d'entrée seront supprimés.`}
+        variant="danger"
+        confirmLabel="Supprimer"
+        loading={deleting}
+      />
+
 
 </div>
   );

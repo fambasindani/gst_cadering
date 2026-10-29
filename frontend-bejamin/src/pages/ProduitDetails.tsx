@@ -469,7 +469,9 @@ export function ProduitDetails() {
                   <Calendar className="w-3 h-3 inline mr-1" />
                   {prixPondere != null
                     ? 'Calculé sur les lots disponibles'
-                    : 'Aucun lot en stock — dernier prix historique'
+                    : (stock && stock.stock_total > 0
+                        ? 'Lots en stock sans prix — dernier prix historique'
+                        : 'Aucun lot en stock — dernier prix historique')
                   }
                 </div>
               </CardContent>

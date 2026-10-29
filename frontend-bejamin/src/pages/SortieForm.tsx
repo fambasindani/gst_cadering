@@ -146,7 +146,7 @@ export function SortieForm() {
     const map = new Map<number, { valeur: number; qte: number }>();
     for (const lot of lots) {
       if (!lot.quantite_disponible || lot.quantite_disponible <= 0) continue;
-      const prix = lot.prix_achat_ht_unitaire || 0;
+      const prix = (Number(lot.prix_achat_ht_unitaire) > 0 ? Number(lot.prix_achat_ht_unitaire) : Number(lot.prix_fallback)) || 0;
       const cur = map.get(lot.id_produit) || { valeur: 0, qte: 0 };
       cur.valeur += prix * lot.quantite_disponible;
       cur.qte += lot.quantite_disponible;
