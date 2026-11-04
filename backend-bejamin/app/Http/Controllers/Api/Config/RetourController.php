@@ -94,7 +94,7 @@ class RetourController extends Controller
                 'commentaire' => 'nullable|string',
                 'lignes' => 'required|array|min:1',
                 'lignes.*.id_lot' => 'required|exists:lots,id',
-                'lignes.*.quantite_retournee' => 'required|integer|min:1',
+                'lignes.*.quantite_retournee' => 'required|numeric|min:0.001',
                 'lignes.*.motif' => 'nullable|string|max:255',
             ]);
 

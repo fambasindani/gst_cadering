@@ -417,7 +417,7 @@ export function ReceptionForm() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="space-y-1">
                       <Label className="text-xs text-gray-500">Qté à recevoir *</Label>
-                      <Input type="number" min="1" max={Math.max(0, reste)} value={rd.quantite_recue}
+                      <Input type="number" step="0.001" min="0.001" max={Math.max(0, reste)} value={rd.quantite_recue}
                         disabled={reste <= 0}
                         onChange={(e) => updateLigne(l.id, 'quantite_recue', e.target.value)}
                         className={errorClass(fieldErrors[`${l.id}.quantite_recue`])} />
@@ -428,7 +428,7 @@ export function ReceptionForm() {
                     {isAdmin ? (
                       <div className="space-y-1">
                         <Label className="text-xs text-amber-700">Qté déjà reçue (correction)</Label>
-                        <Input type="number" min="0" max={l.quantite_commandee} value={rd.quantite_recue_correction}
+                        <Input type="number" step="0.001" min="0" max={l.quantite_commandee} value={rd.quantite_recue_correction}
                           onChange={(e) => updateLigne(l.id, 'quantite_recue_correction', e.target.value)}
                           className={cn('border-amber-300 focus:border-amber-500 focus:ring-amber-500', errorClass(fieldErrors[`${l.id}.nouvelle_quantite_recue`]))} />
                       </div>

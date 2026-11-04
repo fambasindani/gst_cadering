@@ -131,7 +131,7 @@ class LotController extends Controller
                 'id_produit' => 'required|exists:produits,id',
                 'id_magasin' => 'required|exists:magasins,id',
                 'numero_lot' => 'nullable|string|max:50',
-                'quantite_recue' => 'required|integer|min:1',
+                'quantite_recue' => 'required|numeric|min:0.001',
                 'date_peremption' => 'required|date|after:today',
                 'date_fabrication' => 'nullable|date',
                 'id_partenaire' => 'nullable|exists:partenaires,id',
@@ -253,7 +253,7 @@ class LotController extends Controller
                 'prix_achat_ht_unitaire' => 'nullable|numeric|min:0',
                 'id_devise' => 'nullable|exists:devises,id',
                 'id_partenaire' => 'nullable|exists:partenaires,id',
-                'quantite_recue' => 'sometimes|required|integer|min:0',
+                'quantite_recue' => 'sometimes|required|numeric|min:0',
                 'date_fabrication' => 'nullable|date',
             ]);
 

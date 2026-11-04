@@ -78,7 +78,7 @@ class TracabiliteController extends Controller
                 'id_lot' => 'required|exists:lots,id',
                 'id_departement' => 'nullable|exists:departements,id',
                 'id_partenaire' => 'nullable|exists:partenaires,id',
-                'quantite' => 'required|integer|min:1',
+                'quantite' => 'required|numeric|min:0.001',
                 'commentaire' => 'nullable|string|max:500',
                 'date_tracabilite' => 'required|date',
             ]);
@@ -131,7 +131,7 @@ class TracabiliteController extends Controller
                 'date_tracabilite' => 'required|date',
                 'lignes' => 'required|array|min:1',
                 'lignes.*.id_lot' => 'required|exists:lots,id',
-                'lignes.*.quantite' => 'required|integer|min:1',
+                'lignes.*.quantite' => 'required|numeric|min:0.001',
                 'lignes.*.commentaire' => 'nullable|string|max:500',
             ]);
         } catch (ValidationException $e) {
@@ -238,7 +238,7 @@ class TracabiliteController extends Controller
                 'id_lot' => 'sometimes|required|exists:lots,id',
                 'id_departement' => 'nullable|exists:departements,id',
                 'id_partenaire' => 'nullable|exists:partenaires,id',
-                'quantite' => 'sometimes|required|integer|min:1',
+                'quantite' => 'sometimes|required|numeric|min:0.001',
                 'commentaire' => 'nullable|string|max:500',
                 'date_tracabilite' => 'sometimes|required|date',
             ]);

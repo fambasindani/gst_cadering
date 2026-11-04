@@ -183,7 +183,7 @@ export function Sidebar({ isOpen, onClose, isMobile }: SidebarProps) {
                 !isOpen && 'opacity-0 w-0 overflow-hidden',
               )}
             >
-              Fondeg stocks
+              Servair
             </span>
           </div>
           {isMobile && isOpen && (

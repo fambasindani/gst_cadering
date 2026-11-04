@@ -24,10 +24,10 @@ class Inventaire extends Model
     ];
 
     protected $casts = [
-        'stock_theorique' => 'integer',
-        'stock_physique_compte' => 'integer',
-        'ecart' => 'integer',
-        'ecart_saisie' => 'integer',
+        'stock_theorique' => 'float',
+        'stock_physique_compte' => 'float',
+        'ecart' => 'float',
+        'ecart_saisie' => 'float',
         'date_saisie' => 'datetime',
     ];
 

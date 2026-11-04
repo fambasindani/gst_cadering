@@ -311,8 +311,8 @@ public function getStock($id)
         $valeurTotale = 0;
         $devisePonderee = null;
         foreach ($lots as $lot) {
-            $qteTotale += (int) $lot->quantite_disponible;
-            $valeurTotale += (float) $lot->prix_achat_ht_unitaire * (int) $lot->quantite_disponible;
+            $qteTotale += (float) $lot->quantite_disponible;
+            $valeurTotale += (float) $lot->prix_achat_ht_unitaire * (float) $lot->quantite_disponible;
             if (!$devisePonderee && $lot->id_devise) {
                 $devisePonderee = $lot->id_devise;
             }

@@ -21,9 +21,9 @@ class LigneCommande extends Model
     ];
 
     protected $casts = [
-        'quantite_commandee' => 'integer',
+        'quantite_commandee' => 'float',
         'prix_unitaire_ht' => 'decimal:3',
-        'quantite_recue' => 'integer',
+        'quantite_recue' => 'float',
     ];
 
     // Relations

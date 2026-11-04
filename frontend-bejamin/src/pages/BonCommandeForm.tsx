@@ -343,7 +343,7 @@ export function BonCommandeForm() {
                         />
                       </TableCell>
                       <TableCell className="w-24">
-                        <Input type="number" min="1" value={l.quantite_commandee}
+                        <Input type="number" step="0.001" min="0.001" value={l.quantite_commandee}
                           onChange={(e) => updateLigne(l.key, 'quantite_commandee', e.target.value)}
                           className={cn('text-right h-10 border-gray-200 shadow-sm', fieldErrors[`lignes.${i}.quantite_commandee`] && 'border-red-400')} />
                       </TableCell>

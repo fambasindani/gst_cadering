@@ -30,8 +30,8 @@ class Lot extends Model
     ];
 
     protected $casts = [
-        'quantite_recue' => 'integer',
-        'quantite_disponible' => 'integer',
+        'quantite_recue' => 'float',
+        'quantite_disponible' => 'float',
         'date_fabrication' => 'date',
         'date_peremption' => 'date',
         'date_reception' => 'datetime',

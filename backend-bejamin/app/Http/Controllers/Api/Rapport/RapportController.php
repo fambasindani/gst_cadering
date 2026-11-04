@@ -64,7 +64,7 @@ class RapportController extends Controller
                     if ($mouvements->isNotEmpty()) {
                         $montant = $mouvements->sum(fn($m) => $m->quantite * (float) ($m->lot->prix_achat_ht_unitaire ?? $ligne->prix_unitaire_ht));
                     } else {
-                        $montant = (float) $ligne->prix_unitaire_ht * (int) $ligne->quantite_commandee;
+                        $montant = (float) $ligne->prix_unitaire_ht * (float) $ligne->quantite_commandee;
                     }
                     $catId = $ligne->produit ? $ligne->produit->id_categorie : null;
                     if ($isFood($catId)) {
@@ -845,7 +845,7 @@ class RapportController extends Controller
                     'unite' => optional($produit->unite)->nom,
                     'prix_unitaire' => $prix,
                     'devise' => optional($sortie->lot->devise)->code,
-                    'quantite' => (int) $sortie->quantite,
+                    'quantite' => (float) $sortie->quantite,
                     'valeur' => $valeur,
                     'statut' => $sortie->statut_validation,
                 ];
@@ -980,7 +980,7 @@ class RapportController extends Controller
                     'unite' => optional($produit->unite)->nom,
                     'prix_unitaire' => $prix,
                     'devise' => optional($sortie->lot->devise)->code,
-                    'quantite' => (int) $sortie->quantite,
+                    'quantite' => (float) $sortie->quantite,
                     'valeur' => $valeur,
                     'local' => optional($sortie->lot->magasin)->nom,
                     'id_client' => $sortie->id_partenaire,
@@ -1180,7 +1180,7 @@ class RapportController extends Controller
                     'unite' => optional($produit->unite)->nom,
                     'prix_unitaire' => $prix,
                     'devise' => optional($entree->lot->devise)->code,
-                    'quantite' => (int) $entree->quantite,
+                    'quantite' => (float) $entree->quantite,
                     'valeur' => $valeur,
                     'numero_lot' => $entree->lot->numero_lot,
                     'numero_commande' => $entree->reference_document,

@@ -147,7 +147,7 @@ class BonCommandeController extends Controller
                 'commentaire' => 'nullable|string',
                 'lignes' => 'required|array|min:1',
                 'lignes.*.id_produit' => 'required|exists:produits,id',
-                'lignes.*.quantite_commandee' => 'required|integer|min:1',
+                'lignes.*.quantite_commandee' => 'required|numeric|min:0.001',
                 'lignes.*.prix_unitaire_ht' => 'required|numeric|min:0',
                 'lignes.*.id_devise' => 'required|exists:devises,id',
             ], [
@@ -626,7 +626,7 @@ class BonCommandeController extends Controller
             $validated = $request->validate([
                 'receptions' => 'nullable|array',
                 'receptions.*.id_ligne_commande' => 'required|exists:ligne_commande,id',
-                'receptions.*.quantite_recue' => 'required|integer|min:1',
+                'receptions.*.quantite_recue' => 'required|numeric|min:0.001',
                 'receptions.*.numero_lot' => 'nullable|string|max:50',
                 'receptions.*.date_peremption' => 'required|date|after_or_equal:today',
                 'receptions.*.prix_achat_ht_unitaire' => 'nullable|numeric|min:0',
@@ -634,7 +634,7 @@ class BonCommandeController extends Controller
                 'receptions.*.reference_document' => 'nullable|string|max:100',
                 'corrections' => 'nullable|array',
                 'corrections.*.id_ligne_commande' => 'required|exists:ligne_commande,id',
-                'corrections.*.nouvelle_quantite_recue' => 'required|integer|min:0',
+                'corrections.*.nouvelle_quantite_recue' => 'required|numeric|min:0',
             ]);
 
             if (empty($validated['receptions']) && empty($validated['corrections'])) {
@@ -653,11 +653,11 @@ class BonCommandeController extends Controller
                 $quantitesApres[$ligne->id] = $ligne->quantite_recue;
             }
             foreach ($validated['corrections'] ?? [] as $correction) {
-                $quantitesApres[$correction['id_ligne_commande']] = (int) $correction['nouvelle_quantite_recue'];
+                $quantitesApres[$correction['id_ligne_commande']] = (float) $correction['nouvelle_quantite_recue'];
             }
             foreach ($validated['receptions'] ?? [] as $reception) {
                 $idLigne = $reception['id_ligne_commande'];
-                $quantitesApres[$idLigne] = ($quantitesApres[$idLigne] ?? 0) + (int) $reception['quantite_recue'];
+                $quantitesApres[$idLigne] = ($quantitesApres[$idLigne] ?? 0) + (float) $reception['quantite_recue'];
             }
             $restePartiel = false;
             foreach ($bonCommande->lignes as $ligne) {
@@ -681,7 +681,7 @@ class BonCommandeController extends Controller
                         throw new \Exception('Ligne de commande invalide');
                     }
 
-                    $nouveau = (int) $correction['nouvelle_quantite_recue'];
+                    $nouveau = (float) $correction['nouvelle_quantite_recue'];
                     if ($nouveau > $ligne->quantite_commandee) {
                         throw new \Exception("Quantité corrigée (${nouveau}) dépasse la quantité commandée ({$ligne->quantite_commandee})");
                     }
@@ -773,7 +773,7 @@ class BonCommandeController extends Controller
                     );
 
                     // Capturer l'ancienne quantité AVANT mise à jour
-                    $qteAvant = (int) $ligne->quantite_recue;
+                    $qteAvant = (float) $ligne->quantite_recue;
 
                     // Mettre à jour la ligne de commande
                     $ligne->quantite_recue += $reception['quantite_recue'];
@@ -787,10 +787,10 @@ class BonCommandeController extends Controller
                     if (!$ligne) continue;
 
                     $prixRecu = (float) ($reception['prix_achat_ht_unitaire'] ?? $ligne->prix_unitaire_ht);
-                    $qteRecue = (int) $reception['quantite_recue'];
-                    $qteCommandee = (int) $ligne->quantite_commandee;
+                    $qteRecue = (float) $reception['quantite_recue'];
+                    $qteCommandee = (float) $ligne->quantite_commandee;
                     // quantite_recue sur la ligne = déjà mis à jour par la loop 2
-                    $qteTotaleApres = (int) $ligne->quantite_recue;
+                    $qteTotaleApres = (float) $ligne->quantite_recue;
                     $qteDejaRecue = $qteTotaleApres - $qteRecue;
 
                     // Comparer le prix de réception avec le dernier prix dans prix_commande

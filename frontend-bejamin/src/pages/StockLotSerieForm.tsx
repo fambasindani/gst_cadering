@@ -203,7 +203,7 @@ export function StockLotSerieForm() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label icon={Warehouse} required>Quantité reçue</Label>
-                    <Input type="number" min="1" value={form.quantite_recue}
+                    <Input type="number" step="0.001" min="0.001" value={form.quantite_recue}
                       onChange={e => { setFieldErrors(f => { const n = { ...f }; delete n.quantite_recue; return n; }); setForm(f => ({ ...f, quantite_recue: e.target.value })); }}
                       className={cn('h-11 border-gray-200 shadow-sm', errorClass('quantite_recue'))} placeholder="0" />
                     <FieldError field="quantite_recue" />

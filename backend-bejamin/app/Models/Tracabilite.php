@@ -23,7 +23,7 @@ class Tracabilite extends Model
     ];
 
     protected $casts = [
-        'quantite' => 'integer',
+        'quantite' => 'float',
         'date_tracabilite' => 'date',
     ];
 

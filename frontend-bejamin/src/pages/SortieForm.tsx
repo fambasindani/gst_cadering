@@ -407,7 +407,7 @@ export function SortieForm() {
                               )}
                             </TableCell>
                             <TableCell className="w-36">
-                              <Input type="number" min="1" value={l.quantite}
+                              <Input type="number" step="0.001" min="0.001" value={l.quantite}
                                 onChange={(e) => updateLigne(l.key, 'quantite', e.target.value)}
                                 className={cn('text-right h-10 border-gray-200 shadow-sm', fieldErrors[`lignes.${i}.quantite`] && 'border-red-400')} />
                               {fieldErrors[`lignes.${i}.quantite`] && <p className="text-xs text-red-500 mt-1">{fieldErrors[`lignes.${i}.quantite`]}</p>}

@@ -479,7 +479,7 @@ export function SaisieInventaire() {
                         </TableCell>
                         <TableCell>
                           <Input
-                            type="number" min="0"
+                            type="number" step="0.001" min="0"
                             value={l.stock_physique_compte}
                             onChange={(e) => updateLigne(l.key, 'stock_physique_compte', e.target.value)}
                             placeholder="Quantité comptée"

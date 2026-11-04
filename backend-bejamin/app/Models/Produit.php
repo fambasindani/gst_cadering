@@ -104,8 +104,8 @@ class Produit extends Model
         $qteTotale = 0;
         $valeurTotale = 0;
         foreach ($lots as $lot) {
-            $qteTotale += (int) $lot->quantite_disponible;
-            $valeurTotale += (float) $lot->prix_achat_ht_unitaire * (int) $lot->quantite_disponible;
+            $qteTotale += (float) $lot->quantite_disponible;
+            $valeurTotale += (float) $lot->prix_achat_ht_unitaire * (float) $lot->quantite_disponible;
         }
 
         if ($qteTotale > 0) {

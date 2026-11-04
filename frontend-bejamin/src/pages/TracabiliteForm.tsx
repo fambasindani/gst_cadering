@@ -357,7 +357,8 @@ export function TracabiliteForm() {
                             <TableCell>
                               <Input
                                 type="number"
-                                min="1"
+                                step="0.001"
+                                min="0.001"
                                 value={l.quantite}
                                 onChange={(e) => updateLigne(l.key, 'quantite', e.target.value)}
                                 placeholder="Qté"

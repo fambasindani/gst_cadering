@@ -284,7 +284,7 @@ export function RetourForm() {
                     </div>
                     <div className="w-24 space-y-1.5">
                       <Label className="text-xs font-medium text-gray-500">Qté *</Label>
-                      <Input type="number" min="1" value={ligne.quantite_retournee} onChange={e => updateLigne(idx, 'quantite_retournee', e.target.value)}
+                      <Input type="number" step="0.001" min="0.001" value={ligne.quantite_retournee} onChange={e => updateLigne(idx, 'quantite_retournee', e.target.value)}
                         className={`h-9 text-sm ${errClass(`lignes.${idx}.quantite_retournee`)}`} placeholder="0" />
                       {fieldErrors[`lignes.${idx}.quantite_retournee`] && <p className="text-red-500 text-xs">{fieldErrors[`lignes.${idx}.quantite_retournee`]}</p>}
                     </div>

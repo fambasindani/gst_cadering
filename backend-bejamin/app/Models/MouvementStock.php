@@ -30,7 +30,7 @@ class MouvementStock extends Model
     ];
 
     protected $casts = [
-        'quantite' => 'integer',
+        'quantite' => 'float',
         'date_mouvement' => 'datetime',
         'date_validation' => 'datetime',
     ];

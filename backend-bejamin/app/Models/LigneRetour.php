@@ -19,7 +19,7 @@ class LigneRetour extends Model
     ];
 
     protected $casts = [
-        'quantite_retournee' => 'integer',
+        'quantite_retournee' => 'float',
     ];
 
     // Relations

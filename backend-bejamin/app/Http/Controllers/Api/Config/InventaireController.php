@@ -98,7 +98,7 @@ class InventaireController extends Controller
                 'id_periode_inventaire' => 'required|exists:periode_inventaire,id',
                 'id_produit' => 'required|exists:produits,id',
                 'id_magasin' => 'required|exists:magasins,id',
-                'stock_physique_compte' => 'required|integer|min:0',
+                'stock_physique_compte' => 'required|numeric|min:0',
                 'commentaire' => 'nullable|string',
             ]);
 
@@ -198,7 +198,7 @@ class InventaireController extends Controller
                 'id_magasin' => 'required|exists:magasins,id',
                 'lignes' => 'required|array|min:1',
                 'lignes.*.id_produit' => 'required|integer|distinct|exists:produits,id',
-                'lignes.*.stock_physique_compte' => 'required|integer|min:0',
+                'lignes.*.stock_physique_compte' => 'required|numeric|min:0',
                 'lignes.*.commentaire' => 'nullable|string',
             ]);
 
@@ -306,7 +306,7 @@ class InventaireController extends Controller
             }
 
             $validated = $request->validate([
-                'stock_physique_compte' => 'required|integer|min:0',
+                'stock_physique_compte' => 'required|numeric|min:0',
                 'commentaire' => 'nullable|string',
             ]);
 
