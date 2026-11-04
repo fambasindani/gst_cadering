@@ -44,9 +44,9 @@ interface VariationStockPDFProps {
 export function VariationStockPDF({ period, values }: VariationStockPDFProps) {
   const v = (key: string) => values[key] || '';
 
-  const caTotal = (Number(v('caFood')) || 0) + (Number(v('caHand')) || 0);
+  const caTotal = (Number(v('caFood')) || 0) + (Number(v('caLessiviel')) || 0) + (Number(v('caHand')) || 0);
   const totalAchat = (Number(v('achatsFood')) || 0) + (Number(v('achatsLessiviels')) || 0);
-  const totalConso = Number(v('consoFood')) || 0;
+  const totalConso = (Number(v('consoFood')) || 0) + (Number(v('consoLessiviels')) || 0);
 
   return (
     <Document>
@@ -78,6 +78,11 @@ export function VariationStockPDF({ period, values }: VariationStockPDFProps) {
           <Text style={[styles.cellObs, { width: wObs }]}>CA hors redevance aéroportuaire</Text>
         </View>
         <View style={[styles.row, styles.rowAlt]}>
+          <Text style={[styles.cellLabel, { width: wLabel }]}>Chiffre d'affaires réalisé* LESSIVIEL</Text>
+          <Text style={[styles.cellRight, { width: wMontant }]}>{v('caLessiviel')}</Text>
+          <Text style={[styles.cellObs, { width: wObs }]}>CA hors redevance aéroportuaire</Text>
+        </View>
+        <View style={[styles.row, styles.rowAlt]}>
           <Text style={[styles.cellLabel, { width: wLabel }]}>Chiffre d'affaires Hand + divers</Text>
           <Text style={[styles.cellRight, { width: wMontant }]}>{v('caHand')}</Text>
           <Text style={[styles.cellObs, { width: wObs }]}>CA hors redevance aéroportuaire</Text>
@@ -95,7 +100,7 @@ export function VariationStockPDF({ period, values }: VariationStockPDFProps) {
         </View>
 
         <View style={styles.row}>
-          <Text style={[styles.cellLabel, { width: wLabel }]}>Stock initial</Text>
+          <Text style={[styles.cellLabel, { width: wLabel }]}>Stock initial FOOD</Text>
           <Text style={[styles.cellRight, { width: wMontant }]}>{v('stockInitial')}</Text>
           <Text style={[styles.cellObs, { width: wObs }]} />
         </View>
@@ -105,12 +110,12 @@ export function VariationStockPDF({ period, values }: VariationStockPDFProps) {
           <Text style={[styles.cellObs, { width: wObs }]} />
         </View>
         <View style={styles.row}>
-          <Text style={[styles.cellLabel, { width: wLabel }]}>Stock initial</Text>
+          <Text style={[styles.cellLabel, { width: wLabel }]}>Stock initial LESSIVIEL</Text>
           <Text style={[styles.cellRight, { width: wMontant }]}>{v('stockInitial2')}</Text>
           <Text style={[styles.cellObs, { width: wObs }]} />
         </View>
         <View style={[styles.row, styles.rowAlt]}>
-          <Text style={[styles.cellLabel, { width: wLabel }]}>Achats Matières et Lessiviels du mois*</Text>
+          <Text style={[styles.cellLabel, { width: wLabel }]}>Achats Matières LESSIVIEL du mois*</Text>
           <Text style={[styles.cellRight, { width: wMontant }]}>{v('achatsLessiviels')}</Text>
           <Text style={[styles.cellObs, { width: wObs }]} />
         </View>
@@ -122,6 +127,11 @@ export function VariationStockPDF({ period, values }: VariationStockPDFProps) {
         <View style={styles.row}>
           <Text style={[styles.cellLabel, { width: wLabel }]}>Valeur consommation matières FOOD du mois*</Text>
           <Text style={[styles.cellRight, { width: wMontant }]}>{v('consoFood')}</Text>
+          <Text style={[styles.cellObs, { width: wObs }]} />
+        </View>
+        <View style={styles.row}>
+          <Text style={[styles.cellLabel, { width: wLabel }]}>Valeur consommation matières LESSIVIEL du mois*</Text>
+          <Text style={[styles.cellRight, { width: wMontant }]}>{v('consoLessiviels')}</Text>
           <Text style={[styles.cellObs, { width: wObs }]} />
         </View>
         <View style={styles.totalRow}>
@@ -154,6 +164,11 @@ export function VariationStockPDF({ period, values }: VariationStockPDFProps) {
         <View style={[styles.row, styles.rowAlt]}>
           <Text style={[styles.cellLabel, { width: wLabel }]}>CA FOOD ESTIME</Text>
           <Text style={[styles.cellRight, { width: wMontant }]}>{v('caFoodEstime')}</Text>
+          <Text style={[styles.cellObs, { width: wObs }]} />
+        </View>
+        <View style={styles.row}>
+          <Text style={[styles.cellLabel, { width: wLabel }]}>CA LESSIVIEL ESTIME</Text>
+          <Text style={[styles.cellRight, { width: wMontant }]}>{v('caLessivielEstime')}</Text>
           <Text style={[styles.cellObs, { width: wObs }]} />
         </View>
 

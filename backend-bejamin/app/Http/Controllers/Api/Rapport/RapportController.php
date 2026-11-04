@@ -29,10 +29,10 @@ class RapportController extends Controller
 
             // Catégories FOOD vs Lessiviels (Linge & Textile, Hygiène & Entretien)
             $foodCatIds = [2, 3, 4, 5, 6];
-            $lessivielsCatIds = Categorie::whereIn('nom', ['Linge & Textile', 'Hygiène & Entretien'])
+            $lessivielsCatIds = Categorie::whereIn('nom', ['Lessiviel', 'Linge & Textile', 'Hygiène & Entretien'])
                 ->pluck('id')->toArray();
             if (empty($lessivielsCatIds)) {
-                $lessivielsCatIds = [7, 8];
+                $lessivielsCatIds = [7];
             }
 
             $isFood = function ($categorieId) use ($foodCatIds, $lessivielsCatIds) {
@@ -105,6 +105,7 @@ class RapportController extends Controller
 
             // ===== Consommation du mois (sorties stock validées) =====
             $consoFood = 0;
+            $consoLessiviels = 0;
             $consoAerienne = 0;
             $consoNonAerienne = 0;
 
@@ -130,7 +131,7 @@ class RapportController extends Controller
                 if ($isFood($catId)) {
                     $consoFood += $valeur;
                 } elseif (in_array($catId, $lessivielsCatIds)) {
-                    $consoFood += $valeur;
+                    $consoLessiviels += $valeur;
                 } else {
                     $consoFood += $valeur;
                 }
@@ -150,6 +151,7 @@ class RapportController extends Controller
                     'stock_initial_lessiviels' => round($stockInitialLessiviels, 3),
                     'achats_lessiviels' => round($achatsLessiviels, 3),
                     'conso_food' => round($consoFood, 3),
+                    'conso_lessiviels' => round($consoLessiviels, 3),
                     'conso_aerienne' => round($consoAerienne, 3),
                     'conso_non_aerienne' => round($consoNonAerienne, 3),
                 ],

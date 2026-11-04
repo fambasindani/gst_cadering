@@ -46,9 +46,9 @@ export function VariationStock() {
     setValues((prev) => ({ ...prev, [key]: e.target.value }));
 
   const num = (key: string) => Number(values[key]) || 0;
-  const caTotal = num('caFood') + num('caHand');
+  const caTotal = num('caFood') + num('caLessiviel') + num('caHand');
   const totalAchat = num('achatsFood') + num('achatsLessiviels');
-  const totalConso = num('consoFood');
+  const totalConso = num('consoFood') + num('consoLessiviels');
 
   const calculer = async () => {
     setCalculating(true);
@@ -66,6 +66,7 @@ export function VariationStock() {
           stockInitial2: String(d.stock_initial_lessiviels ?? 0),
           achatsLessiviels: String(d.achats_lessiviels ?? 0),
           consoFood: String(d.conso_food ?? 0),
+          consoLessiviels: String(d.conso_lessiviels ?? 0),
           consoAerienne: String(d.conso_aerienne ?? 0),
           consoNonAerienne: String(d.conso_non_aerienne ?? 0),
         }));
@@ -190,6 +191,11 @@ export function VariationStock() {
                   <td className="px-4 py-2 text-xs text-gray-500">CA hors redevance aéroportuaire</td>
                 </tr>
                 <tr className="border-b border-gray-100 bg-gray-50/50">
+                  <td className="px-4 py-2 text-gray-800">Chiffre d'affaires réalisé* LESSIVIEL</td>
+                  <td className="px-4 py-2"><Input type="number" step="0.001" value={values.caLessiviel ?? ''} onChange={set('caLessiviel')} className={moneyStyle} placeholder="0.00" /></td>
+                  <td className="px-4 py-2 text-xs text-gray-500">CA hors redevance aéroportuaire</td>
+                </tr>
+                <tr className="border-b border-gray-100 bg-gray-50/50">
                   <td className="px-4 py-2 text-gray-800">Chiffre d'affaires Hand + divers</td>
                   <td className="px-4 py-2"><Input type="number" step="0.001" value={values.caHand ?? ''} onChange={set('caHand')} className={moneyStyle} placeholder="0.00" /></td>
                   <td className="px-4 py-2 text-xs text-gray-500">CA hors redevance aéroportuaire</td>
@@ -204,7 +210,7 @@ export function VariationStock() {
                   <td colSpan={3} className="px-4 py-2.5 font-bold text-gray-800 border-b border-gray-200">GESTION DES STOCKS ET ACHATS</td>
                 </tr>
                 <tr className="border-b border-gray-100">
-                  <td className="px-4 py-2 text-gray-800">Stock initial</td>
+                  <td className="px-4 py-2 text-gray-800">Stock initial FOOD</td>
                   <td className="px-4 py-2"><Input type="number" step="0.001" value={values.stockInitial ?? ''} onChange={set('stockInitial')} className={moneyStyle} placeholder="0.00" /></td>
                   <td className="px-4 py-2" />
                 </tr>
@@ -214,12 +220,12 @@ export function VariationStock() {
                   <td className="px-4 py-2" />
                 </tr>
                 <tr className="border-b border-gray-100">
-                  <td className="px-4 py-2 text-gray-800">Stock initial</td>
+                  <td className="px-4 py-2 text-gray-800">Stock initial LESSIVIEL</td>
                   <td className="px-4 py-2"><Input type="number" step="0.001" value={values.stockInitial2 ?? ''} onChange={set('stockInitial2')} className={moneyStyle} placeholder="0.00" /></td>
                   <td className="px-4 py-2" />
                 </tr>
                 <tr className="border-b border-gray-100 bg-gray-50/50">
-                  <td className="px-4 py-2 text-gray-800">Achats Matières et Lessiviels du mois*</td>
+                  <td className="px-4 py-2 text-gray-800">Achats Matières LESSIVIEL du mois*</td>
                   <td className="px-4 py-2"><Input type="number" step="0.001" value={values.achatsLessiviels ?? ''} onChange={set('achatsLessiviels')} className={moneyStyle} placeholder="0.00" /></td>
                   <td className="px-4 py-2" />
                 </tr>
@@ -231,6 +237,11 @@ export function VariationStock() {
                 <tr className="border-b border-gray-100 bg-gray-50/50">
                   <td className="px-4 py-2 text-gray-800">Valeur consommation matières FOOD du mois*</td>
                   <td className="px-4 py-2"><Input type="number" step="0.001" value={values.consoFood ?? ''} onChange={set('consoFood')} className={moneyStyle} placeholder="0.00" /></td>
+                  <td className="px-4 py-2" />
+                </tr>
+                <tr className="border-b border-gray-100">
+                  <td className="px-4 py-2 text-gray-800">Valeur consommation matières LESSIVIEL du mois*</td>
+                  <td className="px-4 py-2"><Input type="number" step="0.001" value={values.consoLessiviels ?? ''} onChange={set('consoLessiviels')} className={moneyStyle} placeholder="0.00" /></td>
                   <td className="px-4 py-2" />
                 </tr>
                 <tr className="bg-gray-200/70">
@@ -260,6 +271,11 @@ export function VariationStock() {
                 <tr className="border-b border-gray-100 bg-gray-50/50">
                   <td className="px-4 py-2 text-gray-800">CA FOOD ESTIME</td>
                   <td className="px-4 py-2"><Input type="number" step="0.001" value={values.caFoodEstime ?? ''} onChange={set('caFoodEstime')} className={moneyStyle} placeholder="0.00" /></td>
+                  <td className="px-4 py-2" />
+                </tr>
+                <tr className="border-b border-gray-100">
+                  <td className="px-4 py-2 text-gray-800">CA LESSIVIEL ESTIME</td>
+                  <td className="px-4 py-2"><Input type="number" step="0.001" value={values.caLessivielEstime ?? ''} onChange={set('caLessivielEstime')} className={moneyStyle} placeholder="0.00" /></td>
                   <td className="px-4 py-2" />
                 </tr>
                 <tr>
