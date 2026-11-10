@@ -16,7 +16,7 @@
 
 
 -- Listage de la structure de la base pour bd_gst_bejamin
-CREATE DATABASE IF NOT EXISTS `bd_gst_bejamin` /*!40100 DEFAULT CHARACTER SET armscii8 COLLATE armscii8_bin */ /*!80016 DEFAULT ENCRYPTION='N' */;
+CREATE DATABASE IF NOT EXISTS `bd_gst_bejamin` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
 USE `bd_gst_bejamin`;
 
 -- Listage de la structure de table bd_gst_bejamin. ateliers_tracabilites
