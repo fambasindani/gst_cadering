@@ -11,6 +11,7 @@ import { lotService } from '../services/lot';
 import { partenaireService } from '../services/partenaire';
 import { ArrowLeft, Save, Loader2, Factory, User, Plus, Trash2, Thermometer } from 'lucide-react';
 import type { Lot } from '../types/lot';
+import { nouvelleCle } from '../lib/uuid';
 
 interface Ligne {
   key: string;
@@ -29,7 +30,7 @@ interface Ligne {
 }
 
 const emptyLigne = (): Ligne => ({
-  key: crypto.randomUUID(),
+  key: nouvelleCle(),
   id_lot: '', id_partenaire: '', code_prestation: '', quantite: '', produits_utilises: '',
   code_couleur_produit_dlc: '', cycle_classe: '', heure_debut: '',
   temperature_surface_debut: '', heure_fin: '', temperature_surface_fin: '', action_corrective: '',

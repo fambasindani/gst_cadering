@@ -11,6 +11,7 @@ import { lotService } from '../services/lot';
 import { partenaireService } from '../services/partenaire';
 import { ArrowLeft, Save, Loader2, Flame, User, Plus, Trash2 } from 'lucide-react';
 import type { Lot } from '../types/lot';
+import { nouvelleCle } from '../lib/uuid';
 
 interface Ligne {
   key: string;
@@ -31,7 +32,7 @@ interface Ligne {
 }
 
 const emptyLigne = (): Ligne => ({
-  key: crypto.randomUUID(),
+  key: nouvelleCle(),
   id_lot: '', id_partenaire: '', mode_cuisson: '', code_couleur: '', mise_en_decongelation: '',
   quantite_avant_cuisson: '', quantite_apres_cuisson: '', dlc_dluo: '',
   numero_lot_cree: '', heure_fin_cuisson: '', temperature_coeur_cuisson: '',
